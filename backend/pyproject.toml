@@ -1,0 +1,95 @@
+[project]
+name = "geoinfralens-backend"
+version = "0.1.0"
+description = "GeoInfraLens AI backend: FastAPI API and Celery workers."
+requires-python = ">=3.12"
+dependencies = [
+    # Web API
+    "fastapi>=0.140,<1.0",
+    "uvicorn[standard]>=0.50,<1.0",
+    "python-multipart>=0.0.20",          # file uploads (form data)
+    # Settings and validation
+    "pydantic>=2.11,<3.0",
+    "pydantic-settings>=2.10,<3.0",
+    # Database (PostgreSQL + PostGIS)
+    "sqlalchemy>=2.0.40,<2.2",
+    "psycopg[binary]>=3.2,<4.0",
+    "geoalchemy2>=0.18,<1.0",
+    "alembic>=1.16,<2.0",
+    # Security
+    "pwdlib[argon2]>=0.2.1,<1.0",
+    # Background jobs (Valkey is Redis-compatible, so the redis client is used)
+    "celery>=5.5,<6.0",
+    "redis>=5.2,<9.0",
+    # Images
+    "pillow>=11.0,<13.0",
+    "opencv-python-headless>=4.10,<5.0",
+    # PDF reports (needs the Pango system libraries; see Dockerfile)
+    "weasyprint>=66,<67",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3,<10.0",
+    "httpx2>=2.13,<3.0",                 # HTTP client used by FastAPI's TestClient
+    "ruff>=0.12,<1.0",
+    "mypy>=1.16,<3.0",
+    "celery-types>=0.23",                # type hints for Celery
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+# ---------- Ruff (lint + format) ----------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # import order
+    "N",        # naming (snake_case etc.)
+    "B",        # common bugs
+    "UP",       # modern syntax
+    "BLE",      # no blind `except Exception`
+    "S",        # security
+    "RUF",
+]
+ignore = ["S101"]   # `assert` is fine in tests
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S105", "S106"]   # test-only dummy passwords
+"app/demo_data.py" = ["S311"]   # random only draws dummy pictures and positions
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "fastapi.Path",
+    "fastapi.File",
+    "fastapi.Form",
+    "app.core.auth.require_org_permission",
+    "app.core.auth.require_project_permission",
+]
+
+# ---------- mypy ----------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["geoalchemy2.*", "cv2.*", "weasyprint.*", "torchvision.*"]
+ignore_missing_imports = true
+
+# ---------- pytest ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"

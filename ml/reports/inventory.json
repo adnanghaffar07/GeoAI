@@ -1,0 +1,136 @@
+{
+  "countries": {
+    "China_Drone": {
+      "images": {
+        "train": 2401
+      },
+      "label_files": 2401,
+      "images_without_boxes": 5,
+      "boxes_by_label": {
+        "Block crack": 3,
+        "D00": 1426,
+        "D10": 1263,
+        "D20": 293,
+        "D40": 86,
+        "Repair": 769
+      },
+      "common_image_sizes": {
+        "512x512": 2401
+      }
+    },
+    "China_MotorBike": {
+      "images": {
+        "test": 500,
+        "train": 1977
+      },
+      "label_files": 1977,
+      "images_without_boxes": 0,
+      "boxes_by_label": {
+        "D00": 2678,
+        "D10": 1096,
+        "D20": 641,
+        "D40": 235,
+        "Repair": 277
+      },
+      "common_image_sizes": {
+        "512x512": 1977
+      }
+    },
+    "Czech": {
+      "images": {
+        "test": 709,
+        "train": 2829
+      },
+      "label_files": 2829,
+      "images_without_boxes": 1757,
+      "boxes_by_label": {
+        "D00": 988,
+        "D10": 399,
+        "D20": 161,
+        "D40": 197
+      },
+      "common_image_sizes": {
+        "600x600": 2829
+      }
+    },
+    "India": {
+      "images": {
+        "test": 1959,
+        "train": 7706
+      },
+      "label_files": 7706,
+      "images_without_boxes": 3921,
+      "boxes_by_label": {
+        "D00": 1555,
+        "D01": 179,
+        "D0w0": 1,
+        "D10": 68,
+        "D11": 45,
+        "D20": 2021,
+        "D40": 3187,
+        "D43": 57,
+        "D44": 1062,
+        "D50": 28
+      },
+      "common_image_sizes": {
+        "720x720": 7706
+      }
+    },
+    "Japan": {
+      "images": {
+        "test": 2627,
+        "train": 10506
+      },
+      "label_files": 10506,
+      "images_without_boxes": 794,
+      "boxes_by_label": {
+        "D00": 4049,
+        "D10": 3979,
+        "D20": 6199,
+        "D40": 2243,
+        "D43": 736,
+        "D44": 3995,
+        "D50": 3553
+      },
+      "common_image_sizes": {
+        "600x600": 10187,
+        "1024x1024": 147,
+        "540x540": 124
+      }
+    },
+    "Norway": {
+      "images": {
+        "test": 2040,
+        "train": 8161
+      },
+      "label_files": 8161,
+      "images_without_boxes": 5247,
+      "boxes_by_label": {
+        "D00": 8570,
+        "D10": 1730,
+        "D20": 468,
+        "D40": 461
+      },
+      "common_image_sizes": {
+        "4040x2035": 4342,
+        "3643x2041": 2896,
+        "3650x2044": 923
+      }
+    }
+  },
+  "unreadable_label_files": [],
+  "unreadable_label_file_count": 0,
+  "source": {
+    "url": "https://ndownloader.figshare.com/files/38030910",
+    "file": "RDD2022_released_through_CRDDC2022.zip",
+    "bytes": 13264172619,
+    "md5": "b62bd51d2ffcfaa76c60f234f0cc2bb3",
+    "licence": "CC BY 4.0 (figshare record); authors' GitHub states CC BY-SA 4.0"
+  },
+  "unpack_report": {
+    "inner_zips": 6,
+    "files_written": 74995,
+    "skipped_excluded": 1
+  },
+  "created_utc": "2026-10-16T17:04:07Z"
+}

@@ -1,0 +1,8 @@
+# Store text files with LF line endings in Git. Without this, Windows checkouts
+# can turn shell commands and Dockerfiles into CRLF files that break in Linux containers.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary

@@ -1,0 +1,78 @@
+# Local development environment.
+#
+#   docker compose up --build      start everything (first run builds the backend image)
+#   docker compose down            stop (data is kept in named volumes)
+#
+# Services: PostgreSQL + PostGIS, Valkey (job queue), API, Celery worker.
+# The frontend runs outside Docker with `npm run dev` (faster on Windows), and
+# forwards /api calls to the API on port 8000.
+#
+# Ports are bound to 127.0.0.1 so they are reachable only from this computer.
+
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  queue:
+    image: valkey/valkey:8
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./backend
+    env_file: .env
+    environment:
+      WATCHFILES_FORCE_POLLING: "true"   # makes --reload notice file changes on Windows
+    # Apply database migrations, then start the API with auto-reload.
+    # --no-access-log: the app prints its own request lines (with request ID and timing).
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log"
+    volumes:
+      - ./backend:/app
+      - storage-data:/data/storage
+      - ./ml/models:/models:ro   # trained model files (only read); see README "AI model"
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+
+  worker:
+    build: ./backend
+    env_file: .env
+    # Celery does not auto-reload: run `docker compose restart worker` after changing task code.
+    # One job at a time: with the trial AI model each worker process holds it in memory
+    # (about 1.7 GB measured), so more would need a lot more memory. Reports wait their turn.
+    command: celery -A app.workers.celery_app worker --loglevel=INFO --concurrency=1
+    volumes:
+      - ./backend:/app
+      - storage-data:/data/storage
+      - ./ml/models:/models:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
+
+volumes:
+  db-data:
+  storage-data:   # private uploaded photos and exports; never served directly

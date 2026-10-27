@@ -1,0 +1,40 @@
+# Model pass marks for P8 (documentation/04-design/ml-baseline-plan.md, sections 3-4).
+# PLACEHOLDER: set by the owner on 2026-10-15 (awaiting approval), NOT confirmed by the
+# partner (partner-inputs.md PI-17 is still BLOCKED).
+# Frozen once training starts: any change needs a dated line in project-decisions.md.
+version: 1
+is_placeholder: true
+approved_by: owner          # P8.0 approved 2026-10-16 (still PLACEHOLDER: partner has not confirmed PI-17)
+approved_on: 2026-10-16
+
+matching:
+  iou_min: 0.5             # a find is correct if same class and box overlap >= 50%
+  one_match_per_truth: true
+
+reporting_threshold:
+  chosen_on: validation    # never on the test set
+  rule: best_f1_lowest_on_tie
+
+test_set:
+  holdout: czech_or_norway # one whole country, chosen in P8.2 before training (>= 100 boxes per class)
+  excluded_subsets: [united_states]  # Google Street View images: Google terms forbid ML use
+  use_once: true
+
+classes:
+  pothole:
+    min_recall: 0.70
+    min_precision: 0.50
+    min_test_boxes: 100
+  surface_cracking:
+    min_recall: 0.60
+    min_precision: 0.40
+    min_test_boxes: 100
+  pavement_deterioration:
+    min_recall: 0.60
+    min_precision: 0.40
+    min_test_boxes: 100
+
+# Reported every time, not part of the pass mark.
+report_only:
+  weak_condition_recall_gap: 0.15   # a group this far below overall recall is a "weak condition"
+  cpu_seconds_per_photo_target: 5.0

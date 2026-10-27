@@ -1,0 +1,5 @@
+# P8.1-P8.2 dataset download, check and split (runs on Google Colab). Training packages come in P8.4.
+defusedxml==0.7.1
+# Already on Colab; listed so a local run has them too.
+pillow>=10
+numpy>=1.24

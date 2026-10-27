@@ -1,0 +1,101 @@
+{
+  "split_version": 1,
+  "created_utc": "2026-10-16T18:30:20Z",
+  "settings": {
+    "seed": 2026,
+    "test_country": "Czech",
+    "left_out_countries": [
+      "China_Drone"
+    ],
+    "excluded": "United States (never unpacked)",
+    "val_fraction": 0.1,
+    "max_side_px": 1333,
+    "min_box_side_px": 2.0,
+    "near_duplicate": "dHash 16x16, at most 10 bits different",
+    "class_from_code": {
+      "D40": "pothole",
+      "D00": "surface_cracking",
+      "D10": "surface_cracking",
+      "D20": "pavement_deterioration"
+    },
+    "categories": [
+      {
+        "id": 1,
+        "name": "pothole"
+      },
+      {
+        "id": 2,
+        "name": "surface_cracking"
+      },
+      {
+        "id": 3,
+        "name": "pavement_deterioration"
+      }
+    ]
+  },
+  "splits": {
+    "train": {
+      "photos": 25513,
+      "photos_without_boxes": 11150,
+      "boxes_by_class": {
+        "pothole": 5508,
+        "surface_cracking": 21301,
+        "pavement_deterioration": 8420
+      },
+      "photos_by_country": {
+        "China_MotorBike": 1779,
+        "India": 6935,
+        "Japan": 9455,
+        "Norway": 7344
+      },
+      "sha256_list": "74230d46876a957f60017ad7fe3f381d9d89f056804fccb817e2c4e99b246366",
+      "sha256_annotations": "9d5974480c98c72124f01c96dfbbcd13ee895e77f74b2bc63db5b1803596fed2"
+    },
+    "val": {
+      "photos": 2837,
+      "photos_without_boxes": 1229,
+      "boxes_by_class": {
+        "pothole": 618,
+        "surface_cracking": 2424,
+        "pavement_deterioration": 908
+      },
+      "photos_by_country": {
+        "China_MotorBike": 198,
+        "India": 771,
+        "Japan": 1051,
+        "Norway": 817
+      },
+      "sha256_list": "511f7257e61cbbdb5e00bf012be929a34a44f7704668a4e3173e0de3d42ae87f",
+      "sha256_annotations": "b98dd22e5014eb2de3cd67c699511138417663184657520e38ad59129ea7c97f"
+    },
+    "test": {
+      "photos": 2829,
+      "photos_without_boxes": 1757,
+      "boxes_by_class": {
+        "pothole": 197,
+        "surface_cracking": 1387,
+        "pavement_deterioration": 161
+      },
+      "photos_by_country": {
+        "Czech": 2829
+      },
+      "sha256_list": "edab54e913dc3f88e791abb6566e8c2a588d6773d7776c31d5e3b336e12ecbfb",
+      "sha256_annotations": "c161ed45ecd7f78e9c92336f2c743cccfea59cf6d708a2d3a7f19564ba330316"
+    }
+  },
+  "largest_near_duplicate_group": 3,
+  "cleaning_report": {
+    "boxes_dropped_too_small": 1,
+    "ignored_code_D01": 179,
+    "ignored_code_D0w0": 1,
+    "ignored_code_D11": 45,
+    "ignored_code_D43": 793,
+    "ignored_code_D44": 5057,
+    "ignored_code_D50": 3581,
+    "ignored_code_Repair": 277,
+    "left_out_China_Drone": 2401,
+    "near_duplicate_groups_with_2_or_more": 28,
+    "photos_in_near_duplicate_groups": 59
+  },
+  "test_set_locked": true
+}

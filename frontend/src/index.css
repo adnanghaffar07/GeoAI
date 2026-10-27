@@ -1,0 +1,189 @@
+@import '@fontsource-variable/public-sans';
+@import 'tailwindcss';
+
+/*
+ * Design tokens: the app's two colours live here, and only here.
+ * - Asphalt: menus, headings, main buttons.
+ * - Lane yellow (road marking): what is active or needs attention (selected item,
+ *   keyboard focus, progress, survey areas). Text is never yellow on white (too faint);
+ *   yellow is a fill or a line, with asphalt text on top.
+ * To re-brand, change these values; every screen follows.
+ */
+@theme {
+  --font-sans: 'Public Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --color-asphalt-50: #f1f4f7;
+  --color-asphalt-100: #e2e7ee;
+  --color-asphalt-200: #c5cfdb;
+  --color-asphalt-300: #9aa9bb;
+  --color-asphalt-500: #4f6177;
+  --color-asphalt-600: #3a4a5d;
+  --color-asphalt-700: #2a3747;
+  --color-asphalt-800: #212d3b;
+  --color-asphalt-900: #1b2633;
+  --color-asphalt-950: #121a24;
+
+  --color-lane-50: #fff8e1;
+  --color-lane-100: #ffefb8;
+  --color-lane-300: #fbd558;
+  --color-lane-400: #f7c524;
+  --color-lane-500: #f2b705;
+  --color-lane-600: #c99600;
+
+  --color-canvas: #f3f5f8;
+}
+
+@layer base {
+  body {
+    @apply bg-canvas font-sans text-asphalt-900 antialiased;
+    font-feature-settings: 'tnum' 1; /* numbers line up in tables and counts */
+  }
+  h1,
+  h2,
+  h3 {
+    @apply text-asphalt-900;
+    letter-spacing: -0.01em;
+  }
+  input[type='checkbox'],
+  input[type='radio'] {
+    @apply size-4 cursor-pointer accent-asphalt-900;
+  }
+  /* Everything you can click shows the hand pointer (Tailwind 4 leaves buttons with the arrow).
+     Links already do. Maps and charts set their own pointer on clickable dots and bars. */
+  :where(
+      button,
+      [role='button'],
+      [role='tab'],
+      [role='radio'],
+      [role='checkbox'],
+      [role='option'],
+      [role='menuitem'],
+      select,
+      summary,
+      label:has(input[type='checkbox'], input[type='radio'], input[type='file'])
+    ):not(:disabled, [aria-disabled='true']),
+  input[type='file']::file-selector-button {
+    cursor: pointer;
+  }
+  /* Switched-off controls say so when you point at them. */
+  :where(button, select, input, textarea, [role='button']):is(:disabled, [aria-disabled='true']) {
+    cursor: not-allowed;
+  }
+  /* A button that is busy saving shows the "working" cursor instead. */
+  :where(button[aria-busy='true']) {
+    cursor: progress;
+  }
+  ::selection {
+    @apply bg-lane-300 text-asphalt-950;
+  }
+  /* One consistent keyboard focus everywhere: a yellow ring like a road marking. */
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 3px solid var(--color-lane-500);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* Buttons (also used on links that look like buttons). */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
+      transition-[background-color,box-shadow,transform,color] duration-150
+      active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55 disabled:active:translate-y-0;
+  }
+  .btn-primary {
+    @apply bg-asphalt-900 text-white shadow-[0_1px_0_0_var(--color-asphalt-950)] hover:bg-asphalt-700;
+  }
+  /* The one main action on a page. */
+  .btn-accent {
+    @apply bg-lane-500 text-asphalt-950 shadow-[0_1px_0_0_var(--color-lane-600)] hover:bg-lane-400;
+  }
+  .btn-secondary {
+    @apply border border-asphalt-200 bg-white text-asphalt-900 hover:border-asphalt-300 hover:bg-asphalt-50;
+  }
+  .btn-ghost {
+    @apply text-asphalt-700 hover:bg-asphalt-100 hover:text-asphalt-900;
+  }
+  .btn-danger {
+    @apply border border-red-200 bg-white text-red-700 hover:border-red-300 hover:bg-red-50;
+  }
+
+  /* Text links: underlined like a road marking. */
+  .link {
+    @apply font-medium text-asphalt-800 underline decoration-lane-500 decoration-2 underline-offset-4
+      transition-colors hover:decoration-asphalt-800;
+  }
+
+  /* A white section on the grey page. */
+  .panel {
+    @apply rounded-xl border border-asphalt-100 bg-white shadow-[0_1px_2px_rgb(27_38_51/0.05)];
+  }
+
+  /* Form controls. */
+  .control {
+    @apply block w-full rounded-lg border border-asphalt-200 bg-white px-3.5 py-2.5 text-sm text-asphalt-900
+      transition-[border-color,box-shadow] placeholder:text-asphalt-300 hover:border-asphalt-300
+      focus:border-asphalt-700 focus:shadow-[0_0_0_3px_var(--color-lane-300)] focus:outline-none
+      disabled:bg-asphalt-50 disabled:text-asphalt-500 aria-[invalid=true]:border-red-500;
+  }
+
+  /* Small status pills (photo flags, roles, archived). */
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+}
+
+/*
+ * Tables on phones: each row becomes a small card, and each cell shows its column name
+ * (from the cell's data-label) on the left. Use: <table className="responsive-table">.
+ */
+@media (max-width: 639px) {
+  .responsive-table thead {
+    @apply sr-only;
+  }
+  .responsive-table,
+  .responsive-table tbody,
+  .responsive-table tr,
+  .responsive-table td {
+    display: block;
+    width: 100%;
+  }
+  .responsive-table tr {
+    @apply border-b border-asphalt-100 px-4 py-3 last:border-0;
+  }
+  .responsive-table td {
+    @apply flex min-h-8 items-center justify-between gap-4 px-0 py-1 text-right;
+  }
+  .responsive-table td[data-label]::before {
+    content: attr(data-label);
+    @apply shrink-0 text-left text-xs font-medium text-asphalt-500;
+  }
+  .responsive-table td:not([data-label]) {
+    @apply justify-start text-left;
+  }
+}
+
+/* The page body appears with one short fade when you change pages. */
+@media (prefers-reduced-motion: no-preference) {
+  .page-enter {
+    animation: page-enter 220ms ease-out;
+  }
+  @keyframes page-enter {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+}
+
+/* Notices ("Saved") slide up gently. */
+@media (prefers-reduced-motion: no-preference) {
+  .toast-enter {
+    animation: toast-enter 180ms ease-out;
+  }
+  @keyframes toast-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+}

@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoInfraLens Demo Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+body{margin:0}
+
+/* Layout: sticky contents rail on the left (wide screens), one readable column of sections on the right; the app's own two colours. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #1b2633;          /* asphalt */
+  --ink-soft: #4f6177;
+  --line: #dde3ea;
+  --lane: #f2b705;         /* road-marking yellow */
+  --lane-soft: #fff6d6;
+  --ok: #17784a;
+  --ok-soft: #e5f4ec;
+  --todo: #8a5a00;
+  --todo-soft: #fdf1d8;
+  --code-bg: #eef2f6;
+  --font-body: 'Public Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121a24; --surface: #1b2633; --ink: #e8edf3; --ink-soft: #a9b6c6; --line: #2e3c4d;
+    --lane: #f7c524; --lane-soft: #3a3214; --ok: #6fd3a2; --ok-soft: #173326; --todo: #f3c46a; --todo-soft: #3a2e14;
+    --code-bg: #243244; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121a24; --surface: #1b2633; --ink: #e8edf3; --ink-soft: #a9b6c6; --line: #2e3c4d;
+  --lane: #f7c524; --lane-soft: #3a3214; --ok: #6fd3a2; --ok-soft: #173326; --todo: #f3c46a; --todo-soft: #3a2e14;
+  --code-bg: #243244; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.shell { max-width: 1180px; margin: 0 auto; display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 48px; }
+@media (max-width: 900px) { .shell { grid-template-columns: minmax(0, 1fr); gap: 0; } }
+
+/* Masthead: a stretch of asphalt with the centre line. */
+.masthead { background: #1b2633; color: #fff; margin: 0 calc(-1 * max(16px, env(safe-area-inset-left, 0px))) 40px; position: relative; overflow: hidden; }
+.masthead-inner { max-width: 1180px; margin: 0 auto; padding: 40px max(16px, env(safe-area-inset-left, 0px)) 36px; position: relative; }
+.masthead::after { content: ""; position: absolute; left: 0; right: 0; bottom: 14px; height: 5px;
+  background: repeating-linear-gradient(90deg, #f2b705 0 46px, transparent 46px 78px); opacity: .9; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; color: #c5cfdb; }
+.brand svg { width: 28px; height: 28px; }
+.masthead h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); line-height: 1.15; margin: 18px 0 10px; letter-spacing: -0.015em; text-wrap: balance; color: #fff; }
+.masthead p { margin: 0; color: #c5cfdb; max-width: 62ch; }
+.meta { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 18px; font-size: 14px; color: #9aa9bb; }
+.meta b { color: #fff; font-weight: 600; }
+
+/* Contents rail */
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font-size: 14px; }
+nav.toc p { font-weight: 700; margin: 0 0 8px; color: var(--ink-soft); font-size: 13px; letter-spacing: .04em; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; counter-reset: s; }
+nav.toc a { display: block; padding: 6px 10px; border-left: 3px solid transparent; color: var(--ink-soft); text-decoration: none; border-radius: 0 6px 6px 0; }
+nav.toc a:hover { color: var(--ink); background: var(--surface); border-left-color: var(--lane); }
+@media (max-width: 900px) {
+  nav.toc { position: static; margin-bottom: 28px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  nav.toc ol { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
+
+main { min-width: 0; }
+section { margin-bottom: 56px; scroll-margin-top: 16px; }
+h2 { font-size: 1.6rem; line-height: 1.25; letter-spacing: -0.01em; margin: 0 0 6px; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .num { font-size: .95rem; font-weight: 700; color: var(--ink); background: var(--lane); border-radius: 6px; padding: 1px 8px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 1.12rem; margin: 30px 0 8px; }
+.lead { color: var(--ink-soft); margin: 0 0 20px; max-width: 68ch; }
+p, li { max-width: 72ch; }
+ul, ol { padding-left: 1.3em; }
+li + li { margin-top: 4px; }
+a { color: var(--ink); text-decoration-color: var(--lane); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+code, kbd { font-family: var(--font-mono); font-size: .86em; background: var(--code-bg); padding: 1px 5px; border-radius: 5px; }
+pre.cmd { font-family: var(--font-mono); font-size: 14px; background: #1b2633; color: #e8edf3; padding: 14px 16px; border-radius: 10px; overflow-x: auto; margin: 10px 0 16px; line-height: 1.55; }
+pre.cmd .c { color: #9aa9bb; }
+
+.say { border-left: 4px solid var(--lane); background: var(--surface); padding: 12px 16px; border-radius: 0 10px 10px 0; margin: 14px 0; max-width: 72ch; }
+.say b:first-child { display: block; font-size: 13px; color: var(--ink-soft); margin-bottom: 2px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0 8px; }
+@media (max-width: 640px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.stat strong { display: block; font-size: 1.8rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--ink-soft); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); margin: 12px 0 18px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; color: var(--ink-soft); font-weight: 600; background: color-mix(in srgb, var(--surface) 92%, var(--ink) 8%); }
+tr:last-child td { border-bottom: 0; }
+td code { white-space: nowrap; }
+.pill { display: inline-block; font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 1px 9px; white-space: nowrap; }
+.pill.done { background: var(--ok-soft); color: var(--ok); }
+.pill.part { background: var(--todo-soft); color: var(--todo); }
+.pill.next { background: var(--code-bg); color: var(--ink-soft); }
+.method { font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+
+.screen { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 22px; }
+.screen h3 { margin-top: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.screen h3 .where { font-family: var(--font-mono); font-size: 13px; font-weight: 400; color: var(--ink-soft); }
+dl.opts { display: grid; grid-template-columns: minmax(150px, 220px) minmax(0, 1fr); gap: 8px 18px; margin: 10px 0 0; }
+dl.opts dt { font-weight: 600; }
+dl.opts dd { margin: 0; color: var(--ink-soft); }
+@media (max-width: 640px) { dl.opts { grid-template-columns: minmax(0, 1fr); gap: 2px; } dl.opts dd { margin-bottom: 10px; } }
+
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; overflow-x: auto; margin: 14px 0; }
+.steps { counter-reset: step; list-style: none; padding: 0; display: grid; gap: 10px; }
+.steps li { counter-increment: step; position: relative; padding-left: 40px; }
+.steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 13px; font-weight: 700; display: grid; place-items: center; }
+.qa dt { font-weight: 700; margin-top: 16px; }
+.qa dd { margin: 4px 0 0; color: var(--ink-soft); max-width: 72ch; }
+footer { color: var(--ink-soft); font-size: 14px; border-top: 1px solid var(--line); padding-top: 16px; }
+a:focus-visible, summary:focus-visible { outline: 3px solid var(--lane); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#2a3747"/><path d="M16 4v24" stroke="#f2b705" stroke-width="3.2" stroke-dasharray="5 4" stroke-linecap="round"/></svg>
+      GeoInfraLens AI
+    </div>
+    <h1>Demo guide for the team lead</h1>
+    <p>What the app does, what is built and what is not, which technology does what, and how to walk through every screen. Written in plain language so it can be explained without notes.</p>
+    <div class="meta"><span>Status date <b>15 Oct 2026</b></span><span>Current phase <b>P4 of P0–P11</b></span><span>Built by <b>Adnan, CodeAutomation.ai</b></span></div>
+  </div>
+</header>
+
+<div class="shell">
+  <nav class="toc" aria-label="Contents">
+    <p>Contents</p>
+    <ol>
+      <li><a href="#summary">The app in one minute</a></li>
+      <li><a href="#status">Done and not done</a></li>
+      <li><a href="#run">Start the demo</a></li>
+      <li><a href="#script">Demo script</a></li>
+      <li><a href="#screens">Every screen and option</a></li>
+      <li><a href="#tech">Technology used</a></li>
+      <li><a href="#links">One-time links</a></li>
+      <li><a href="#maps">How the maps work</a></li>
+      <li><a href="#api">The API and Swagger</a></li>
+      <li><a href="#connect">How frontend talks to backend</a></li>
+      <li><a href="#console">Console messages</a></li>
+      <li><a href="#questions">Likely questions</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="summary">
+      <h2><span class="num">1</span>The app in one minute</h2>
+      <p class="lead">GeoInfraLens AI helps a city road department find road and sidewalk problems (potholes, cracks, damaged pavement) from survey photos, see them on a map, and decide what to inspect first.</p>
+      <ol class="steps">
+        <li>A <b>field collector</b> takes photos with a phone on the street. The phone stores the GPS location and time inside each photo.</li>
+        <li>The photos are <b>uploaded</b> into a project. The app reads the location and time and checks the quality (blurry, too dark, outside the survey area).</li>
+        <li><b>AI</b> looks at each photo and suggests possible problems. <i>(next phase, P5)</i></li>
+        <li>A <b>technical reviewer</b> (a person) confirms or rejects every AI suggestion. The AI never decides on its own. <i>(P6)</i></li>
+        <li>Confirmed problems appear on the <b>map</b>, get an <b>inspection priority</b>, and go into <b>reports</b>. <i>(P7)</i></li>
+      </ol>
+      <div class="say"><b>One line to say</b>"The AI only suggests. A qualified person checks every suggestion before it counts, and every change is recorded."</div>
+    </section>
+
+    <section id="status">
+      <h2><span class="num">2</span>Done and not done</h2>
+      <p class="lead">The project is built in phases. Each phase has a checklist and needs sign-off before the next one starts.</p>
+      <div class="stats">
+        <div class="stat"><strong>4 / 12</strong><span>phases done (P0–P3 signed off, P4 in final testing)</span></div>
+        <div class="stat"><strong>13 / 21</strong><span>screens (3 of them partly)</span></div>
+        <div class="stat"><strong>12 / 23</strong><span>database tables</span></div>
+        <div class="stat"><strong>37 / ~64</strong><span>API requests</span></div>
+      </div>
+      <p>Automatic tests: <b>113 backend</b> and <b>30 frontend</b>, all passing. Every screen also works on a phone.</p>
+
+      <h3>Phases</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Phase</th><th>What it is</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>P0</td><td>Project documentation and plan</td><td><span class="pill done">Signed off</span></td></tr>
+          <tr><td>P1</td><td>Requirements: 55 features, 5 user roles, 52 acceptance tests</td><td><span class="pill done">Signed off</span></td></tr>
+          <tr><td>P2</td><td>Design: database, API, AI result format, screen list</td><td><span class="pill done">Signed off</span></td></tr>
+          <tr><td>P3</td><td>Foundation: sign-in, invitations, roles, team, history</td><td><span class="pill done">Signed off</span></td></tr>
+          <tr><td>P4</td><td>Projects with map areas, photo upload, GPS, quality checks</td><td><span class="pill part">Built, final testing</span></td></tr>
+          <tr><td>P5</td><td>AI analysis of photos (first with a test detector)</td><td><span class="pill next">Next</span></td></tr>
+          <tr><td>P6</td><td>Human review of AI suggestions, findings map</td><td><span class="pill next">Not started</span></td></tr>
+          <tr><td>P7</td><td>Inspection priority, inspections, reports</td><td><span class="pill next">Not started</span></td></tr>
+          <tr><td>P8</td><td>Train the real AI model (needs the customer's photos and permission)</td><td><span class="pill next">Waiting on customer</span></td></tr>
+          <tr><td>P9</td><td>System testing and hardening</td><td><span class="pill next">Not started</span></td></tr>
+          <tr><td>P10</td><td>Pilot deployment</td><td><span class="pill next">Not started</span></td></tr>
+          <tr><td>P11</td><td>Handover</td><td><span class="pill next">Not started</span></td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Built and working</h3>
+      <ul>
+        <li>Secure sign-in, sign-out, and automatic lock after 5 wrong passwords in 15 minutes.</li>
+        <li>Inviting people by one-time link, accepting the invitation, and setting a password.</li>
+        <li>Password reset links created by an administrator.</li>
+        <li>Organization roles (Administrator, Manager, Member) and project roles (Project manager, Field collector, Technical reviewer, Viewer).</li>
+        <li>One organization can never see another organization's data.</li>
+        <li>Projects with a survey area drawn on the map or uploaded as a GeoJSON file; edit and archive.</li>
+        <li>Photo upload in batches with progress, retry, duplicate protection, GPS and time reading, and quality warnings.</li>
+        <li>Picking a location on the map for photos that have no GPS.</li>
+        <li>Private photo storage: a photo opens only for someone allowed to see it.</li>
+        <li>A history of every important action (who did what, when).</li>
+        <li>Modern design, phone-friendly screens, password show/hide eye, clear console messages.</li>
+      </ul>
+
+      <h3>Not built yet</h3>
+      <ul>
+        <li>AI analysis of photos (P5).</li>
+        <li>Reviewing AI suggestions, adding manual observations, findings map (P6).</li>
+        <li>Inspection priority, inspection records, reports and exports (P7).</li>
+        <li>The real trained AI model (P8). It needs the customer's photos and written permission to use them.</li>
+        <li>Screens for retention settings and the history log. The history is already recorded; only the screen is missing.</li>
+        <li>Editing finding types. They are placeholders until the customer sends their own list.</li>
+        <li>Automatic emails. Today the invite or reset link is shown on screen with a Copy button.</li>
+        <li>Deployment to a real server (P10).</li>
+      </ul>
+
+      <h3>Waiting on the customer</h3>
+      <ul>
+        <li><b>Blocking:</b> permission to use their photos to train the AI, a qualified engineer to review findings, agreed accuracy targets for the AI.</li>
+        <li>16 other inputs such as their list of defect types and severity rules. Labelled placeholders are used until then, so work is not blocked.</li>
+      </ul>
+    </section>
+
+    <section id="run">
+      <h2><span class="num">3</span>Start the demo</h2>
+      <p class="lead">Two windows: one for the backend (server and database), one for the frontend (the screens). Open Docker Desktop first and wait for "Engine running".</p>
+      <h3>Window 1: backend</h3>
+<pre class="cmd">cd "C:\Users\Developer2025\Desktop\GeoInfraLens AI"
+docker compose up --build</pre>
+      <h3>Window 2: frontend</h3>
+<pre class="cmd">cd "C:\Users\Developer2025\Desktop\GeoInfraLens AI\frontend"
+npm run dev</pre>
+      <p>Then open <code>http://localhost:5173</code> for the app and <code>http://localhost:8000/api/docs</code> for the API list.</p>
+      <div class="say"><b>Before the meeting</b>Run through the demo script once. Have 3–5 phone photos ready (with location on), one screenshot (no location), one <code>.txt</code> file, and one GeoJSON file from geojson.io. Use a second email address for the invitation step.</div>
+    </section>
+
+    <section id="script">
+      <h2><span class="num">4</span>Demo script (about 15 minutes)</h2>
+      <ol class="steps">
+        <li><b>Sign in.</b> Show the eye button on the password box. Mention passwords are stored scrambled (hashed), never as plain text.</li>
+        <li><b>Overview.</b> Show System status: database ok, queue ok.</li>
+        <li><b>Team.</b> Read the blue-yellow note about organization roles and project roles. Invite a person and show the one-time link with Copy.</li>
+        <li><b>Accept the invitation</b> in a private browser window: enter a name and password, and sign in as that person.</li>
+        <li><b>Create a project.</b> Press Save with everything empty to show the messages beside each field. Then fill it in and draw the survey area on the map. Create a second one from a GeoJSON file.</li>
+        <li><b>Team tab of the project.</b> Add the invited person as Field collector.</li>
+        <li><b>Upload photos.</b> Tick the permission box. Add phone photos, a screenshot and a .txt file. Show the progress bars, "No location" for the screenshot, and the clear refusal for the .txt file. Upload one photo again to show "Already uploaded".</li>
+        <li><b>Photos tab.</b> Show warnings (blurry, no time zone), the location source, and use <i>Pick location on map</i> for the screenshot.</li>
+        <li><b>Overview tab.</b> Show the counts and the dots on the map.</li>
+        <li><b>Permissions.</b> Sign in as the field collector: they see only their project and only their own photos.</li>
+        <li><b>Phone view.</b> Press F12, then Ctrl + Shift + M, and pick a phone size.</li>
+        <li><b>Behind the scenes.</b> Open <code>/api/docs</code>, and show the console messages in the backend window and the browser (F12 → Console).</li>
+      </ol>
+    </section>
+
+    <section id="screens">
+      <h2><span class="num">5</span>Every screen and option</h2>
+      <p class="lead">Buttons only appear if the signed-in person is allowed to use them. The server checks permission again on every request, so hiding a button is a convenience, not the protection.</p>
+
+      <div class="screen">
+        <h3>Sign in <span class="where">/sign-in</span></h3>
+        <dl class="opts">
+          <dt>Email, Password</dt><dd>The account's email and password.</dd>
+          <dt>Eye button</dt><dd>Shows or hides the typed password, so typos can be checked.</dd>
+          <dt>Sign in</dt><dd>Checks the password. After 5 wrong tries in 15 minutes, sign-in is paused for that account.</dd>
+          <dt>Forgot your password?</dt><dd>There is no self-service reset yet. An administrator creates a reset link on the Team page.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Accept invitation and Set new password <span class="where">/invite/…, /reset-password/…</span></h3>
+        <dl class="opts">
+          <dt>Your name, Password, Repeat password</dt><dd>For a new account. Password needs at least 10 characters. Each password box has its own eye button.</dd>
+          <dt>Link problems</dt><dd>If the link expired, was used, or was cancelled, the page says which, and what to do next.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Left menu (every page after sign-in)</h3>
+        <dl class="opts">
+          <dt>Organization</dt><dd>The organization you are working in. People in several organizations can switch here.</dd>
+          <dt>Overview, Projects, Team, Finding types, My account</dt><dd>Main pages. The yellow marker shows where you are. Team and Finding types appear only for people allowed to see them.</dd>
+          <dt>Name and sign-out icon</dt><dd>Who is signed in. The arrow icon signs out.</dd>
+          <dt>Phone</dt><dd>The menu folds into a top bar with a ☰ button.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Overview <span class="where">/</span></h3>
+        <dl class="opts">
+          <dt>Welcome line</dt><dd>Your name and organization.</dd>
+          <dt>System status</dt><dd>Checks that the database and the job queue are reachable. "ok" means healthy.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Projects <span class="where">/projects</span></h3>
+        <dl class="opts">
+          <dt>Create project</dt><dd>Shown to Administrators and Managers.</dd>
+          <dt>Show archived projects</dt><dd>Includes finished projects, which are read-only.</dd>
+          <dt>Project card</dt><dd>Name, your role in it, number of photos, photos without location, and photos with quality warnings. Click to open.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Create project / Project settings <span class="where">/projects/new, /projects/…/edit</span></h3>
+        <dl class="opts">
+          <dt>Project name</dt><dd>Required.</dd>
+          <dt>Road category, Partner reference</dt><dd>Optional. The reference is the customer's own project number.</dd>
+          <dt>Survey start / end</dt><dd>Optional dates. The end cannot be before the start.</dd>
+          <dt>Finding types</dt><dd>The kinds of problems this survey looks for. "AI suggests" types come from the AI; "Entered by people" types are added by hand. All are placeholders for now.</dd>
+          <dt>Technical reviewers</dt><dd>Who will check AI suggestions. At least one is needed. The creator becomes Project manager automatically.</dd>
+          <dt>Survey area: Draw a shape</dt><dd>Click corners on the map, click the first corner again to finish. Several shapes are allowed.</dd>
+          <dt>Move or adjust</dt><dd>Drag a shape or its corners; press Delete to remove a selected shape.</dd>
+          <dt>Clear all</dt><dd>Removes the drawn area to start again.</dd>
+          <dt>Upload GeoJSON file</dt><dd>Loads an area from a standard map file instead of drawing.</dd>
+          <dt>Save project</dt><dd>If anything is wrong, messages appear next to the fields and nothing typed is lost.</dd>
+          <dt>Archive project</dt><dd>(Settings only) Makes the project read-only. Nothing is deleted.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Project tabs <span class="where">/projects/…</span></h3>
+        <dl class="opts">
+          <dt>Overview</dt><dd>Upload button, counts (photos, photos needing a location, photos with warnings), and the survey area map with a dot for each photo. Dots are approximate camera positions, not exact defect positions.</dd>
+          <dt>Photos</dt><dd>Each photo with its preview, time taken, who uploaded it, where the location came from (photo GPS, phone location, picked on map, or none), and warnings. Filter: "Only photos without a location".</dd>
+          <dt>Pick location on map</dt><dd>For photos without GPS: click where it was taken, then Save. It is stored as "Picked on map" and can be set only once.</dd>
+          <dt>Open original</dt><dd>Opens the full, unchanged photo.</dd>
+          <dt>Withdraw</dt><dd>Hides a photo from the project. It is kept, never deleted. Collectors can withdraw only their own photos.</dd>
+          <dt>Upload photos</dt><dd>See the next screen.</dd>
+          <dt>Team</dt><dd>Who has which project role. "What the project roles mean" explains each role. Managers can add a person with a role or remove a role. The last project manager cannot be removed.</dd>
+          <dt>Settings</dt><dd>The project form and the Archive option.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Upload photos <span class="where">/projects/…/upload</span></h3>
+        <dl class="opts">
+          <dt>Drag photos here / Choose photos</dt><dd>JPEG or PNG, up to 20 MB each.</dd>
+          <dt>Take photo</dt><dd>On phones, opens the camera directly.</dd>
+          <dt>"I am allowed to upload these photos"</dt><dd>Must be ticked. A privacy reminder about faces, number plates and house interiors.</dd>
+          <dt>Use this device's location</dt><dd>Only for photos with no GPS, and only when uploading at the place the photos were taken.</dd>
+          <dt>Upload</dt><dd>Sends 3 photos at a time, each with its own progress bar.</dd>
+          <dt>Results per file</dt><dd>"Uploaded" or "Already uploaded" (the same file is never stored twice), plus "Has location" or "No location". A failed file gets Retry; a wrong file type gets a clear reason and Remove.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Team <span class="where">/settings/team</span></h3>
+        <dl class="opts">
+          <dt>Roles note</dt><dd>Explains organization roles versus project roles.</dd>
+          <dt>Invite person</dt><dd>Email and role. Creates a one-time link shown once, with Copy.</dd>
+          <dt>Members: Role</dt><dd>Change a person's organization role. The last administrator cannot be removed or demoted.</dd>
+          <dt>Reset link</dt><dd>Creates a one-time password reset link for that person (Administrators only).</dd>
+          <dt>Remove</dt><dd>Removes the person after a confirm click. They are signed out at once.</dd>
+          <dt>Pending invitations</dt><dd>Invitations not yet accepted. "Cancel invitation" makes the link stop working.</dd>
+        </dl>
+      </div>
+
+      <div class="screen">
+        <h3>Finding types and My account <span class="where">/settings/catalog, /account</span></h3>
+        <dl class="opts">
+          <dt>Finding types</dt><dd>View-only list of problem types with code, who finds them (AI or people) and status. Marked as placeholders until the customer's list arrives.</dd>
+          <dt>My account</dt><dd>Your name, email, organizations and roles, and Sign out.</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section id="tech">
+      <h2><span class="num">6</span>Technology used</h2>
+      <p class="lead">All free and open source. Chosen to be simple enough for one developer and solid enough for a real pilot.</p>
+
+      <h3>Frontend (the screens in the browser)</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Technology</th><th>What it does here</th></tr></thead>
+        <tbody>
+          <tr><td>React 19 + TypeScript</td><td>Builds the screens. TypeScript catches mistakes before the app runs.</td></tr>
+          <tr><td>Vite 8</td><td>Runs the app while developing (<code>npm run dev</code>) and builds the final version. Also forwards <code>/api</code> calls to the backend.</td></tr>
+          <tr><td>Tailwind CSS 4</td><td>Styling. All colours (asphalt and road-marking yellow) are set in one file, <code>index.css</code>.</td></tr>
+          <tr><td>Own UI components</td><td>Buttons, text fields, password field with eye, tables that become cards on phones. Small and written for this app.</td></tr>
+          <tr><td>Lucide icons</td><td>The menu icons, the eye, sign-out. This is the same icon set shadcn/ui uses.</td></tr>
+          <tr><td>Public Sans font</td><td>The typeface the US government made for public-service websites. Bundled, so it works offline.</td></tr>
+          <tr><td>React Router 8</td><td>Moves between pages (Projects, Team, …) without reloading.</td></tr>
+          <tr><td>TanStack Query 5</td><td>Fetches data from the backend, shows loading states, and refreshes lists after changes.</td></tr>
+          <tr><td>React Hook Form + Zod</td><td>Forms and checking what was typed (for example "Enter a project name").</td></tr>
+          <tr><td>MapLibre GL 6</td><td>The interactive map.</td></tr>
+          <tr><td>Terra Draw</td><td>Drawing survey areas on the map.</td></tr>
+          <tr><td>Vitest + Testing Library, oxlint</td><td>Automatic tests and code-quality checks.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="say"><b>About shadcn/ui</b>shadcn/ui is set up in the project (its settings file is there) and can be added one component at a time when a complex part is needed, such as a date picker or a dropdown menu. So far the app did not need it: simple own components built with Tailwind were enough. The icons are the same ones shadcn uses.</div>
+
+      <h3>Backend (the server)</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Technology</th><th>What it does here</th></tr></thead>
+        <tbody>
+          <tr><td>Python + FastAPI</td><td>The API: receives requests from the screens, checks permissions, returns data. Creates the Swagger page automatically.</td></tr>
+          <tr><td>Pydantic</td><td>Checks every incoming request (types, lengths, required fields) on the server, even if the screen already checked.</td></tr>
+          <tr><td>SQLAlchemy + GeoAlchemy2</td><td>Talks to the database from Python, including map shapes.</td></tr>
+          <tr><td>Alembic</td><td>Database updates ("migrations"). New tables are added without losing existing data.</td></tr>
+          <tr><td>pwdlib (Argon2)</td><td>Scrambles (hashes) passwords so they are never stored readable.</td></tr>
+          <tr><td>Pillow + OpenCV</td><td>Reads photo GPS and time, makes small previews, and detects blurry or dark photos.</td></tr>
+          <tr><td>Celery + Valkey</td><td>A job queue for slow background work. It will run the AI analysis in P5.</td></tr>
+          <tr><td>pytest, ruff, mypy</td><td>Automatic tests and code-quality checks.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Database and running</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Technology</th><th>What it does here</th></tr></thead>
+        <tbody>
+          <tr><td>PostgreSQL 17 + PostGIS 3.5</td><td>The database. PostGIS adds map features: storing survey areas and photo points, checking whether a photo is inside the area, measuring areas.</td></tr>
+          <tr><td>Private storage folder</td><td>Photos are saved in a private Docker storage area, never on a public web address.</td></tr>
+          <tr><td>Docker Compose</td><td>Starts the database, queue, API and worker together with one command, the same on every computer.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="links">
+      <h2><span class="num">7</span>One-time links (invitations and password resets)</h2>
+      <p class="lead">No email service is connected yet, so the administrator copies the link and sends it themselves (email, chat).</p>
+      <ol class="steps">
+        <li>The server creates a long random code using Python's <code>secrets</code> module (the standard tool for security codes). It cannot be guessed.</li>
+        <li>The database stores only a <b>scrambled fingerprint</b> of the code (SHA-256), never the code itself. Even someone who reads the database cannot use the links.</li>
+        <li>The full link is shown <b>once</b> on screen with a Copy button. It is never shown again.</li>
+        <li>When someone opens the link, the server scrambles the code the same way and looks for a match.</li>
+        <li>The link works <b>once</b>. Invitations expire after <b>7 days</b>, reset links after <b>1 hour</b>. A newer link replaces older ones. Using a reset link signs the person out everywhere.</li>
+        <li>The code is hidden as <code>***</code> in all console messages.</li>
+      </ol>
+      <div class="say"><b>One line to say</b>"Links are random, single-use, time-limited, and the database never stores them readable."</div>
+    </section>
+
+    <section id="maps">
+      <h2><span class="num">8</span>How the maps work</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Part</th><th>Technology</th><th>Plain explanation</th></tr></thead>
+        <tbody>
+          <tr><td>The map itself</td><td>MapLibre GL JS</td><td>Free, open-source map engine (like Google Maps, but ours to control).</td></tr>
+          <tr><td>Street background</td><td>OpenFreeMap tiles</td><td>Free street map pictures. Can be swapped with one setting (<code>VITE_MAP_STYLE_URL</code>). Terms to be checked before the pilot.</td></tr>
+          <tr><td>Drawing areas</td><td>Terra Draw</td><td>Lets the user click corners and adjust shapes.</td></tr>
+          <tr><td>Map files</td><td>GeoJSON</td><td>The standard text format for map shapes; GIS tools such as QGIS export it.</td></tr>
+          <tr><td>Storing and checking</td><td>PostGIS</td><td>Saves shapes and points; checks that shapes are valid (edges don't cross) and whether a photo is inside the area.</td></tr>
+          <tr><td>Coordinates</td><td>WGS 84 (EPSG:4326)</td><td>Latitude and longitude, the same system phones and GPS use.</td></tr>
+        </tbody>
+      </table></div>
+      <p>If the street background cannot load (offline), the map shows a plain background and drawing still works. Photo locations are treated as <b>approximate</b> camera positions, and a photo without GPS is never given an invented location.</p>
+    </section>
+
+    <section id="api">
+      <h2><span class="num">9</span>The API and the Swagger page</h2>
+      <p class="lead">The API is the list of requests the screens can send to the server. FastAPI publishes it automatically as an interactive page (Swagger UI).</p>
+      <ul>
+        <li><b>Open:</b> <code>http://localhost:8000/api/docs</code> while the backend runs. Every request is listed with its inputs, outputs and possible errors, and can be tried there.</li>
+        <li><b>Machine-readable version:</b> <code>http://localhost:8000/api/openapi.json</code> (the OpenAPI standard).</li>
+        <li>The Swagger page is switched <b>off in production</b> for security.</li>
+        <li>All addresses start with <code>/api/v1</code>. "v1" means version 1: later changes only add new requests, so nothing that works today breaks.</li>
+        <li>Every error has the same shape: a code, a plain message, details, and a request ID for support.</li>
+      </ul>
+      <h3>The 37 requests built so far</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Group</th><th>Requests</th><th>Count</th></tr></thead>
+        <tbody>
+          <tr><td>Health</td><td><span class="method">GET</span> <code>/api/health</code>, <code>/api/health/ready</code></td><td>2</td></tr>
+          <tr><td>Sign-in and links</td><td>login, logout, current user (me), open and accept invitation, open and use reset link</td><td>7</td></tr>
+          <tr><td>Organization</td><td>details, change settings, finding types, members (list, change role, remove, reset link), invitations (list, create, cancel), history</td><td>11</td></tr>
+          <tr><td>Projects</td><td>list, create, details, edit, archive, team (list, add, remove), people who can be added, history</td><td>10</td></tr>
+          <tr><td>Photos</td><td>upload, list, details, original file, preview, set location, withdraw</td><td>7</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section id="connect">
+      <h2><span class="num">10</span>How the frontend talks to the backend</h2>
+      <div class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    participant B as Browser (React screens)
+    participant V as Vite dev server :5173
+    participant A as FastAPI backend :8000
+    participant D as PostgreSQL + PostGIS
+    B->>V: POST /api/v1/auth/login
+    V->>A: forwards /api/... (proxy)
+    A->>D: check password hash
+    D-->>A: user found
+    A-->>B: 200 + session cookie (httpOnly)
+    B->>V: GET /api/v1/organizations/{id}/projects (cookie sent)
+    V->>A: forwards
+    A->>A: who is this? allowed?
+    A->>D: projects this person may see
+    A-->>B: JSON list → screen shows cards
+</pre>
+      </div>
+      <ol class="steps">
+        <li><b>One address.</b> The browser only talks to <code>localhost:5173</code>. Vite forwards anything starting with <code>/api</code> to the backend on port 8000. In production the same happens on one web address.</li>
+        <li><b>One helper.</b> All screens call the backend through one file (<code>src/lib/api-client.ts</code>). It sends JSON, reads answers, and turns every failure into the same error shape.</li>
+        <li><b>Session cookie.</b> After sign-in the server sets a cookie the page's code cannot read (httpOnly). The browser sends it automatically; the server looks up who it is on every request. Signing out or being removed ends it immediately.</li>
+        <li><b>Permission on every request.</b> The server checks the person's organization and project roles for each request. Another organization's data returns "not found".</li>
+        <li><b>Caching and refresh.</b> TanStack Query keeps fetched data, shows loading skeletons, and refreshes lists after a change (for example after an upload).</li>
+        <li><b>Photo upload</b> uses a direct browser upload (XMLHttpRequest) so each file can show its own progress bar.</li>
+        <li><b>Request ID.</b> Every request gets an ID. Errors show it as "Reference" so a problem can be found in the server console.</li>
+      </ol>
+    </section>
+
+    <section id="console">
+      <h2><span class="num">11</span>Console messages</h2>
+      <p class="lead">Both sides now print clear messages, useful during the demo and when something goes wrong. Passwords and link codes are never printed.</p>
+      <h3>Backend window (Docker)</h3>
+<pre class="cmd">GeoInfraLens API ready (environment=development, log level=INFO, API docs: /api/docs)
+POST /api/v1/auth/login -> 200 (218 ms)
+Activity: auth.signed_in by user=52d4… org=-
+Activity: auth.sign_in_failed by user=- org=-        <span class="c">← warning</span>
+Refused (403 permission_denied): You do not have permission to do this.
+Photo stored: image=… project=… size=636 KB location=photo_gps flags=none
+Photo already in project (same file), kept image=…
+Queue (Valkey) not reachable: Error 111 connecting …  <span class="c">← one clear line</span></pre>
+      <ul>
+        <li><b>Request lines:</b> what was asked, the result code and how long it took.</li>
+        <li><b>Activity lines:</b> printed only when the action was really saved, for example a project created or a member removed.</li>
+        <li><b>Refused lines:</b> why a request was turned down.</li>
+        <li>Each line carries the request ID, matching the "Reference" shown on screen.</li>
+      </ul>
+      <h3>Browser (F12 → Console), while developing only</h3>
+<pre class="cmd">[GeoInfraLens] POST /v1/auth/login → 200 (230 ms)
+[GeoInfraLens] Signed in (1 organization(s))
+[GeoInfraLens] Uploading 3 photo(s), 3 at a time
+[GeoInfraLens] POST /v1/projects/…/images → 201 (82 ms)
+[GeoInfraLens] Upload finished</pre>
+      <p>Errors appear in red with the same reference ID. The released version prints nothing to the browser console.</p>
+    </section>
+
+    <section id="questions">
+      <h2><span class="num">12</span>Likely questions from the lead</h2>
+      <dl class="qa">
+        <dt>Does the AI work yet?</dt>
+        <dd>Not yet. P5 adds the AI step with a test detector so the whole flow can be built and tested. The real model is trained in P8, once the customer gives photos and permission.</dd>
+        <dt>Can one customer see another customer's data?</dt>
+        <dd>No. Every request is checked against the person's organization and project roles, and there are automatic tests that try to read other organizations' data and must fail.</dd>
+        <dt>Where are photos stored? Is it secure?</dt>
+        <dd>In a private storage area on the server, never on a public address. A photo is sent only after a permission check, every time. The original is never changed; a small preview is made for screens.</dd>
+        <dt>What if a photo has no GPS?</dt>
+        <dd>It is flagged "No location" and nothing is guessed. Someone picks the spot on the map, and it is labelled "Picked on map".</dd>
+        <dt>What happens if an upload fails or is sent twice?</dt>
+        <dd>Each file can be retried. The server recognises a file it already has by its fingerprint and never stores it twice.</dd>
+        <dt>Can we change colours, login method, or hosting later?</dt>
+        <dd>Yes. Colours live in one file. Sign-in code is in one place, so Google or Microsoft single sign-on can be added later. The app runs in Docker, so it can move to any server or cloud.</dd>
+        <dt>Is it tested?</dt>
+        <dd>Yes: 113 automatic backend tests and 30 frontend tests, plus browser walk-throughs at computer and phone size for each phase.</dd>
+        <dt>What does it cost to run?</dt>
+        <dd>The software is all free and open source. Costs will be the server and storage for the pilot, decided in P10.</dd>
+        <dt>What is needed from the customer?</dt>
+        <dd>Permission to use their photos for AI training, a qualified engineer to review findings, agreed accuracy targets, and their list of defect types and severity rules.</dd>
+      </dl>
+    </section>
+
+    <footer>Full project documentation is in the <code>documentation</code> folder of the project, starting with <code>CURRENT_PHASE.md</code>.</footer>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:true});</script>
+</body>
+</html>

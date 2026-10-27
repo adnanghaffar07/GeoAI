@@ -1,0 +1,13 @@
+# Settings for the ML code (separate from the backend). Training packages are added in P8.4.
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+extend-exclude = ["notebooks"]  # Colab notebooks use shell commands (!) that are not plain Python
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "S", "UP", "BLE", "N"]
+ignore = ["S101"]  # assert is fine in tests

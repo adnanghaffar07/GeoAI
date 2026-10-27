@@ -1,0 +1,135 @@
+{
+  "model_version": "frcnn-rdd2022-0.1",
+  "model_sha256": "d18cedeffd726e90e1d69ddf29910f64b7e99c9c176a6109f4d644d0cfffc729",
+  "test_sha256": "c161ed45ecd7f78e9c92336f2c743cccfea59cf6d708a2d3a7f19564ba330316",
+  "tested_at": "2026-10-22T18:49:23.017920+00:00",
+  "test_photos": 2829,
+  "best_epoch_validation_mean_ap50": 0.5803126403500275,
+  "cutoffs_from_validation": {
+    "pothole": 0.7824978232383728,
+    "surface_cracking": 0.7950506210327148,
+    "pavement_deterioration": 0.817863404750824
+  },
+  "score_floor": 0.01,
+  "classes": {
+    "pothole": {
+      "ap50": 0.058033207001761455,
+      "cutoff": 0.7824978232383728,
+      "recall": 0.07614213197969544,
+      "precision": 0.2727272727272727,
+      "f1": 0.11904761904761904,
+      "found": 15,
+      "false_alarms": 40,
+      "real_boxes": 197
+    },
+    "surface_cracking": {
+      "ap50": 0.21685564557346368,
+      "cutoff": 0.7950506210327148,
+      "recall": 0.17015140591204037,
+      "precision": 0.4729458917835671,
+      "f1": 0.2502651113467656,
+      "found": 236,
+      "false_alarms": 263,
+      "real_boxes": 1387
+    },
+    "pavement_deterioration": {
+      "ap50": 0.18096922279502836,
+      "cutoff": 0.817863404750824,
+      "recall": 0.33540372670807456,
+      "precision": 0.2231404958677686,
+      "f1": 0.2679900744416874,
+      "found": 54,
+      "false_alarms": 188,
+      "real_boxes": 161
+    }
+  },
+  "decision": {
+    "overall": "NOT PASSED",
+    "passed_classes": [],
+    "classes": {
+      "pothole": {
+        "verdict": "FAIL",
+        "min_recall": 0.7,
+        "min_precision": 0.5,
+        "min_test_boxes": 100
+      },
+      "surface_cracking": {
+        "verdict": "FAIL",
+        "min_recall": 0.6,
+        "min_precision": 0.4,
+        "min_test_boxes": 100
+      },
+      "pavement_deterioration": {
+        "verdict": "FAIL",
+        "min_recall": 0.6,
+        "min_precision": 0.4,
+        "min_test_boxes": 100
+      }
+    }
+  },
+  "robustness": {
+    "too_dark": {
+      "photos": 0,
+      "classes": {
+        "pothole": {
+          "recall": null,
+          "real_boxes": 0,
+          "weak_condition": false,
+          "judged": false
+        },
+        "surface_cracking": {
+          "recall": null,
+          "real_boxes": 0,
+          "weak_condition": false,
+          "judged": false
+        },
+        "pavement_deterioration": {
+          "recall": null,
+          "real_boxes": 0,
+          "weak_condition": false,
+          "judged": false
+        }
+      }
+    },
+    "blurry": {
+      "photos": 0,
+      "classes": {
+        "pothole": {
+          "recall": null,
+          "real_boxes": 0,
+          "weak_condition": false,
+          "judged": false
+        },
+        "surface_cracking": {
+          "recall": null,
+          "real_boxes": 0,
+          "weak_condition": false,
+          "judged": false
+        },
+        "pavement_deterioration": {
+          "recall": null,
+          "real_boxes": 0,
+          "weak_condition": false,
+          "judged": false
+        }
+      }
+    },
+    "clean_roads": {
+      "photos": 1757,
+      "false_alarms": 142,
+      "per_photo": 0.08081957882754695
+    }
+  },
+  "cpu_timing": {
+    "photos": 20,
+    "median": 3.6129106399999955,
+    "max": 3.732867560999921,
+    "cpu_threads": 1
+  },
+  "thresholds": {
+    "file_sha256": "0e36d82a13db9297dcfb43e076efe10092391cfc1ecfc2769dbc83c88389dede",
+    "is_placeholder": true,
+    "weak_gap": 0.15,
+    "cpu_target": 5.0
+  }
+}

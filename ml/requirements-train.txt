@@ -1,0 +1,7 @@
+# P8.4-P8.5 training and scoring. Google Colab already has these; only needed to run the tests locally.
+torch>=2.4
+torchvision>=0.19
+numpy>=1.24
+pillow>=10
+pyyaml>=6            # P8.5 reads the pass marks
+opencv-python-headless>=4.8  # P8.5 dark/blurry checks, same as the app

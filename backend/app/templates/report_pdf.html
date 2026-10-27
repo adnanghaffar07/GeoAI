@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page { size: A4 landscape; margin: 14mm;
+    @bottom-right { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #555; } }
+  body { font-family: 'DejaVu Sans', sans-serif; font-size: 8.5pt; color: #1b2633; }
+  h1 { font-size: 16pt; margin: 0 0 4pt; }
+  h2 { font-size: 11pt; margin: 12pt 0 4pt; }
+  h3 { font-size: 9pt; margin: 0 0 3pt; }
+  ul { margin: 0; padding-left: 12pt; }
+  li { margin: 1pt 0; }
+  .warn { border: 2px solid #b45309; background: #fef3c7; padding: 6pt; font-weight: bold; }
+  .grid { display: flex; gap: 10pt; }
+  .box { border: 1px solid #d5dbe3; padding: 6pt; flex: 1; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border-bottom: 1px solid #e3e7ec; padding: 3pt 4pt; text-align: left; }
+  th { background: #1b2633; color: white; }
+  .n { text-align: right; }
+  tr.unrev td { background: #fff7e0; }
+  thead { display: table-header-group; }
+</style>
+</head>
+<body>
+  <h1>$title</h1>
+  $warning
+  <ul>$header</ul>
+  <h2>Summary</h2>
+  <div class="grid">$summary</div>
+  <h2>Findings, highest inspection priority first</h2>
+  <table>
+    <thead><tr><th>#</th><th>Type</th><th>Review status</th><th>Severity</th>
+      <th>Inspection priority</th><th>Inspection</th><th>Location (lat, lon)</th>
+      <th>Location note</th></tr></thead>
+    <tbody>$rows</tbody>
+  </table>
+</body>
+</html>
