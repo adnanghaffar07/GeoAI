@@ -11,6 +11,7 @@ from app.api import (
     analysis,
     auth,
     findings,
+    geo,
     health,
     images,
     organizations,
@@ -25,6 +26,7 @@ v1_router.include_router(auth.router)
 v1_router.include_router(organizations.router)
 v1_router.include_router(platform.public_router)
 v1_router.include_router(platform.router)
+v1_router.include_router(geo.router)
 v1_router.include_router(projects.org_router)
 v1_router.include_router(projects.router)
 v1_router.include_router(images.project_router)

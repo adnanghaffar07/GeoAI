@@ -199,6 +199,7 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
   }
 
   const reviewerIds = useWatch({ control: form.control, name: 'reviewer_user_ids' })
+  const boundary = useWatch({ control: form.control, name: 'boundary' })
   const typeKeys = useWatch({ control: form.control, name: 'finding_type_keys' })
   const toggle = (field: 'reviewer_user_ids' | 'finding_type_keys', value: string, checked: boolean) => {
     const current = form.getValues(field)
@@ -303,8 +304,8 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
             <div>
               <h2 className="font-medium">Survey area</h2>
               <p className="text-sm text-asphalt-500">
-                Search for a street, neighborhood or city to select it, or draw the area of roads to survey on the map. If you already
-                have the area as a map file, you can upload it instead.
+                Search for roads, an address or an area to select them, or draw the area of roads to survey on the map. If you
+                already have the area as a map file, you can upload it instead.
               </p>
               <p className="text-xs text-asphalt-400">Map file: GeoJSON with longitude/latitude (WGS 84).</p>
             </div>
@@ -322,11 +323,11 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
           )}
           {!readOnly && (
             <PlaceSearch
-              hasArea={form.getValues('boundary') != null}
+              currentArea={boundary ?? null}
               onChoose={(area) => {
                 setFileProblem(null)
                 setArea(area)
-                setMapKey((key) => key + 1) // reopen the map showing the chosen area
+                setMapKey((key) => key + 1) // reopen the map showing the new area
               }}
             />
           )}

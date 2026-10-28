@@ -1,65 +1,66 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { PlaceSearchError, placeToArea, searchPlaces } from '@/lib/address-search'
+import { PlaceSearchError, parseCoordinates, placeShape, searchPlaces } from '@/lib/address-search'
 
 const OUTLINE = {
   type: 'Polygon',
   coordinates: [[[-88.2, 41.7], [-88.1, 41.7], [-88.1, 41.8], [-88.2, 41.8], [-88.2, 41.7]]],
 }
+const ROAD = { type: 'LineString', coordinates: [[-88.15, 41.77], [-88.14, 41.78]] }
 
+describe('placeShape', () => {
+  it('knows roads, areas and single locations', () => {
+    expect(placeShape({ place_id: 1, display_name: 'Main St', geojson: ROAD })).toEqual({ shape: ROAD, kind: 'road' })
+    expect(placeShape({ place_id: 2, display_name: 'Naperville', geojson: OUTLINE })).toEqual({ shape: OUTLINE, kind: 'area' })
+    expect(placeShape({ place_id: 3, display_name: '400 S Eagle St', geojson: { type: 'Point', coordinates: [-88.15, 41.77] } })?.kind).toBe('address')
+  })
 
-/** Coordinates rounded to ~1 mm, so tiny floating-point differences do not matter. */
-const rounded = (area: { type: string; coordinates: unknown }) => ({
-  ...area,
-  coordinates: JSON.parse(JSON.stringify(area.coordinates), (_key, value: unknown) => (typeof value === 'number' ? Math.round(value * 1e8) / 1e8 : value)),
+  it('uses a rectangle when the place has no shape', () => {
+    const found = placeShape({ place_id: 4, display_name: 'X', boundingbox: ['41.77', '41.78', '-88.15', '-88.14'] })
+
+    expect(found).toEqual({
+      kind: 'area',
+      shape: { type: 'Polygon', coordinates: [[[-88.15, 41.77], [-88.14, 41.77], [-88.14, 41.78], [-88.15, 41.78], [-88.15, 41.77]]] },
+    })
+  })
 })
 
-describe('placeToArea', () => {
-  it('uses the real outline of an area such as a city or neighborhood', () => {
-    const result = placeToArea({ place_id: 1, display_name: 'Naperville', boundingbox: ['41.7', '41.8', '-88.2', '-88.1'], geojson: OUTLINE })
-
-    expect(result).toEqual({ area: OUTLINE, isOutline: true })
-  })
-
-  it('makes a rectangle around a street', () => {
-    const street = { type: 'LineString', coordinates: [[-88.15, 41.77], [-88.14, 41.78]] }
-    const { area, isOutline } = placeToArea({ place_id: 2, display_name: 'Main St', boundingbox: ['41.77', '41.78', '-88.15', '-88.14'], geojson: street })
-
-    expect(isOutline).toBe(false)
-    expect(rounded(area)).toEqual({
-      type: 'Polygon',
-      coordinates: [[[-88.15, 41.77], [-88.14, 41.77], [-88.14, 41.78], [-88.15, 41.78], [-88.15, 41.77]]],
-    })
-  })
-
-  it('makes a block-sized area around a single address instead of a dot', () => {
-    const { area } = placeToArea({
-      place_id: 3,
-      display_name: '400 S Eagle St',
-      boundingbox: ['41.7700', '41.7701', '-88.1500', '-88.1499'],
-      geojson: { type: 'Point', coordinates: [-88.15, 41.77] },
-    })
-
-    const ring = (area.coordinates as number[][][])[0]!
-    const lats = ring.map((point) => point[1]!)
-    expect(Math.max(...lats) - Math.min(...lats)).toBeGreaterThan(0.002) // about 300 m tall
+describe('parseCoordinates', () => {
+  it('reads "latitude, longitude" and ignores everything else', () => {
+    expect(parseCoordinates('41.7731, -88.1501')).toEqual({ lat: 41.7731, lon: -88.1501 })
+    expect(parseCoordinates(' 41.7731 -88.1501 ')).toEqual({ lat: 41.7731, lon: -88.1501 })
+    expect(parseCoordinates('Main Street 12')).toBeNull()
+    expect(parseCoordinates('95, 10')).toBeNull()
   })
 })
 
 describe('searchPlaces', () => {
-  it('asks OpenStreetMap search for up to 5 places with outlines', async () => {
-    const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify([{ place_id: 9, display_name: 'Naperville, Illinois', boundingbox: ['41.7', '41.8', '-88.2', '-88.1'], geojson: OUTLINE }])),
-    )
+  it('searches OpenStreetMap by name for up to 5 places with their shapes', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify([{ place_id: 9, display_name: 'Washington Street, Naperville', geojson: ROAD }])))
 
-    const places = await searchPlaces('Naperville, IL')
+    const places = await searchPlaces('Washington Street, Naperville')
 
     const url = new URL(String(fetchMock.mock.calls[0]![0]))
     expect(url.origin + url.pathname).toBe('https://nominatim.openstreetmap.org/search')
-    expect(url.searchParams.get('q')).toBe('Naperville, IL')
-    expect(url.searchParams.get('limit')).toBe('5')
+    expect(url.searchParams.get('q')).toBe('Washington Street, Naperville')
     expect(url.searchParams.get('polygon_geojson')).toBe('1')
-    expect(places).toEqual([{ id: '9', label: 'Naperville, Illinois', isOutline: true, area: OUTLINE }])
+    expect(places).toEqual([{ id: '9', label: 'Washington Street, Naperville', kind: 'road', shape: ROAD }])
+  })
+
+  it('for coordinates, offers the nearest road and the point itself', async () => {
+    const fetchMock = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValue(new Response(JSON.stringify({ place_id: 5, display_name: 'Eagle Street, Naperville', geojson: ROAD })))
+
+    const places = await searchPlaces('41.7731, -88.1501')
+
+    const url = new URL(String(fetchMock.mock.calls[0]![0]))
+    expect(url.pathname).toBe('/reverse')
+    expect(url.searchParams.get('lat')).toBe('41.7731')
+    expect(places.map((place) => place.kind)).toEqual(['road', 'address'])
+    expect(places[1]!.shape).toEqual({ type: 'Point', coordinates: [-88.1501, 41.7731] })
   })
 
   it('explains when the search cannot be reached or is busy', async () => {
