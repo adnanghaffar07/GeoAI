@@ -25,6 +25,7 @@ class UserOut(BaseModel):
     id: uuid.UUID
     email: str
     full_name: str
+    is_platform_admin: bool = False
 
 
 class MembershipOut(BaseModel):

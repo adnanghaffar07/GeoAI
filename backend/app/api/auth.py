@@ -47,7 +47,12 @@ def _client(request: Request) -> tuple[str | None, str | None]:
 
 def _me(db: Session, user: User) -> MeResponse:
     return MeResponse(
-        user=UserOut(id=user.id, email=user.email, full_name=user.full_name),
+        user=UserOut(
+            id=user.id,
+            email=user.email,
+            full_name=user.full_name,
+            is_platform_admin=user.is_platform_admin,
+        ),
         memberships=[
             MembershipOut(**vars(summary)) for summary in accounts.list_memberships(db, user)
         ],

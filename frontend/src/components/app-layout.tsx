@@ -1,7 +1,9 @@
-import { Archive, FolderKanban, History, LayoutDashboard, Menu, Tags, UserRound, Users, X, type LucideIcon } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Archive, Building2, FolderKanban, History, LayoutDashboard, Menu, Tags, UserRound, Users, X, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
+import { listOrganizationRequests, platformQueryKeys } from '@/api/platform'
 import { useAuth } from '@/auth/auth-context'
 import { BrandName } from '@/components/brand-mark'
 import { SignOutButton } from '@/components/sign-out-button'
@@ -30,6 +32,9 @@ const SETTINGS_ITEMS: NavItem[] = [
   { to: '/settings/retention', label: 'Data retention', icon: Archive, permission: 'org.retention.edit' },
 ]
 
+/** Platform admins only (CR-004). */
+const PLATFORM_ITEM: NavItem = { to: '/platform/requests', label: 'Organization requests', icon: Building2 }
+
 const initials = (name: string) =>
   name
     .split(/\s+/)
@@ -47,6 +52,15 @@ export function AppLayout() {
   const mainItems = MAIN_ITEMS.filter(allowed)
   const settingsItems = SETTINGS_ITEMS.filter(allowed)
   const name = auth.me?.user.full_name ?? ''
+  const isPlatformAdmin = Boolean(auth.me?.user.is_platform_admin)
+  // Number of waiting requests beside the menu item (refreshed every few minutes).
+  const waiting = useQuery({
+    queryKey: platformQueryKeys.list('pending'),
+    queryFn: ({ signal }) => listOrganizationRequests('pending', signal),
+    enabled: isPlatformAdmin,
+    staleTime: 60_000,
+    refetchInterval: 5 * 60_000,
+  })
 
   return (
     <div className="min-h-screen md:flex">
@@ -91,6 +105,12 @@ export function AppLayout() {
               ))}
             </>
           )}
+          {isPlatformAdmin && (
+            <>
+              <p className="mt-5 mb-1 px-3 text-xs font-semibold tracking-wide text-asphalt-300 uppercase">Platform</p>
+              <MenuLink item={PLATFORM_ITEM} badge={waiting.data?.pending_count} onNavigate={() => setMenuOpen(false)} />
+            </>
+          )}
         </nav>
         <div className="mt-auto flex items-center gap-3 rounded-xl bg-white/5 p-3">
           <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-lane-500 text-sm font-bold text-asphalt-950">
@@ -113,7 +133,7 @@ export function AppLayout() {
   )
 }
 
-function MenuLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
+function MenuLink({ item, badge, onNavigate }: { item: NavItem; badge?: number; onNavigate: () => void }) {
   return (
     <NavLink
       to={item.to}
@@ -135,6 +155,12 @@ function MenuLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void 
           />
           <item.icon className={cn('size-[18px]', isActive ? 'text-lane-400' : 'text-asphalt-300 group-hover:text-white')} aria-hidden />
           {item.label}
+          {badge !== undefined && badge > 0 && (
+            <span className="ml-auto rounded-full bg-lane-500 px-2 py-0.5 text-xs font-bold text-asphalt-950 tabular-nums">
+              {badge}
+              <span className="sr-only"> waiting</span>
+            </span>
+          )}
         </>
       )}
     </NavLink>

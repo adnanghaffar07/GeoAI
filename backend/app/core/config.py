@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     # further attempts until the window passes.
     sign_in_max_failures: int = Field(default=5, ge=1, le=100)
     sign_in_failure_window_minutes: int = Field(default=15, ge=1, le=24 * 60)
+    # Spam limit for the public "Request access" form: requests per network address per hour.
+    organization_requests_per_hour: int = Field(default=5, ge=1, le=1000)
 
     # --- Photo uploads (placeholder values until the customer confirms PI-03, PI-15) ---
     max_upload_mb: int = Field(default=20, ge=1, le=200)

@@ -22,6 +22,9 @@ class User(Base):
     # Argon2 hash. Optional so that a future single sign-on method needs no data change.
     password_hash: Mapped[str | None] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    # Platform admin (CR-004): reviews requests from new organizations. Set only with the
+    # server command `python -m app.cli make-platform-admin`, never from the website.
+    is_platform_admin: Mapped[bool] = mapped_column(Boolean, default=False, server_default="false")
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = created_at_column()
     updated_at: Mapped[datetime] = updated_at_column()

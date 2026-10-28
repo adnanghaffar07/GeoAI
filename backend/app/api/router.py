@@ -14,6 +14,7 @@ from app.api import (
     health,
     images,
     organizations,
+    platform,
     priority,
     projects,
     reports,
@@ -22,6 +23,8 @@ from app.api import (
 v1_router = APIRouter(prefix="/v1")
 v1_router.include_router(auth.router)
 v1_router.include_router(organizations.router)
+v1_router.include_router(platform.public_router)
+v1_router.include_router(platform.router)
 v1_router.include_router(projects.org_router)
 v1_router.include_router(projects.router)
 v1_router.include_router(images.project_router)

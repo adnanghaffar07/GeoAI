@@ -64,6 +64,7 @@ API docs (development only): http://localhost:8000/api/docs
 | Frontend type check + build | `npm run build` |
 | Restart worker after task changes | `docker compose restart worker` |
 | Create an organization + first admin | `docker compose exec api python -m app.cli create-organization --name "…" --admin-email … --admin-name "…"` |
+| Make an existing account a platform admin (add `--remove` to undo) | `docker compose exec api python -m app.cli make-platform-admin --email …` |
 
 ## AI model (trial)
 

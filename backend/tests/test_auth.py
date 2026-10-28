@@ -26,11 +26,24 @@ def test_sign_in_sets_secure_cookie_and_returns_memberships(
     assert "httponly" in cookie and "samesite=lax" in cookie
     body = response.json()
     assert body["user"]["email"] == "admin@a.test"
+    assert body["user"]["is_platform_admin"] is False
     membership = body["memberships"][0]
     assert membership["organization_id"] == str(org.id)
     assert membership["org_role"] == "org_admin"
     assert "org.members.invite" in membership["permissions"]
     assert client.get(ME).status_code == 200
+
+
+def test_me_says_when_the_account_is_a_platform_admin(db: Session, client: TestClient) -> None:
+    make_org(db)
+    user = db.scalar(select(User).where(User.email == "admin@a.test"))
+    assert user is not None
+    user.is_platform_admin = True
+    db.commit()
+
+    client.post(LOGIN, json={"email": "admin@a.test", "password": DEFAULT_PASSWORD})
+
+    assert client.get(ME).json()["user"]["is_platform_admin"] is True
 
 
 def test_wrong_password_and_unknown_email_give_the_same_answer(

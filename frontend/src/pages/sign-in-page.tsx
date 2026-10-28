@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
-import { Navigate, useNavigate, useSearchParams } from 'react-router'
+import { Link, Navigate, useNavigate, useSearchParams } from 'react-router'
 import { z } from 'zod'
 
 import { signIn } from '@/api/auth'
@@ -69,6 +69,12 @@ export function SignInPage() {
         </Button>
       </form>
       <p className="mt-4 text-sm text-asphalt-500">Forgot your password? Ask your administrator to make a password reset link for you.</p>
+      <div className="mt-8 border-t border-asphalt-100 pt-6 text-sm">
+        <p className="text-asphalt-600">New organization?</p>
+        <Link to="/request-access" className="btn btn-secondary mt-2 w-full">
+          Request access
+        </Link>
+      </div>
     </AuthCard>
   )
 }

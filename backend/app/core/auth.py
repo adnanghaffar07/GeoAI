@@ -183,3 +183,10 @@ def require_project_permission(permission: str) -> Callable[..., ProjectContext]
         return ctx
 
     return dependency
+
+
+def require_platform_admin(current: CurrentUser = Depends(get_current_user)) -> User:
+    """Platform admins only (CR-004). Others get `403 permission_denied`."""
+    if not current.user.is_platform_admin:
+        raise PermissionDeniedError("Only platform admins can do this.")
+    return current.user

@@ -6,6 +6,7 @@ from app.models.base import Base
 from app.models.image import Image
 from app.models.invitation import Invitation, PasswordReset
 from app.models.organization import ORG_ROLES, Organization, OrganizationMembership
+from app.models.organization_request import REQUEST_STATUSES, OrganizationRequest
 from app.models.priority import Inspection, PriorityConfig, PriorityScore
 from app.models.project import PROJECT_ROLES, Project, ProjectMember
 from app.models.report import Report
@@ -16,6 +17,7 @@ from app.models.user import User, UserSession
 __all__ = [
     "ORG_ROLES",
     "PROJECT_ROLES",
+    "REQUEST_STATUSES",
     "AnalysisJob",
     "AuditEvent",
     "Base",
@@ -27,6 +29,7 @@ __all__ = [
     "Invitation",
     "Organization",
     "OrganizationMembership",
+    "OrganizationRequest",
     "PasswordReset",
     "PriorityConfig",
     "PriorityScore",

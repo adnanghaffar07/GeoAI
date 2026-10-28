@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://mature-glad-utc-snapshot.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://popular-reprint-frequencies-after.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

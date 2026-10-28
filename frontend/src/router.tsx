@@ -14,6 +14,7 @@ import { MovedProjectPage, ProjectSettingsLayout } from '@/pages/project/project
 import { ProjectTeamPage } from '@/pages/project/project-team-page'
 import { ProjectUploadPage } from '@/pages/project/project-upload-page'
 import { ProjectsPage } from '@/pages/projects-page'
+import { RequestAccessPage } from '@/pages/request-access-page'
 import { ResetPasswordPage } from '@/pages/reset-password-page'
 import { SignInPage } from '@/pages/sign-in-page'
 import { TeamPage } from '@/pages/team-page'
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
   { path: '/sign-in', element: <SignInPage />, errorElement: <RouteErrorPage /> },
   { path: '/invite/:token', element: <AcceptInvitationPage />, errorElement: <RouteErrorPage /> },
   { path: '/reset-password/:token', element: <ResetPasswordPage />, errorElement: <RouteErrorPage /> },
+  { path: '/request-access', element: <RequestAccessPage />, errorElement: <RouteErrorPage /> },
   // Signed-in app
   {
     element: (
@@ -74,6 +76,8 @@ export const router = createBrowserRouter([
       { path: 'settings/history', lazy: lazyPage(() => import('@/pages/settings-history-page').then((m) => ({ default: m.SettingsHistoryPage }))) },
       { path: 'settings/retention', lazy: lazyPage(() => import('@/pages/settings-retention-page').then((m) => ({ default: m.SettingsRetentionPage }))) },
       { path: 'account', element: <AccountPage /> },
+      // Platform admins only (CR-004)
+      { path: 'platform/requests', lazy: lazyPage(() => import('@/pages/platform-requests-page').then((m) => ({ default: m.PlatformRequestsPage }))) },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -12,7 +12,8 @@ export interface Membership {
 export type OrgRole = 'org_admin' | 'org_manager' | 'org_member'
 
 export interface Me {
-  user: { id: string; email: string; full_name: string }
+  /** `is_platform_admin`: may review requests from new organizations (CR-004). */
+  user: { id: string; email: string; full_name: string; is_platform_admin?: boolean }
   memberships: Membership[]
 }
 

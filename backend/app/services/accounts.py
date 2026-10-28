@@ -146,10 +146,34 @@ def create_invitation(db: Session, ctx: OrgContext, email: str, org_role: str) -
     if already_member:
         raise ConflictError("This person is already a member of the organization.")
 
+    return invite_to_organization(
+        db,
+        organization_id=ctx.organization.id,
+        email=email,
+        org_role=org_role,
+        invited_by=ctx.user.id,
+        actor_roles=ctx.actor_roles,
+    )
+
+
+def invite_to_organization(
+    db: Session,
+    *,
+    organization_id: uuid.UUID,
+    email: str,
+    org_role: str,
+    invited_by: uuid.UUID,
+    actor_roles: list[str],
+) -> InvitationLink:
+    """Create a one-time invitation link (the caller checks permissions and commits).
+
+    Older pending invites for the same email in this organization are revoked, so only
+    the newest link works. Also used when a platform admin approves a new organization."""
+    email = normalize_email(email)
     now = utc_now()
     pending = db.scalars(
         select(Invitation).where(
-            Invitation.organization_id == ctx.organization.id,
+            Invitation.organization_id == organization_id,
             Invitation.email == email,
             Invitation.accepted_at.is_(None),
             Invitation.revoked_at.is_(None),
@@ -160,11 +184,11 @@ def create_invitation(db: Session, ctx: OrgContext, email: str, org_role: str) -
 
     token = new_token()
     invitation = Invitation(
-        organization_id=ctx.organization.id,
+        organization_id=organization_id,
         email=email,
         org_role=org_role,
         token_hash=hash_token(token),
-        invited_by=ctx.user.id,
+        invited_by=invited_by,
         expires_at=now + timedelta(days=get_settings().invitation_lifetime_days),
     )
     db.add(invitation)
@@ -172,9 +196,9 @@ def create_invitation(db: Session, ctx: OrgContext, email: str, org_role: str) -
     record_event(
         db,
         action="invitation.created",
-        organization_id=ctx.organization.id,
-        actor_user_id=ctx.user.id,
-        actor_roles=ctx.actor_roles,
+        organization_id=organization_id,
+        actor_user_id=invited_by,
+        actor_roles=actor_roles,
         target_type="invitation",
         target_id=invitation.id,
         details={"email": email, "org_role": org_role},

@@ -19,6 +19,7 @@ import {
 import { useAuth } from '@/auth/auth-context'
 import { ErrorMessage } from '@/components/error-message'
 import { AreaDrawMap } from '@/components/map/area-draw-map'
+import { PlaceSearch } from '@/components/map/place-search'
 import { Button } from '@/components/ui/button'
 import { TextField } from '@/components/ui/field'
 import { SkeletonRows } from '@/components/ui/loading-screen'
@@ -302,7 +303,8 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
             <div>
               <h2 className="font-medium">Survey area</h2>
               <p className="text-sm text-asphalt-500">
-                Draw the area of roads to survey on the map. If you already have the area as a map file, you can upload it instead.
+                Search for a street, neighborhood or city to select it, or draw the area of roads to survey on the map. If you already
+                have the area as a map file, you can upload it instead.
               </p>
               <p className="text-xs text-asphalt-400">Map file: GeoJSON with longitude/latitude (WGS 84).</p>
             </div>
@@ -317,6 +319,16 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
             <p role="alert" className="text-sm text-red-700">
               {fileProblem}
             </p>
+          )}
+          {!readOnly && (
+            <PlaceSearch
+              hasArea={form.getValues('boundary') != null}
+              onChoose={(area) => {
+                setFileProblem(null)
+                setArea(area)
+                setMapKey((key) => key + 1) // reopen the map showing the chosen area
+              }}
+            />
           )}
           <AreaDrawMap key={mapKey} initialArea={form.getValues('boundary')} onChange={setArea} disabled={readOnly} />
           {errors.boundary && <p className="text-sm text-red-700">{errors.boundary.message}</p>}
