@@ -23,6 +23,9 @@ const KIND: Record<PlaceKind, { label: string; icon: typeof Route; note: (width:
 interface PlaceSearchProps {
   /** The area now on the map (needed to add a place to it). */
   currentArea: AreaGeometry | null
+  /** Strip width for roads (shared with "Draw a road" on the map). */
+  roadWidthM: number
+  onRoadWidthChange: (width: number) => void
   /** Called with the new area (the chosen place, or the current area plus the place). */
   onChoose: (area: AreaGeometry) => void
 }
@@ -32,11 +35,10 @@ interface PlaceSearchProps {
  * the survey area from it. Roads become a strip along the road; several roads can be added.
  * Not a <form>: it sits inside the project form, so Enter is handled here instead.
  */
-export function PlaceSearch({ currentArea, onChoose }: PlaceSearchProps) {
+export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange: setWidth, onChoose }: PlaceSearchProps) {
   const inputId = useId()
   const widthId = useId()
   const [query, setQuery] = useState('')
-  const [width, setWidth] = useState(30)
   const [mode, setMode] = useState<'replace' | 'add'>('replace')
   const [message, setMessage] = useState<string | null>(null)
   const search = useMutation({ mutationFn: (text: string) => searchPlaces(text) })
@@ -63,7 +65,7 @@ export function PlaceSearch({ currentArea, onChoose }: PlaceSearchProps) {
         setMessage(
           `${what} ${adding ? 'added to the area' : 'selected'}. Check it on the map; use Move or adjust to change it. To add another road, search again and choose “Add to the area”.`,
         )
-        if (place.kind === 'road') setMode('add')
+        setMode('add') // the next place is added, so nothing already selected is lost by accident
       },
     })
   }
@@ -104,7 +106,7 @@ export function PlaceSearch({ currentArea, onChoose }: PlaceSearchProps) {
       <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
         <div>
           <label htmlFor={widthId} className="mb-1 block text-xs font-medium text-asphalt-700">
-            Road width to include
+            Road width (searched and drawn roads)
           </label>
           <select id={widthId} className="control py-1.5" value={width} onChange={(event) => setWidth(Number(event.target.value))}>
             {WIDTHS.map((option) => (

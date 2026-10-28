@@ -10,12 +10,27 @@ import { renderWithProviders } from '@/test/render'
 // The real map needs WebGL, which the test browser does not have. This stand-in
 // offers one button that "draws" the test area.
 vi.mock('@/components/map/area-draw-map', () => ({
-  AreaDrawMap: ({ onChange }: { onChange: (area: AreaGeometry | null) => void }) => (
-    <button type="button" onClick={() => onChange(AREA)}>
-      Draw test area
-    </button>
+  AreaDrawMap: ({
+    initialArea,
+    onChange,
+    onShapeAdded,
+  }: {
+    initialArea: AreaGeometry | null
+    onChange: (area: AreaGeometry | null) => void
+    onShapeAdded?: (shape: unknown, rest: AreaGeometry | null) => void
+  }) => (
+    <>
+      <button type="button" onClick={() => onChange(AREA)}>
+        Draw test area
+      </button>
+      <button type="button" onClick={() => onShapeAdded?.(DRAWN_ROAD, initialArea)}>
+        Draw test road
+      </button>
+    </>
   ),
 }))
+
+const DRAWN_ROAD = { type: 'LineString', coordinates: [[-122.42, 37.77], [-122.41, 37.775]] }
 
 
 const ROAD_LINE = { type: 'LineString', coordinates: [[-88.15, 41.77], [-88.15, 41.78]] }
@@ -99,7 +114,7 @@ describe('NewProjectPage', () => {
     await userEvent.type(screen.getByLabelText('Project name'), 'Washington St survey')
     await userEvent.click(screen.getByLabelText(/Pothole/))
     await userEvent.click(screen.getByLabelText(/Ada Admin/))
-    await userEvent.selectOptions(screen.getByLabelText('Road width to include'), '50')
+    await userEvent.selectOptions(screen.getByLabelText('Road width (searched and drawn roads)'), '50')
     await userEvent.type(screen.getByLabelText('Find a road, address or area'), 'Washington Street, Naperville{Enter}')
     const result = await screen.findByRole('button', { name: /Washington Street, Naperville, Illinois/ })
     expect(result).toHaveTextContent('Road')
@@ -122,5 +137,20 @@ describe('NewProjectPage', () => {
     await vi.waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/projects') && init?.method === 'POST')).toBe(true))
     const createCall = fetchMock.mock.calls.find(([url, init]) => String(url).endsWith('/projects') && init?.method === 'POST')
     expect(JSON.parse(String(createCall?.[1]?.body)).boundary).toEqual(TWO_STRIPS)
+  })
+
+  it('a road drawn on the map is joined to the area already selected', async () => {
+    const fetchMock = mockApi(() => json({ id: 'p9' }, 201))
+    renderWithProviders(<NewProjectPage />, { me: ADMIN_WITH_PROJECTS })
+    await screen.findByText('Pothole')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Draw test area' })) // an area first
+    await userEvent.selectOptions(screen.getByLabelText('Road width (searched and drawn roads)'), '20')
+    await userEvent.click(screen.getByRole('button', { name: 'Draw test road' })) // then a road
+
+    await vi.waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/v1/geo/area-from-place'))).toBe(true))
+    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/v1/geo/area-from-place'))
+    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ shape: DRAWN_ROAD, road_width_m: 20, add_to: AREA })
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

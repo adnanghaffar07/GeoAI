@@ -18,7 +18,8 @@ import {
 } from '@/api/projects'
 import { useAuth } from '@/auth/auth-context'
 import { ErrorMessage } from '@/components/error-message'
-import { AreaDrawMap } from '@/components/map/area-draw-map'
+import { areaFromPlace, type PlaceShape } from '@/api/geo'
+import { AreaDrawMap, type DrawMode } from '@/components/map/area-draw-map'
 import { PlaceSearch } from '@/components/map/place-search'
 import { Button } from '@/components/ui/button'
 import { TextField } from '@/components/ui/field'
@@ -179,6 +180,25 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
     },
   })
 
+  const [roadWidth, setRoadWidth] = useState(30)
+  const [drawMode, setDrawMode] = useState<DrawMode | undefined>(undefined)
+  const joinShape = useMutation({
+    mutationFn: ({ shape, rest }: { shape: PlaceShape; rest: AreaGeometry | null }) =>
+      areaFromPlace(shape, { roadWidthM: roadWidth, addTo: rest }),
+  })
+  // A road drawn on the map (or a new area next to existing shapes): the server joins it to
+  // the rest of the area, then the map reopens showing the result in the same drawing tool.
+  const addDrawnShape = (shape: PlaceShape, rest: AreaGeometry | null) => {
+    joinShape.mutate(
+      { shape, rest },
+      {
+        onSuccess: ({ area }) => setArea(area),
+        onError: () => setArea(rest),
+        onSettled: () => setMapKey((key) => key + 1),
+      },
+    )
+  }
+
   const setArea = (area: AreaGeometry | null) => form.setValue('boundary', area, { shouldValidate: form.formState.isSubmitted, shouldDirty: true })
 
   const loadAreaFile = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -304,8 +324,8 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
             <div>
               <h2 className="font-medium">Survey area</h2>
               <p className="text-sm text-asphalt-500">
-                Search for roads, an address or an area to select them, or draw the area of roads to survey on the map. If you
-                already have the area as a map file, you can upload it instead.
+                Select areas and roads by searching for them, or draw them on the map ("Draw an area", "Draw a road"). Everything
+                you add is joined into one survey area. If you already have the area as a map file, you can upload it instead.
               </p>
               <p className="text-xs text-asphalt-400">Map file: GeoJSON with longitude/latitude (WGS 84).</p>
             </div>
@@ -324,6 +344,8 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
           {!readOnly && (
             <PlaceSearch
               currentArea={boundary ?? null}
+              roadWidthM={roadWidth}
+              onRoadWidthChange={setRoadWidth}
               onChoose={(area) => {
                 setFileProblem(null)
                 setArea(area)
@@ -331,7 +353,28 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
               }}
             />
           )}
-          <AreaDrawMap key={mapKey} initialArea={form.getValues('boundary')} onChange={setArea} disabled={readOnly} />
+          <div className="relative">
+            <AreaDrawMap
+              key={mapKey}
+              initialArea={form.getValues('boundary')}
+              onChange={setArea}
+              disabled={readOnly || joinShape.isPending}
+              roadWidthM={roadWidth}
+              initialMode={drawMode}
+              onModeChange={setDrawMode}
+              onShapeAdded={addDrawnShape}
+            />
+            {joinShape.isPending && (
+              <p role="status" className="absolute top-14 left-3 rounded-lg bg-white/95 px-3 py-2 text-sm font-medium shadow">
+                Adding to the area…
+              </p>
+            )}
+          </div>
+          {joinShape.isError && (
+            <p role="alert" className="text-sm text-red-700">
+              That shape could not be added: {joinShape.error instanceof Error ? joinShape.error.message : 'try drawing it again.'}
+            </p>
+          )}
           {errors.boundary && <p className="text-sm text-red-700">{errors.boundary.message}</p>}
         </div>
 
