@@ -36,13 +36,24 @@
 @layer base {
   body {
     @apply bg-canvas font-sans text-asphalt-900 antialiased;
+    /* 2026-11-03 refresh: a soft light from the top so the page is not flat grey. */
+    background-image: radial-gradient(1200px 500px at 70% -10%, rgb(242 183 5 / 0.07), transparent 60%),
+      radial-gradient(900px 400px at 0% 0%, rgb(27 38 51 / 0.05), transparent 60%);
+    background-attachment: fixed;
     font-feature-settings: 'tnum' 1; /* numbers line up in tables and counts */
   }
   h1,
   h2,
   h3 {
     @apply text-asphalt-900;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
+  }
+  /* Tables: a light header row and calm row lines everywhere. */
+  table thead th {
+    @apply bg-asphalt-50/70 text-xs font-semibold tracking-wide text-asphalt-500 uppercase;
+  }
+  table tbody tr {
+    @apply transition-colors hover:bg-asphalt-50/60;
   }
   input[type='checkbox'],
   input[type='radio'] {
@@ -86,19 +97,21 @@
 @layer components {
   /* Buttons (also used on links that look like buttons). */
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold
-      transition-[background-color,box-shadow,transform,color] duration-150
+    @apply inline-flex min-h-10 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+      transition-[background-color,box-shadow,transform,color,border-color] duration-150
       active:translate-y-px disabled:cursor-not-allowed disabled:opacity-55 disabled:active:translate-y-0;
   }
   .btn-primary {
-    @apply bg-asphalt-900 text-white shadow-[0_1px_0_0_var(--color-asphalt-950)] hover:bg-asphalt-700;
+    @apply bg-gradient-to-b from-asphalt-800 to-asphalt-950 text-white shadow-[0_1px_2px_rgb(18_26_36/0.25),inset_0_1px_0_rgb(255_255_255/0.08)]
+      hover:from-asphalt-700 hover:to-asphalt-900 hover:shadow-[0_4px_12px_rgb(18_26_36/0.22)];
   }
   /* The one main action on a page. */
   .btn-accent {
-    @apply bg-lane-500 text-asphalt-950 shadow-[0_1px_0_0_var(--color-lane-600)] hover:bg-lane-400;
+    @apply bg-gradient-to-b from-lane-400 to-lane-500 text-asphalt-950 shadow-[0_1px_2px_rgb(201_150_0/0.35),inset_0_1px_0_rgb(255_255_255/0.35)]
+      hover:shadow-[0_4px_14px_rgb(242_183_5/0.35)];
   }
   .btn-secondary {
-    @apply border border-asphalt-200 bg-white text-asphalt-900 hover:border-asphalt-300 hover:bg-asphalt-50;
+    @apply border border-asphalt-200 bg-white text-asphalt-900 shadow-[0_1px_2px_rgb(27_38_51/0.05)] hover:border-asphalt-300 hover:bg-asphalt-50;
   }
   .btn-ghost {
     @apply text-asphalt-700 hover:bg-asphalt-100 hover:text-asphalt-900;
@@ -115,12 +128,13 @@
 
   /* A white section on the grey page. */
   .panel {
-    @apply rounded-xl border border-asphalt-100 bg-white shadow-[0_1px_2px_rgb(27_38_51/0.05)];
+    @apply rounded-2xl border border-asphalt-100/80 bg-white
+      shadow-[0_1px_2px_rgb(27_38_51/0.04),0_8px_24px_-12px_rgb(27_38_51/0.12)];
   }
 
   /* Form controls. */
   .control {
-    @apply block w-full rounded-lg border border-asphalt-200 bg-white px-3.5 py-2.5 text-sm text-asphalt-900
+    @apply block w-full rounded-xl border border-asphalt-200 bg-white px-3.5 py-2.5 text-sm text-asphalt-900 shadow-[inset_0_1px_1px_rgb(27_38_51/0.03)]
       transition-[border-color,box-shadow] placeholder:text-asphalt-300 hover:border-asphalt-300
       focus:border-asphalt-700 focus:shadow-[0_0_0_3px_var(--color-lane-300)] focus:outline-none
       disabled:bg-asphalt-50 disabled:text-asphalt-500 aria-[invalid=true]:border-red-500;
@@ -128,7 +142,7 @@
 
   /* Small status pills (photo flags, roles, archived). */
   .pill {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
 }
 

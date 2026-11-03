@@ -8,6 +8,7 @@ work, so no result backend is configured.
 """
 
 from celery import Celery
+from celery.schedules import crontab
 
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -23,6 +24,7 @@ celery_app = Celery(
         "app.workers.system_tasks",
         "app.workers.analysis_tasks",
         "app.workers.report_tasks",
+        "app.workers.forecast_tasks",
     ],
 )
 celery_app.conf.update(
@@ -38,4 +40,10 @@ celery_app.conf.update(
     # marked failed with a plain reason and can be retried).
     broker_connection_timeout=_settings.dependency_check_timeout_seconds,
     timezone="UTC",
+    # Road-risk forecasting (F4b): one hourly check; each part runs when it is due (daily 06:00,
+    # weekly Monday 07:00, Chicago time), so time missed while the computer was off is caught up.
+    # Needs the `beat` container.
+    beat_schedule={
+        "forecast-tick": {"task": "forecast.tick", "schedule": crontab(minute=5)},
+    },
 )

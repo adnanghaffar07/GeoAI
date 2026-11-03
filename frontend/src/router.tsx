@@ -53,6 +53,8 @@ export const router = createBrowserRouter([
           { path: 'upload', element: <ProjectUploadPage /> },
           { path: 'findings', lazy: lazyPage(() => import('@/pages/project/project-findings-page').then((m) => ({ default: m.ProjectFindingsPage }))) },
           { path: 'priority', lazy: lazyPage(() => import('@/pages/project/project-priority-page').then((m) => ({ default: m.ProjectPriorityPage }))) },
+          { path: 'road-risk', lazy: lazyPage(() => import('@/pages/project/project-road-risk-page').then((m) => ({ default: m.ProjectRoadRiskPage }))) },
+          { path: 'road-risk/:sectionId', lazy: lazyPage(() => import('@/pages/project/project-road-section-page').then((m) => ({ default: m.ProjectRoadSectionPage }))) },
           { path: 'reports', lazy: lazyPage(() => import('@/pages/project/project-reports-page').then((m) => ({ default: m.ProjectReportsPage }))) },
           { path: 'review/:findingId', lazy: lazyPage(() => import('@/pages/project/project-review-page').then((m) => ({ default: m.ProjectReviewPage }))) },
           // Settings tab: project details, team and history together
@@ -62,6 +64,7 @@ export const router = createBrowserRouter([
             children: [
               { index: true, lazy: lazyPage(() => import('@/pages/project-form-page').then((m) => ({ default: m.EditProjectPage }))) },
               { path: 'team', element: <ProjectTeamPage /> },
+              { path: 'road-risk', lazy: lazyPage(() => import('@/pages/project/project-road-risk-settings-page').then((m) => ({ default: m.ProjectRoadRiskSettingsPage }))) },
               { path: 'history', lazy: lazyPage(() => import('@/pages/project/project-history-page').then((m) => ({ default: m.ProjectHistoryPage }))) },
             ],
           },
@@ -76,6 +79,8 @@ export const router = createBrowserRouter([
       { path: 'settings/history', lazy: lazyPage(() => import('@/pages/settings-history-page').then((m) => ({ default: m.SettingsHistoryPage }))) },
       { path: 'settings/retention', lazy: lazyPage(() => import('@/pages/settings-retention-page').then((m) => ({ default: m.SettingsRetentionPage }))) },
       { path: 'account', element: <AccountPage /> },
+      { path: 'notifications', lazy: lazyPage(() => import('@/pages/notifications-page').then((m) => ({ default: m.NotificationsPage }))) },
+      { path: 'notifications/:alertId', lazy: lazyPage(() => import('@/pages/notifications-page').then((m) => ({ default: m.AlertPage }))) },
       // Platform admins only (CR-004)
       { path: 'platform/requests', lazy: lazyPage(() => import('@/pages/platform-requests-page').then((m) => ({ default: m.PlatformRequestsPage }))) },
       { path: '*', element: <NotFoundPage /> },

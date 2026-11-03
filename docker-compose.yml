@@ -41,6 +41,10 @@ services:
     env_file: .env
     environment:
       WATCHFILES_FORCE_POLLING: "true"   # makes --reload notice file changes on Windows
+      <<: &forecast-env
+        PYTHONPATH: /ml   # the forecasting code (ml/forecasting) for the road-risk jobs (F4b)
+        FORECAST_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/forecast
+      FORECAST_TEST_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/forecast_apptest
     # Apply database migrations, then start the API with auto-reload.
     # --no-access-log: the app prints its own request lines (with request ID and timing).
     command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --no-access-log"
@@ -48,6 +52,7 @@ services:
       - ./backend:/app
       - storage-data:/data/storage
       - ./ml/models:/models:ro   # trained model files (only read); see README "AI model"
+      - ./ml:/ml                 # forecasting code and its data folders (F4b)
     ports:
       - "127.0.0.1:8000:8000"
     depends_on:
@@ -63,16 +68,39 @@ services:
     # One job at a time: with the trial AI model each worker process holds it in memory
     # (about 1.7 GB measured), so more would need a lot more memory. Reports wait their turn.
     command: celery -A app.workers.celery_app worker --loglevel=INFO --concurrency=1
+    environment: *forecast-env
     volumes:
       - ./backend:/app
       - storage-data:/data/storage
       - ./ml/models:/models:ro
+      - ./ml:/ml                 # forecasting code and its data folders (F4b)
     depends_on:
       db:
         condition: service_healthy
       queue:
         condition: service_healthy
 
+  # Road-risk forecasting schedule (F4b): sends `forecast.tick` to the worker every hour.
+  # Each job runs when it is due (daily 06:00, weekly Monday 07:00, Chicago time).
+  beat:
+    build: ./backend
+    env_file: .env
+    command: celery -A app.workers.celery_app beat --loglevel=INFO --schedule /tmp/celerybeat-schedule
+    depends_on:
+      queue:
+        condition: service_healthy
+
+  # CR-006 "Ask about road risk": a free, open-source local model (no account, no cost; data stays here).
+  # The model is downloaded once with scripts\assistant-model.bat. If this is off, the app gives built-in answers.
+  ollama:
+    image: ollama/ollama:0.5.7
+    restart: unless-stopped
+    volumes:
+      - ollama-models:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: 5m   # frees the memory 5 minutes after the last question
+
 volumes:
+  ollama-models:
   db-data:
   storage-data:   # private uploaded photos and exports; never served directly

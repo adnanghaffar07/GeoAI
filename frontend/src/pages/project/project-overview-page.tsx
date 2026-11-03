@@ -4,6 +4,8 @@ import { Camera, TriangleAlert, Upload } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { imageQueryKeys, listImages } from '@/api/images'
+import { getRiskList, roadRiskQueryKeys } from '@/api/road-risk'
+import { LevelBadge } from '@/components/road-risk/road-risk-parts'
 import { DashboardView } from '@/components/dashboard/dashboard-view'
 import { AiCheckBanner } from '@/components/analysis/ai-check-banner'
 import { AreaMap, type MapPoint } from '@/components/map/area-map'
@@ -16,6 +18,12 @@ export function ProjectOverviewPage() {
   const canSeePhotos = hasProjectPermission(project, 'image.status.view')
   const canUpload = hasProjectPermission(project, 'image.upload') && !project.archived
   const { counts } = project
+  const canSeeRisk = hasProjectPermission(project, 'risk.view') && Boolean(project.road_risk_enabled)
+  const risk = useQuery({
+    queryKey: roadRiskQueryKeys.list(project.id, '', 0),
+    queryFn: ({ signal }) => getRiskList(project.id, { pageSize: 1 }, signal),
+    enabled: canSeeRisk,
+  })
 
   // Up to 200 photo locations for the small coverage map.
   const photos = useQuery({
@@ -74,6 +82,22 @@ export function ProjectOverviewPage() {
             Check the photos
           </Link>
         </p>
+      )}
+
+      {canSeeRisk && risk.data && risk.data.status.status === 'ready' && (
+        <section className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-sm" aria-label="Road risk summary">
+          <div className="space-y-1">
+            <p className="font-medium">
+              Road risk <span className="pill bg-lane-500 text-asphalt-950">{risk.data.label}</span>
+            </p>
+            <p className="flex flex-wrap gap-2">
+              <LevelBadge level="high" /> {risk.data.counts.high} <LevelBadge level="medium" /> {risk.data.counts.medium}
+            </p>
+          </div>
+          <Link to={`/projects/${project.id}/road-risk`} className="btn btn-secondary">
+            See road risk
+          </Link>
+        </section>
       )}
 
       <DashboardView orgId={project.organization_id} projectId={project.id} showMap={false} />

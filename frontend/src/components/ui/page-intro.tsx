@@ -13,8 +13,8 @@ export function PageIntro({ title, children, actions }: PageIntroProps) {
   return (
     <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
       <div className="min-w-0 max-w-3xl">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {children && <p className="mt-1 text-sm text-asphalt-500">{children}</p>}
+        <h2 className="text-xl font-bold tracking-tight">{title}</h2>
+        {children && <p className="mt-1.5 text-sm leading-relaxed text-asphalt-500">{children}</p>}
       </div>
       {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
     </div>

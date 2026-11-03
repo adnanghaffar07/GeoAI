@@ -21,7 +21,7 @@ Legend: ✅ allowed · ❌ blocked · 🔸 allowed with a condition (see note)
 4. **Removed users lose access immediately.** Removing a member or deactivating a user deletes their sessions.
 5. **Invitations expire** (proposed: 7 days) and can only be used once.
 6. **Changes are recorded.** Role changes, member removals, settings changes, review decisions, and exports are written to the audit log with who, when, and what changed.
-7. **Platform setup is not in the app.** Creating an organization and its first admin is done with a command-line script by the operator (us). There is no "super admin" screen in V1.
+7. **Platform setup is not in the app.** Creating an organization and its first admin is done with a command-line script by the operator (us). There is no "super admin" screen in V1. *(Changed 2026-10-28, CR-004: see section 7. A **platform admin** can approve requests from new organizations in the app; the platform admin role itself is still given only by a server command.)*
 
 ---
 
@@ -134,6 +134,18 @@ Columns show project roles. "Org admin" means an `org_admin` acting in any proje
 | View and download shared reports | `report.view_shared` | ✅ | ✅ | ❌ | ✅ | ✅ |
 | View all reports and the export log | `report.view_all` | ✅ | ✅ | ❌ | ❌ | ❌ |
 
+### 3.8 Road-risk forecasting (F4c, added 2026-10-30)
+
+| Action | Permission key | Org admin | Project manager | Field collector | Technical reviewer | Viewer |
+|--------|---------------|:-:|:-:|:-:|:-:|:-:|
+| View road risk levels, reasons, risk factors, map, weather outlook, download | `risk.view` | ✅ | ✅ | 🔸 ¹¹ | 🔸 ¹¹ | 🔸 ¹¹ |
+| Switch forecasting on / off; "update now" | `risk.configure` | ✅ | ✅ | ❌ | ❌ | ❌ |
+| View alerts and mark them read (notification bell) | `alert.view` | ✅ ¹⁰ | ✅ | ❌ | ❌ | ❌ |
+
+¹¹ F4d (owner request 2026-10-30): the project manager ticks which roles also see road risk, per project; default technical reviewers ✅ and viewers ✅, field collectors ❌. A field collector given a road inspection sees that road (no level) in "My inspections".
+
+¹⁰ From the F4 plan (approved 2026-10-30) and roadmap section 7.5: alerts go to project managers only. An org admin sees a project's alerts when they open it; the bell lists only projects where the person holds the project manager role.
+
 ---
 
 ## 4. How this becomes code
@@ -192,3 +204,21 @@ Audit and review events store the actor, the action key, and the **roles the act
 
 ### Rule 5: permission tests follow the mapping
 The "must be blocked" tests are generated from the same mapping, so a policy change updates the tests in the same place and nothing is missed.
+
+---
+
+## 7. Platform admin (CR-004, 2026-10-28)
+
+A **platform admin** is above all organizations. It is a flag on the user account (`users.is_platform_admin`), not an organization or project role, and it is given or removed **only** with the server command `python -m app.cli make-platform-admin --email … [--remove]` (recorded in the history). Nobody can make themselves platform admin from the website.
+
+| Action | Who | Notes |
+|--------|-----|-------|
+| Send "Request access" for a new organization | Anyone (no sign-in) | Creates only a request; spam limits apply |
+| See requests (waiting, approved, rejected) | Platform admin | Others get `403`; not signed in `401` |
+| Approve a request (creates the organization and an org-admin invitation) | Platform admin | Recorded as `organization.created` and `organization_request.approved` |
+| Reject a request (reason required) | Platform admin | Nothing is created |
+| Make a new invitation link for an approved request | Platform admin | The old link stops working |
+
+Being a platform admin gives **no** access to any organization's projects, photos or findings. A platform admin who also works in an organization uses their normal organization and project roles there.
+
+**Map helper (2026-10-28):** `POST /geo/area-from-place` (turn a searched or drawn road, point or area into a survey area) is open to any signed-in person: it only calculates a shape and saves nothing. Saving the project still needs `project.create` / `project.edit`.

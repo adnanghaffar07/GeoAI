@@ -220,3 +220,60 @@ If another reviewer saved first (`409`):
 - `GET /organizations/{org_id}/dashboard?project_id=&days=` (needs `org.view`): `days` is 7, 30 or 90, or left out for all time (anything else answers `422 validation_failed`); `project_id` narrows to one project (`404` if the person cannot see it).
 - Answer: `scope {project_id, days, date_from, date_to}`, `access {photos, photos_own_only, candidates, verified, rejected, priority, own_inspections}` (what the screen may show), `totals`, `review_status`, `verified_by_type`, `verified_by_severity`, `inspection_status`, `activity [{date, photos, suggestions, verified}]` (at most 366 days), `top_priority` (5, unresolved), `map_points` (verified with a location, at most 2000, `map_truncated`), `projects [{id, name, my_roles, photos, waiting_review, verified, rejected, inspections_open}]`, `finding_types`, `severity_levels`.
 - Each number counts only what the person may see on each project; numbers they may not see are left out (not zero-filled).
+
+## Implementation notes (2026-10-19 to 2026-10-28, additive)
+
+**Trial model (CR-003):** analysis jobs, image `analysis`, findings and reports gain `is_trial_model` (bool) next to `is_test_detector`; reports gain `includes_trial_model`. `POST /projects/{id}/analysis-jobs` answers `503 service_unavailable` with a plain reason when the trial model file is missing or is not the tested file.
+
+**New photos waiting for the AI (FR-60):** `GET /projects/{id}` `counts.images_waiting_for_ai`; dashboard `totals.photos_waiting_for_ai` and `projects[].photos_waiting_for_ai` (stored photos with no analysis job for the current model version).
+
+**Platform admin and organization requests (CR-004):**
+| Method | Path | Who | Answer |
+|--------|------|-----|--------|
+| GET | `/auth/me` | signed in | `user.is_platform_admin` (bool) added |
+| POST | `/organization-requests` | anyone (no sign-in) | `202 {message}`. Body: `organization_name`, `contact_name`, `contact_email`, `phone?`, `city_or_agency`, `note?`, `website` (hidden robot trap: if filled, answers 202 and saves nothing). `409 conflict` if a request for that email is waiting; `429 too_many_requests` after 5 per hour from one address (`cf-connecting-ip` / `x-forwarded-for` first) |
+| GET | `/platform/organization-requests?status=pending\|approved\|rejected` | platform admin | `{items: [...], pending_count}`; waiting oldest first, decided newest first |
+| POST | `/platform/organization-requests/{id}/approve` | platform admin | Body `{note?}`. `{request, invitation_url, invitation_expires_at}`; creates the organization, its placeholder settings and an `org_admin` invitation. `409` if already decided |
+| POST | `/platform/organization-requests/{id}/reject` | platform admin | Body `{reason}` (3–2000 characters). The updated request. `409` if already decided |
+| POST | `/platform/organization-requests/{id}/invitation-link` | platform admin | New link for an approved request; older pending links for that email are revoked |
+
+Not platform admin: `403 permission_denied`; not signed in: `401`.
+
+**Survey area from a place (FR-58, FR-59):**
+| Method | Path | Who | Answer |
+|--------|------|-----|--------|
+| POST | `/geo/area-from-place` | signed in | Body `{shape, road_width_m (10–200, default 30), add_to?}` where `shape` is GeoJSON Point / LineString / MultiLineString / Polygon / MultiPolygon (max 20,000 points) and `add_to` an existing area. Answer `{area (Polygon or MultiPolygon), area_square_meters}`. Lines become strips (`ST_Buffer` on geography, round ends), points a 150 m circle, areas keep their outline (`ST_MakeValid`); with `add_to` the result is joined (`ST_Union`). Saves nothing. `422` for bad input or an empty / over-detailed result |
+
+Place search itself runs in the browser against OpenStreetMap Nominatim (`/search`, and `/reverse` for coordinates); it is not part of this API.
+
+## Implementation notes (F4c road risk, 2026-10-30, additive)
+
+Section 3.10 Road risk and alerts (`backend/app/api/road_risk.py`). Owner decision F4-D2: **levels only**. No answer contains a percentage or the raw model value; every risk answer carries `label: "TRIAL FORECAST"` and `notice: "Risk estimate, not a confirmed defect."`.
+
+| Method | Path | Who | Answer |
+|--------|------|-----|--------|
+| GET | `/projects/{id}/forecast-settings` | `risk.view` | `{enabled, status (off/setting_up/ready/failed/too_large), level (1/2, when ready), level_label, message, area_km2, max_area_km2, last_weekly_run, last_daily_run, can_configure, label, notice}` |
+| PUT | `/projects/{id}/forecast-settings` | `risk.configure` | Body `{enabled}`. On: area checked (max 500 km²) and set up in the background; already on and ready or setting up: nothing changes. Off: results kept. Audited (`forecast.enabled`, `forecast.disabled`). `409` on archived projects |
+| POST | `/projects/{id}/risk-runs` | `risk.configure` | `202`. "Update now": marks the daily (and Chicago weekly) parts due and wakes the worker; the hourly check runs them anyway if the worker is busy. Daily part runs from 06:00 Chicago time. `409` if not on and ready. Audited (`forecast.update_requested`) |
+| GET | `/projects/{id}/risk?level=high\|medium\|low&page&page_size (max 500)` | `risk.view` | `{items, page, page_size, total, status, levels_run, factors_run, counts {high, medium, low}, label, notice}`. Item: `section_id, name, road_type, length_m, position (1 = inspect first), level, rank_in_area (Level 2), reasons [{input, label, value}] (top 3, largest first), missing_inputs (plain labels), factors [{factor, label, value, level, kind}]`. Level 2: weekly B1 levels, rank order. Level 1: ordered by the number of high, then medium risk factors; level = the highest risk-factor level |
+| GET | `/projects/{id}/risk/map` | `risk.view` | GeoJSON FeatureCollection of all sections; properties `section_id, name, level, position` |
+| GET | `/projects/{id}/road-sections/{section_id}/risk` | `risk.view` | `{section, geometry, history [{as_of, level, rank_in_area}] (weekly, newest first, max 52), inspections [{id, status, planned_date}] (linked by risk_level_id), levels_run, factors_run, label, notice}`. `404` if the section is not in this project |
+| GET | `/projects/{id}/weather` | `risk.view` | `{outlook {source, issued_at, fetched_at, days, freeze_thaw_days, frost_days, heavy_rain_days, snow_mm} \| null, recent {as_of, values [factor]} \| null}` (recent = middle value over the project's sections) |
+| GET | `/projects/{id}/alerts?include_closed&page&page_size` | `alert.view` | Page of `{id, project_id, project_name, type, title, details, created_at, closed_at, read}`, newest first |
+| GET | `/notifications` | signed in | `{items (max 50, open first, newest first), unread_count}` for projects the person manages (project manager role) |
+| POST | `/notifications/{alert_id}/read` | `alert.view` on the alert's project | `204`; reading twice is fine. `404` outside the person's projects |
+
+**Added in F4d part 1 (2026-10-30):**
+| Method | Path | Who | Answer |
+|--------|------|-----|--------|
+| PUT | `/projects/{id}/forecast-settings` | `risk.configure` | Body now `{enabled?, visible_to_roles?}` (at least one; roles from `technical_reviewer`, `viewer`, `field_collector`). Visibility can be set before switching on. Audited `forecast.visibility_changed` (before/after) |
+| GET | `/projects/{id}/forecast-settings` and all `risk.view` routes | `risk.view` + project setting | Answer has `visible_to_roles`. Reviewers, viewers and field collectors get `403` when the project hides road risk from their role |
+| GET | `/projects/{id}` | as before | `my_permissions` leaves out `risk.view` where hidden; new `road_risk_enabled` (bool) |
+| GET | `/projects/{id}/risk/export?format=csv\|geojson` | `risk.view` + setting | Labelled file (CSV: `#` lines with TRIAL FORECAST, notice, run dates; GeoJSON: `metadata`). Audited `forecast.exported` |
+| POST | `/projects/{id}/road-sections/{section_id}/inspections` | `inspection.plan` | Body `{owner_user_id, planned_date}`. `201` InspectionOut. `404` if the road is not in the project, `409` if it has an open inspection |
+| (changed) | InspectionOut | | Adds `project_id`, `section_id`; `finding_id` is `null` for road inspections |
+| (changed) | `GET /projects/{id}/inspections` | | Items `{inspection, finding \| null, road \| null}`; `road` = `{section_id, name, road_type, length_m}` (no level) |
+| (changed) | `/inspections/{id}`, `/evidence`, `/reopen` | | Work for road inspections too |
+
+Differences from roadmap 7.3 (decided in F4c): risk history is per project (`/projects/{id}/road-sections/{id}/risk`) so permissions follow the project; `weather-summary?days=30` became `/weather` (7-day outlook plus the recent weather inputs); no `horizon` (30 days only).
+

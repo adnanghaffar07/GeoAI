@@ -110,3 +110,12 @@ Until a real model passes its accuracy check (PI-17), the app uses a **stand-in*
 | Model adds a new problem type | Declared in the registry and added as a finding type. Existing findings unaffected. |
 | Future model adds more detail (e.g. an exact outline/mask instead of a box) | Added as a **new optional field** in contract version 2. Version 1 notes still work. |
 | Model withdrawn | Marked inactive in the registry. Its past findings stay, labelled with its version. |
+
+## Model versions in use (2026-10-28)
+
+| `model_version` | What it is | Label in the app |
+|-----------------|-----------|------------------|
+| `stand-in-0.1` | Test detector (made-up boxes), default | "TEST DETECTOR: not a real detection" |
+| `frcnn-rdd2022-0.1` | Trained Faster R-CNN (RDD2022), final test NOT PASSED; switched on with `ANALYSIS_MODEL_VERSION` | "TRIAL MODEL: accuracy not approved" (CR-003) |
+
+Both return contract version 1 unchanged. The trial model fills `image_width_px` / `image_height_px` from the upright photo (phone rotation applied) and clips boxes to the photo.

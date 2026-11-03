@@ -12,6 +12,13 @@ organizations). Add --remove to take the role away again:
 
     docker compose exec api python -m app.cli make-platform-admin --email admin@example.com
 
+Road-risk forecasting (F4b; the screens come in F4d). Switch it on for a project and set the
+area up now, or run the hourly forecasting check now instead of waiting for it:
+
+    docker compose exec worker python -m app.cli forecast-enable \\
+        --project PROJECT_ID --email manager@example.com
+    docker compose exec worker python -m app.cli forecast-tick
+
 This is the pilot's way of adding organizations (see project-decisions.md: the
 delivery model and main-admin sign-in method can change later).
 """
@@ -133,7 +140,14 @@ def main(argv: list[str] | None = None) -> int:
     )
     platform.add_argument("--email", required=True)
     platform.add_argument("--remove", action="store_true", help="Take the role away instead")
+    enable = sub.add_parser("forecast-enable", help="Switch road-risk forecasting on and set it up")
+    enable.add_argument("--project", required=True, help="Project id")
+    enable.add_argument("--email", required=True, help="Who switches it on (recorded)")
+    sub.add_parser("forecast-tick", help="Run the forecasting jobs that are due now")
     args = parser.parse_args(argv)
+
+    if args.command in ("forecast-enable", "forecast-tick"):
+        return _forecast_command(args)
 
     if args.command == "make-platform-admin":
         return _platform_admin_command(args.email, enabled=not args.remove)
@@ -154,6 +168,28 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Created organization '{org.name}' ({org.id}).")
     print(f"The admin can now sign in with {normalize_email(args.admin_email)}.")
     return 0
+
+
+def _forecast_command(args: argparse.Namespace) -> int:
+    import json
+    import uuid
+
+    from app.services import forecasting
+
+    with get_session_factory()() as db:
+        if args.command == "forecast-tick":
+            print(json.dumps(forecasting.tick(db), indent=2, default=str))
+            return 0
+        user = db.scalar(select(User).where(func.lower(User.email) == normalize_email(args.email)))
+        if user is None:
+            print(f"Error: no account with the email {args.email}.", file=sys.stderr)
+            return 1
+        row = forecasting.enable(db, uuid.UUID(args.project), user.id)
+        if row.status == "setting_up":
+            print("Setting up the area (Chicago: a minute; elsewhere: downloads, 10-20 minutes)...")
+            row = forecasting.setup(db, row.id)
+        print(f"Forecasting for the project: {row.status} (level {row.level}). {row.message or ''}")
+        return 0 if row.status == "ready" else 1
 
 
 def _platform_admin_command(email: str, *, enabled: bool) -> int:

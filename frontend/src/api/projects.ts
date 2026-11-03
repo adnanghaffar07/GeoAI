@@ -45,6 +45,8 @@ export interface ProjectDetail extends ProjectSummary {
   archived_at: string | null
   /** What the signed-in person may do in this project; buttons are shown from this. */
   my_permissions: string[]
+  /** Road-risk forecasting is switched on for this project (the tab shows with risk.view). */
+  road_risk_enabled?: boolean
 }
 
 export interface ProjectInput {

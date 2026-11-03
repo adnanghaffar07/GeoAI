@@ -31,6 +31,9 @@ os.environ.update(
         "SESSION_COOKIE_SECURE": "false",
         # Photos uploaded by tests go to a throwaway folder.
         "STORAGE_DIR": tempfile.mkdtemp(prefix="geoinfralens-test-storage-"),
+        # Tests always use the labelled test detector, whatever .env chooses for the demo
+        # (the trial model finds nothing in the tiny test photos; 2026-10-30).
+        "ANALYSIS_MODEL_VERSION": "stand-in-0.1",
     }
 )
 

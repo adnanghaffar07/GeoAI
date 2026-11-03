@@ -85,6 +85,7 @@ Column types in plain words: `uuid` = random ID · `text` = words · `int` = who
 | password_hash | text | Argon2 hash; the password itself is never stored |
 | is_active | bool | false = cannot sign in (deactivated, not deleted) |
 | last_login_at | timestamptz | |
+| is_platform_admin | bool | *(CR-004, migration 0007)* default false; set only by the server command `make-platform-admin` |
 | created_at, updated_at | timestamptz | |
 
 **`organization_memberships`**: which organization a person belongs to, and their organization role.
@@ -382,7 +383,7 @@ Rule: `resolved` requires an outcome note or an evidence photo (FR-44). Reopenin
 Index: `organization_id + created_at`, `project_id + created_at`.
 
 **Audit event types** (the `action` values; new ones may be added, existing ones never change meaning):
-`auth.signed_in`, `auth.sign_in_failed`, `auth.signed_out`, `invitation.created`, `invitation.revoked`, `invitation.accepted`, `password_reset.created`, `password_reset.used`, `member.role_changed`, `member.removed`, `organization.settings_changed`, `retention.changed`, `finding_type.created`, `finding_type.changed`, `severity_rubric.created`, `project.created`, `project.changed`, `project.archived`, `project_member.added`, `project_member.removed`, `image.withdrawn`, `image.location_set` (CR-002), `analysis.started`, `priority_config.created`, `inspection.planned`, `inspection.resolved`, `inspection.reopened`, `report.generated`, `report.shared`, `report.downloaded`. *(Added in P7: `inspection.inspected`, `inspection.evidence_added`, `report.unshared`.)*
+`auth.signed_in`, `auth.sign_in_failed`, `auth.signed_out`, `invitation.created`, `invitation.revoked`, `invitation.accepted`, `password_reset.created`, `password_reset.used`, `member.role_changed`, `member.removed`, `organization.settings_changed`, `retention.changed`, `finding_type.created`, `finding_type.changed`, `severity_rubric.created`, `project.created`, `project.changed`, `project.archived`, `project_member.added`, `project_member.removed`, `image.withdrawn`, `image.location_set` (CR-002), `analysis.started`, `priority_config.created`, `inspection.planned`, `inspection.resolved`, `inspection.reopened`, `report.generated`, `report.shared`, `report.downloaded`. *(Added in P7: `inspection.inspected`, `inspection.evidence_added`, `report.unshared`.)* *(Added 2026-10-28, CR-004: `user.platform_admin_granted`, `user.platform_admin_removed`, `organization_request.created`, `organization_request.approved`, `organization_request.rejected`; `organization.created` now also records `via: organization_request`.)* *(Added 2026-10-30, F4c: `forecast.enabled`, `forecast.disabled`, `forecast.update_requested`; F4d: `forecast.visibility_changed`, `forecast.exported`; `inspection.*` events of road inspections carry `section_id` instead of `finding_id`.)*
 `organization.created` (added 2026-10-14: recorded when the setup command creates an organization).
 `audit_events.organization_id` is empty for events that happen before an organization is known (`auth.sign_in_failed`, `auth.signed_in`, `auth.signed_out`, `password_reset.used`). `audit_events.project_id` is added in P4 with the projects table.
 Review decisions are recorded in `review_events` (with full before/after detail) rather than duplicated here.
@@ -434,3 +435,33 @@ Review decisions are recorded in `review_events` (with full before/after detail)
 | P7 | priority_configs, priority_scores, inspections, reports, gis_layers, road_segments, facilities |
 
 Each phase adds its tables with one migration, which is tested both forwards and backwards.
+
+## 6. Changes after the freeze (change control)
+
+| Migration | Date | Change | Why |
+|-----------|------|--------|-----|
+| 0007 | 2026-10-28 | `users.is_platform_admin` bool, default false | CR-004: platform admin |
+| 0008 | 2026-10-28 | New table `organization_requests` (below) | CR-004: organizations request access, platform admin approves |
+
+Both are **add-only**: no existing column or row changes meaning, and both downgrade cleanly.
+
+**`organization_requests`**: a new organization asking to use the app. Nothing else is created until a platform admin approves.
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid | |
+| organization_name, contact_name, city_or_agency | text | required |
+| contact_email | text | required; stored lower-case; **one `pending` request per email** (partial unique index on `lower(contact_email)` where status = pending) |
+| phone, note | text | optional |
+| status | text | `pending` \| `approved` \| `rejected` (check constraint) |
+| requester_ip | text | only for the spam limit (requests per address per hour) |
+| decided_by | uuid → users | who approved or rejected |
+| decided_at | timestamptz | |
+| decision_note | text | approval note or rejection reason |
+| organization_id | uuid → organizations | the organization created on approval |
+| created_at | timestamptz | |
+
+Index: `(status, created_at)` for the review lists. Approval creates the organization, its placeholder settings and an `invitations` row in **one transaction**, with the request row locked so two admins cannot both decide it.
+
+Not stored: survey-area helper results (`POST /geo/area-from-place` only calculates; the shape is saved as the project's `boundary` like any drawn area).
+
+Planned, not built (forecasting track, draft): `road_sections`, `weather_stations`, `weather_daily`, `section_features`, `risk_runs`, `risk_scores`, `inspections.risk_score_id` (see `04-design/forecasting-roadmap.md` §7.1).

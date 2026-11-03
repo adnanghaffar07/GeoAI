@@ -30,6 +30,8 @@ documentation/
 |------|-----------------|--------|
 | `CURRENT_PHASE.md` | Where are we, what may the agent do, what are the working rules? | Live |
 | `project-decisions.md` | What was decided, when, and why? | Live |
+| `GeoInfraLens AI - Technical Document and User Manual.docx` | Links, login, user manual with screenshots, stack, architecture, operations (for the team and Google Drive) | v1.0, 2026-10-28 |
+| `Geo_Infra_Lens_AI_Orange_Deck_Adnan_Ghaffar.pdf` | Research concept deck: forecasting road damage (Chicago suburbs) | Source for `04-design/forecasting-roadmap.md` |
 
 ### 01-overview
 | File | What it answers | Status |
@@ -49,24 +51,29 @@ documentation/
 ### 03-requirements (P1)
 | File | What it answers | Status |
 |------|-----------------|--------|
-| `03-requirements/requirements.md` | What must version 1 do (FR/NFR), and what not? | Approved (incl. CR-001) |
-| `03-requirements/permission-matrix.md` | Who may do what? | Approved (incl. CR-001) |
+| `03-requirements/requirements.md` | What must version 1 do (FR/NFR), and what not? | Approved (incl. CR-001; additions CR-003, CR-004 in §13) |
+| `03-requirements/permission-matrix.md` | Who may do what? | Approved (incl. CR-001; platform admin CR-004 in §7) |
 | `03-requirements/partner-inputs.md` | What must the customer decide? Placeholders until then | Waiting for customer |
-| `03-requirements/acceptance-checklist.md` | The tests the app must pass (AC-01…AC-52) | Live checklist |
+| `03-requirements/acceptance-checklist.md` | The tests the app must pass (AC-01…AC-60) | Live checklist |
 
 ### 04-design (P2)
 | File | What it answers | Status |
 |------|-----------------|--------|
-| `04-design/database-schema.md` | Which tables, columns, and rules? | Approved, frozen |
-| `04-design/api-spec.md` | Which requests can the screens send? | Approved, frozen |
+| `04-design/database-schema.md` | Which tables, columns, and rules? | Frozen; additions via change control (§6, to migration 0008) |
+| `04-design/api-spec.md` | Which requests can the screens send? | Frozen; additive notes up to 2026-10-28 |
 | `04-design/model-output-contract.md` | What must the AI hand back? | Approved, frozen |
-| `04-design/ui-screens.md` | Which screens, and their loading/empty/error states? | Approved, frozen |
-| `04-design/ml-baseline-plan.md` | P8: model classes, how it is measured, pass marks, gate | P8.0 approved 2026-10-16 (pass marks PLACEHOLDER) |
+| `04-design/ui-screens.md` | Which screens, and their loading/empty/error states? | Frozen; changes in §4 (2026-10-20) and §5 (2026-10-28) |
+| `04-design/ml-baseline-plan.md` | P8: model classes, how it is measured, pass marks, gate | Done to P8.7 as TRIAL (CR-003); pass marks PLACEHOLDER |
+| `04-design/forecasting-roadmap.md` | V2 research track: predicting which roads will be damaged next, and how it fits into the app | Approved (CR-005, 2026-10-28) |
+| `04-design/forecasting-f0-ground-rules.md` | Forecasting F0: what is predicted, inputs, test periods, measures, pass marks | Approved and frozen 2026-10-28 (pass marks PLACEHOLDER until PI-20) |
 
 ### 07-ml (P8)
 | File | What it answers | Status |
 |------|-----------------|--------|
-| `07-ml/dataset-card-rdd2022.md` | Where the training data comes from, its licence, what is inside, known gaps | Draft; counts after the Colab run |
+| `07-ml/dataset-card-rdd2022.md` | Where the training data comes from, its licence, what is inside, known gaps | Complete (counts from the Colab run) |
+| `04-design/forecasting-f1b-plan.md` | Forecasting F1b: elevation, flood zone, soil, traffic and bus routes per road section | Complete 2026-10-29 |
+| `04-design/forecasting-f2-plan.md` | Forecasting F2: learning table, baselines B0/B1, LightGBM, validation, locked test once | Approved and built 2026-10-29; waiting for the owner's run |
+| `07-ml/dataset-card-chicago-forecast.md` | Forecasting F1 data: Chicago roads, 311 pothole reports, weather, community areas; licences, rules, known limits | F1 complete for Chicago 2026-10-29 (counts filled in) |
 
 ### 05-standards
 | File | What it answers | Status |
@@ -90,4 +97,5 @@ documentation/
 
 ## 06-demo
 
-- `06-demo/demo-guide.html`: plain-language demo guide for the team lead (status, demo script, every screen and option, technology, one-time links, maps, API/Swagger, frontend–backend flow, console messages). Open it in a browser.
+- `06-demo/testing-guide-p5-p7.md`: step-by-step owner test of P5–P7 (see its 2026-10-28 note for renamed buttons).
+- `06-demo/demo-guide.html`: plain-language demo guide (written 2026-10-15; the Word technical document of 2026-10-28 is the current, complete guide) for the team lead (status, demo script, every screen and option, technology, one-time links, maps, API/Swagger, frontend–backend flow, console messages). Open it in a browser.

@@ -209,15 +209,15 @@ def build(
                 .group_by(Finding.inspection_status)
             ).all()
         }
+    # Inspections of findings and of road sections (F4d) both carry their project.
     inspection_scope = or_(
-        _in(Finding.project_id, a.priority),
-        and_(_in(Finding.project_id, a.own_inspections), Inspection.owner_user_id == user_id),
+        _in(Inspection.project_id, a.priority),
+        and_(_in(Inspection.project_id, a.own_inspections), Inspection.owner_user_id == user_id),
     )
     inspection_rows = db.execute(
-        select(Finding.project_id, Inspection.status, func.count())
-        .join(Finding, Finding.id == Inspection.finding_id)
+        select(Inspection.project_id, Inspection.status, func.count())
         .where(inspection_scope)
-        .group_by(Finding.project_id, Inspection.status)
+        .group_by(Inspection.project_id, Inspection.status)
     ).all()
     open_by_project: Counter[uuid.UUID] = Counter()
     resolved_total = 0

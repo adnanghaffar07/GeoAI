@@ -146,7 +146,7 @@ For every step above:
 
 ## Progress
 
-Current step: **Stage 0 (P1)** - coding has not started.
+Current step (2026-10-28): **Stage H (P9)** next; Stages A–F built, Stage G done as a TRIAL, post-P7 additions below.
 
 Stage A code was written and verified on 2026-10-14 (at the owner's request, during P1):
 - [x] A1 folder structure, `.gitignore`, `.gitattributes`, `.editorconfig`, root README. **Owner still runs `git init` and the first commit.**
@@ -193,3 +193,18 @@ Stage F (P7) was built and verified on 2026-10-15:
 - Checks: backend 204 tests, ruff, mypy strict; frontend 57 tests, oxlint, TypeScript, build; real worker run, simultaneous-request check, browser walk-through on desktop and phone; independent code check with fixes.
 
 Next: owner tests P5, P6 and P7 together on their computer (steps in the P7 report), signs them off, then P8 (ML baseline, needs PI-04) / P9 (hardening).
+
+Stage G (P8, public data) was done 2026-10-15 to 2026-10-22:
+- [x] G1 RDD2022 download and dataset card; G2 split with Czech Republic locked as test; G3 marking guide and local photos: **waiting for PI-04 / real photos**
+- [x] G4 Faster R-CNN training on Colab (12 epochs, best epoch 10, validation mAP50 0.580)
+- [x] G5 one-time final test: NOT PASSED; G7 connected to the app as a labelled TRIAL (CR-003)
+
+Added after P7 (2026-10-20 to 2026-10-28):
+- [x] UI pass for non-technical users (6 project tabs, "What to do next", plain wording, feedback and error pages)
+- [x] AI-check banner for new photos (FR-60)
+- [x] Platform admin and organization sign-up with approval (CR-004; migrations 0007, 0008; FR-56, FR-57)
+- [x] Survey area by place search, roads by name / coordinates / drawing, areas and roads joined (FR-58, FR-59; `POST /geo/area-from-place`)
+- [x] Demo deployment: Vercel + Cloudflare tunnel; Word technical document and user manual
+- Checks (2026-10-28): backend 240 tests, ruff, mypy strict; frontend 92 tests, oxlint, TypeScript, build; ML 70 tests.
+
+Next: owner signs off P5–P7, then Stage H (P9 system testing), P10 hosting decision; forecasting track only after CR-005.

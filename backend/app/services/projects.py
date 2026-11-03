@@ -328,13 +328,13 @@ def project_counts(db: Session, project_ids: list[uuid.UUID]) -> dict[uuid.UUID,
         by_type.setdefault(pid, {})[type_key or "unknown"] = int(n)
     open_inspections = dict(
         db.execute(
-            select(Finding.project_id, func.count())
-            .join(Inspection, Inspection.finding_id == Finding.id)
+            # findings and road sections (F4d): every inspection carries its project
+            select(Inspection.project_id, func.count())
             .where(
-                Finding.project_id.in_(project_ids),
+                Inspection.project_id.in_(project_ids),
                 Inspection.status.in_(ACTIVE_INSPECTION_STATES),
             )
-            .group_by(Finding.project_id)
+            .group_by(Inspection.project_id)
         ).all()
     )
     result = {}

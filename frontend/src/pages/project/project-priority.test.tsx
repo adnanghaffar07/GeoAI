@@ -46,7 +46,9 @@ const ITEM: PriorityItem = {
 
 const INSPECTION: Inspection = {
   id: 'i1',
+  project_id: 'p1',
   finding_id: 'f1',
+  section_id: null,
   owner_user_id: 'u2',
   owner_name: 'Bo Worker',
   planned_date: '2026-10-20',
@@ -154,6 +156,13 @@ describe('Inspection priority', () => {
     await userEvent.click(within(dialog).getByRole('button', { name: 'Mark resolved' }))
 
     await waitFor(() => expect(posts).toEqual([{ url: '/api/v1/inspections/i1', method: 'PATCH', body: { status: 'resolved', outcome_note: 'Filled with cold mix' } }]))
+  })
+
+  it('shows managers the inspections assigned to them at the top', async () => {
+    renderPriority(MANAGER)
+    const mine = await screen.findByRole('region', { name: 'Assigned to me' })
+    expect(within(mine).getByText('Assigned to me (1)')).toBeInTheDocument()
+    expect(within(mine).getByRole('button', { name: 'Record result' })).toBeInTheDocument()
   })
 
   it('shows field collectors only the inspections assigned to them', async () => {

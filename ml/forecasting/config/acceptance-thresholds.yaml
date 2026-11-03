@@ -1,0 +1,45 @@
+# Forecasting F2 pass marks: PLACEHOLDER until the partner confirms them (PI-20).
+# Source of truth in words: documentation/04-design/forecasting-f0-ground-rules.md, sections 2, 5, 6 and 7.
+# F0 approved and frozen 2026-10-28; any change needs a line in project-decisions.md.
+status: PLACEHOLDER            # pass-mark values; the rules themselves were approved and frozen 2026-10-28
+approved: 2026-10-28
+version: 1
+drafted: 2026-10-28
+
+target:
+  event: new_pothole_report
+  horizon_days: 30
+  forecast_weekday: monday
+  match_distance_m: 20
+  exclude_duplicates: true
+
+sections:
+  length_m: 100
+  min_end_piece_m: 30
+  include_highway_types: [primary, secondary, tertiary, residential, unclassified,
+                          primary_link, secondary_link, tertiary_link]
+  exclude_highway_types: [motorway, trunk, service, footway, path, track]
+
+periods:
+  history_start: 2011-01-01        # inputs only
+  train: {start: 2012-01-02, end: 2021-06-28}
+  validation: {start: 2021-07-05, end: 2022-06-27}
+  test_locked: {start: 2022-07-04, end: 2025-06-30}
+  held_out_community_areas: {count: 10, seed: 20261028}
+
+measures:
+  precision_at_top_fraction: 0.01
+  recall_at_top_fraction: 0.10
+  report: [precision_at_top_1pct, recall_at_top_10pct, pr_auc, brier, base_rate]
+  bootstrap: {resamples: 1000, interval: 0.95, unit: forecast_week}
+  subsets: [all, winter_nov_apr, held_out_areas]
+
+baselines: [b0_rule_recent_reports_then_freeze_thaw, b1_logistic_regression]
+
+pass_marks:                         # main model vs the BEST baseline, on the locked test
+  precision_at_top_1pct_ratio_min: 1.15
+  precision_at_top_1pct_ci_low_above_baseline: true
+  pr_auc_ratio_min: 1.15
+  brier_better_than_all_baselines: true
+  winter_precision_at_top_1pct_ratio_min: 1.0
+  held_out_areas_precision_at_top_1pct_ratio_min: 1.0

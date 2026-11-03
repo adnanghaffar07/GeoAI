@@ -48,7 +48,11 @@ export type InspectionState = 'planned' | 'inspected' | 'resolved' | 'reopened'
 
 export interface Inspection {
   id: string
-  finding_id: string
+  project_id: string
+  /** Empty for a road inspection (planned from the road-risk screens). */
+  finding_id: string | null
+  /** The road section of a road inspection. */
+  section_id: string | null
   owner_user_id: string
   owner_name: string | null
   planned_date: string
@@ -78,9 +82,19 @@ export interface PriorityList extends Page<PriorityItem> {
   config: PriorityConfig
 }
 
+/** The road of a road inspection (no risk level: that needs road-risk access). */
+export interface InspectedRoad {
+  section_id: string
+  name: string | null
+  road_type: string
+  length_m: number
+}
+
 export interface AssignedInspection {
   inspection: Inspection
-  finding: Finding
+  /** Empty for a road inspection, which has `road` instead. */
+  finding: Finding | null
+  road?: InspectedRoad | null
 }
 
 export const INSPECTION_LABELS: Record<string, string> = {
@@ -139,4 +153,13 @@ export const evidenceUrl = (inspectionId: string) => `/api/v1/inspections/${insp
 
 export function reopenInspection(inspectionId: string, body: { reason: string; owner_user_id: string; planned_date: string }): Promise<Inspection> {
   return apiRequest(`/v1/inspections/${inspectionId}/reopen`, { method: 'POST', body })
+}
+
+/** Plan an inspection of a road section, even with no photo finding there. */
+export function planRoadInspection(projectId: string, sectionId: string, body: { owner_user_id: string; planned_date: string }): Promise<Inspection> {
+  return apiRequest(`/v1/projects/${projectId}/road-sections/${sectionId}/inspections`, { method: 'POST', body })
+}
+
+export function roadInspectionHistory(projectId: string, sectionId: string, signal?: AbortSignal): Promise<Inspection[]> {
+  return apiRequest(`/v1/projects/${projectId}/road-sections/${sectionId}/inspections`, { signal })
 }

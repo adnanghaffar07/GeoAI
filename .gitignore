@@ -41,3 +41,8 @@ Thumbs.db
 
 # ---- Local backup copies (kept on this computer only) ----
 _backups/
+
+# ---- Forecasting work files (large arrays; rebuilt by the scripts, never committed) ----
+ml/forecasting/models/*/work/
+*.npy
+*.npz

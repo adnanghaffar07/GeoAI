@@ -14,6 +14,7 @@ export function ProjectSettingsLayout() {
   const sections = [
     { to: base, label: 'Project details' },
     { to: `${base}/team`, label: 'Team' },
+    ...(hasProjectPermission(project, 'risk.configure') ? [{ to: `${base}/road-risk`, label: 'Road risk' }] : []),
     ...(hasProjectPermission(project, 'project.audit.view') ? [{ to: `${base}/history`, label: 'History' }] : []),
   ]
 

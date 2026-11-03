@@ -1,0 +1,428 @@
+{
+  "passed": true,
+  "tables": [
+    {
+      "table": "community_areas",
+      "rows": 77,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "road_sections",
+      "rows": 71979,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "pothole_reports",
+      "rows": 988302,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "weather_stations",
+      "rows": 2,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "weather_daily",
+      "rows": 11734,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "pavement_condition_cook",
+      "rows": 44090,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "section_static",
+      "rows": 71979,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "flood_zones",
+      "rows": 3159,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "soil_units",
+      "rows": 7370,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "traffic_counts",
+      "rows": 4705,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    },
+    {
+      "table": "bus_routes",
+      "rows": 950,
+      "only_in_old": 0,
+      "only_in_new": 0,
+      "same": true
+    }
+  ],
+  "learning_table": [
+    {
+      "item": "duplicate_reports_30d.npy",
+      "same": true
+    },
+    {
+      "item": "duplicate_reports_90d.npy",
+      "same": true
+    },
+    {
+      "item": "held_out.npy",
+      "same": true
+    },
+    {
+      "item": "label.npy",
+      "same": true
+    },
+    {
+      "item": "last_report_day.npy",
+      "same": true
+    },
+    {
+      "item": "neighbour_cols.npy",
+      "same": true
+    },
+    {
+      "item": "neighbour_rows.npy",
+      "same": true
+    },
+    {
+      "item": "reports_14d.npy",
+      "same": true
+    },
+    {
+      "item": "reports_30d.npy",
+      "same": true
+    },
+    {
+      "item": "reports_365d.npy",
+      "same": true
+    },
+    {
+      "item": "reports_7d.npy",
+      "same": true
+    },
+    {
+      "item": "reports_90d.npy",
+      "same": true
+    },
+    {
+      "item": "reports_all_before.npy",
+      "same": true
+    },
+    {
+      "item": "reports_same_30d_last_year.npy",
+      "same": true
+    },
+    {
+      "item": "reports_same_season_3y.npy",
+      "same": true
+    },
+    {
+      "item": "static__bus_routes.npy",
+      "same": true
+    },
+    {
+      "item": "static__flood_02pct.npy",
+      "same": true
+    },
+    {
+      "item": "static__flood_1pct.npy",
+      "same": true
+    },
+    {
+      "item": "static__heavy_vehicle_band.npy",
+      "same": true
+    },
+    {
+      "item": "static__highway_code.npy",
+      "same": true
+    },
+    {
+      "item": "static__lanes.npy",
+      "same": true
+    },
+    {
+      "item": "static__length_m.npy",
+      "same": true
+    },
+    {
+      "item": "static__low_spot_m.npy",
+      "same": true
+    },
+    {
+      "item": "static__probably_bridge.npy",
+      "same": true
+    },
+    {
+      "item": "static__slope_pct.npy",
+      "same": true
+    },
+    {
+      "item": "static__surface_code.npy",
+      "same": true
+    },
+    {
+      "item": "static__traffic_band.npy",
+      "same": true
+    },
+    {
+      "item": "station_of_section.npy",
+      "same": true
+    },
+    {
+      "item": "weather__below_freezing_days_30d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__days_since_freeze.npy",
+      "same": true
+    },
+    {
+      "item": "weather__freeze_thaw_14d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__freeze_thaw_30d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__freeze_thaw_7d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__heavy_rain_days_30d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__hot_days_30d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__rain_mm_30d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__rain_mm_7d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__snow_mm_30d.npy",
+      "same": true
+    },
+    {
+      "item": "weather__snow_mm_7d.npy",
+      "same": true
+    },
+    {
+      "item": "weeks.npy",
+      "same": true
+    },
+    {
+      "item": "years_with_reports_5y.npy",
+      "same": true
+    },
+    {
+      "item": "events/2009.npy",
+      "same": true
+    },
+    {
+      "item": "events/2010.npy",
+      "same": true
+    },
+    {
+      "item": "events/2011.npy",
+      "same": true
+    },
+    {
+      "item": "events/2012.npy",
+      "same": true
+    },
+    {
+      "item": "events/2013.npy",
+      "same": true
+    },
+    {
+      "item": "events/2014.npy",
+      "same": true
+    },
+    {
+      "item": "events/2015.npy",
+      "same": true
+    },
+    {
+      "item": "events/2016.npy",
+      "same": true
+    },
+    {
+      "item": "events/2017.npy",
+      "same": true
+    },
+    {
+      "item": "events/2018.npy",
+      "same": true
+    },
+    {
+      "item": "events/2019.npy",
+      "same": true
+    },
+    {
+      "item": "events/2020.npy",
+      "same": true
+    },
+    {
+      "item": "events/2021.npy",
+      "same": true
+    },
+    {
+      "item": "events/2022.npy",
+      "same": true
+    },
+    {
+      "item": "events/2023.npy",
+      "same": true
+    },
+    {
+      "item": "events/2024.npy",
+      "same": true
+    },
+    {
+      "item": "events/2025.npy",
+      "same": true
+    },
+    {
+      "item": "events/2026.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2009.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2010.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2011.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2012.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2013.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2014.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2015.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2016.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2017.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2018.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2019.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2020.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2021.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2022.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2023.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2024.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2025.npy",
+      "same": true
+    },
+    {
+      "item": "duplicates/2026.npy",
+      "same": true
+    },
+    {
+      "item": "sections.json",
+      "same": true
+    },
+    {
+      "item": "meta.json (sections, stations, Mondays)",
+      "same": true
+    }
+  ],
+  "validation_scores": [
+    {
+      "model": "B0_rule",
+      "same": true,
+      "precision_top_1pct_old": 0.2762,
+      "precision_top_1pct_new": 0.2762
+    },
+    {
+      "model": "B1_logistic",
+      "same": true,
+      "precision_top_1pct_old": 0.3571,
+      "precision_top_1pct_new": 0.3571
+    },
+    {
+      "model": "M_lightgbm",
+      "same": true,
+      "precision_top_1pct_old": 0.3641,
+      "precision_top_1pct_new": 0.3641
+    },
+    {
+      "model": "M_lightgbm_without_traffic",
+      "same": true,
+      "precision_top_1pct_old": 0.3652,
+      "precision_top_1pct_new": 0.3652
+    }
+  ],
+  "checked": "2026-10-30",
+  "minutes_this_run": 4.1
+}

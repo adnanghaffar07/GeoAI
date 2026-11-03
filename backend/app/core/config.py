@@ -83,6 +83,26 @@ class Settings(BaseSettings):
     # ANALYSIS_MODEL_VERSION names it; "stand-in-0.1" (the test detector) needs no file.
     ai_models_dir: Path = Path("/models")
 
+    # --- Road-risk forecasting (F4; documentation/04-design/forecasting-f4b-design.md) ---
+    # The separate forecast database (never the app database). Empty = forecasting jobs are off.
+    forecast_database_url: str = ""
+    # Named in the User-Agent of weather and city-data requests (api.weather.gov asks for one).
+    forecast_contact_email: str = ""
+    # Largest project area set up for Level 1 risk factors (owner decision F4-D4).
+    forecast_max_area_km2: float = Field(default=500.0, gt=0)
+    # F4e alert rules (E-D1; change in .env, e.g. FORECAST_ALERT_RAIN_MM=30).
+    forecast_alert_freeze_thaw_days: int = Field(default=3, ge=1, le=7)
+    forecast_alert_rain_mm: float = Field(default=25.0, gt=0)
+    forecast_alert_daily_stale_days: int = Field(default=2, ge=1)
+    forecast_alert_weekly_stale_days: int = Field(default=8, ge=1)
+    # CR-006 assistant: a free local model (Ollama). Empty URL = built-in answers only.
+    assistant_url: str = "http://ollama:11434"
+    assistant_model: str = "llama3.2:3b"
+    assistant_timeout_seconds: float = Field(default=60.0, gt=0)
+    assistant_daily_limit: int = Field(default=50, ge=1)
+    # The Chicago model files (forecast-chicago-0.2, fingerprints in f4a-models.json).
+    forecast_models_dir: Path = Path("/ml/forecasting/models/chicago")
+
     @property
     def is_production(self) -> bool:
         return self.app_env is AppEnvironment.PRODUCTION

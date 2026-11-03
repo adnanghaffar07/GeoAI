@@ -33,6 +33,7 @@ from app.schemas.projects import (
     ProjectUpdate,
 )
 from app.services import projects as service
+from app.services import road_risk
 
 org_router = APIRouter(prefix="/organizations/{org_id}/projects", tags=["projects"])
 router = APIRouter(prefix="/projects/{project_id}", tags=["projects"])
@@ -72,7 +73,8 @@ def _detail(db: Session, ctx: ProjectContext) -> ProjectDetail:
         survey_end=project.survey_end,
         partner_reference=project.partner_reference,
         archived_at=project.archived_at,
-        my_permissions=sorted(ctx.permissions),
+        my_permissions=sorted(road_risk.effective_permissions(db, ctx)),
+        road_risk_enabled=road_risk.is_enabled(db, project.id),
     )
 
 

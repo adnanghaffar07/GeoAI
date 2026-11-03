@@ -1,0 +1,852 @@
+{
+  "periods": {
+    "fresh_check": [
+      "2025-08-04",
+      "2026-09-28"
+    ],
+    "year_1_calibration": [
+      "2024-10-07",
+      "2025-09-29"
+    ],
+    "year_2_judging": [
+      "2025-10-06",
+      "2026-09-28"
+    ]
+  },
+  "overlap_with_f2": {
+    "same": true,
+    "items_checked": 31,
+    "different": []
+  },
+  "fresh_check": {
+    "B0_rule": {
+      "all": {
+        "mondays": 61,
+        "rows": 4390719,
+        "base_rate": 0.0455,
+        "precision_at_top_1pct": {
+          "value": 0.2384,
+          "low": 0.2102,
+          "high": 0.2719
+        },
+        "recall_at_top_10pct": {
+          "value": 0.2534,
+          "low": 0.247,
+          "high": 0.2592
+        },
+        "pr_auc": {
+          "value": 0.116,
+          "low": 0.0997,
+          "high": 0.1327
+        },
+        "brier": {
+          "value": 0.0438,
+          "low": 0.0395,
+          "high": 0.0487
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0659,
+        "precision_at_top_1pct": {
+          "value": 0.3421,
+          "low": 0.2924,
+          "high": 0.3917
+        },
+        "recall_at_top_10pct": {
+          "value": 0.2472,
+          "low": 0.2379,
+          "high": 0.2564
+        },
+        "pr_auc": {
+          "value": 0.1503,
+          "low": 0.1309,
+          "high": 0.1641
+        },
+        "brier": {
+          "value": 0.0598,
+          "low": 0.053,
+          "high": 0.0663
+        }
+      },
+      "held_out_areas": {
+        "mondays": 61,
+        "rows": 712663,
+        "base_rate": 0.0504,
+        "precision_at_top_1pct": {
+          "value": 0.2396,
+          "low": 0.2099,
+          "high": 0.2733
+        },
+        "recall_at_top_10pct": {
+          "value": 0.2453,
+          "low": 0.2376,
+          "high": 0.2533
+        },
+        "pr_auc": {
+          "value": 0.1192,
+          "low": 0.1031,
+          "high": 0.1354
+        },
+        "brier": {
+          "value": 0.0479,
+          "low": 0.0435,
+          "high": 0.0528
+        }
+      },
+      "calibration": [
+        [
+          0.0732,
+          0.0214,
+          439072
+        ],
+        [
+          0.0732,
+          0.017,
+          439072
+        ],
+        [
+          0.0732,
+          0.0249,
+          439072
+        ],
+        [
+          0.0732,
+          0.0487,
+          439072
+        ],
+        [
+          0.0732,
+          0.0601,
+          439072
+        ],
+        [
+          0.0732,
+          0.0615,
+          439072
+        ],
+        [
+          0.0732,
+          0.0332,
+          439072
+        ],
+        [
+          0.0732,
+          0.0251,
+          439072
+        ],
+        [
+          0.085,
+          0.0304,
+          439072
+        ],
+        [
+          0.1659,
+          0.1329,
+          439071
+        ]
+      ]
+    },
+    "B1_logistic": {
+      "all": {
+        "mondays": 61,
+        "rows": 4390719,
+        "base_rate": 0.0455,
+        "precision_at_top_1pct": {
+          "value": 0.3148,
+          "low": 0.2802,
+          "high": 0.3547
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3358,
+          "low": 0.3311,
+          "high": 0.3407
+        },
+        "pr_auc": {
+          "value": 0.1826,
+          "low": 0.1633,
+          "high": 0.2012
+        },
+        "brier": {
+          "value": 0.0405,
+          "low": 0.0362,
+          "high": 0.0453
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0659,
+        "precision_at_top_1pct": {
+          "value": 0.4469,
+          "low": 0.3962,
+          "high": 0.4976
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3421,
+          "low": 0.3364,
+          "high": 0.3483
+        },
+        "pr_auc": {
+          "value": 0.2252,
+          "low": 0.2083,
+          "high": 0.2406
+        },
+        "brier": {
+          "value": 0.0567,
+          "low": 0.0499,
+          "high": 0.0632
+        }
+      },
+      "held_out_areas": {
+        "mondays": 61,
+        "rows": 712663,
+        "base_rate": 0.0504,
+        "precision_at_top_1pct": {
+          "value": 0.2892,
+          "low": 0.2537,
+          "high": 0.3287
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3158,
+          "low": 0.3052,
+          "high": 0.326
+        },
+        "pr_auc": {
+          "value": 0.1758,
+          "low": 0.1571,
+          "high": 0.1949
+        },
+        "brier": {
+          "value": 0.0449,
+          "low": 0.0405,
+          "high": 0.0498
+        }
+      },
+      "calibration": [
+        [
+          0.0036,
+          0.0077,
+          439072
+        ],
+        [
+          0.0083,
+          0.0102,
+          439072
+        ],
+        [
+          0.0138,
+          0.014,
+          439072
+        ],
+        [
+          0.0198,
+          0.019,
+          439072
+        ],
+        [
+          0.0264,
+          0.0242,
+          439072
+        ],
+        [
+          0.0339,
+          0.0304,
+          439072
+        ],
+        [
+          0.043,
+          0.0401,
+          439072
+        ],
+        [
+          0.0556,
+          0.0559,
+          439072
+        ],
+        [
+          0.077,
+          0.0815,
+          439072
+        ],
+        [
+          0.1526,
+          0.1724,
+          439071
+        ]
+      ]
+    },
+    "M_lightgbm": {
+      "all": {
+        "mondays": 61,
+        "rows": 4390719,
+        "base_rate": 0.0455,
+        "precision_at_top_1pct": {
+          "value": 0.3165,
+          "low": 0.2842,
+          "high": 0.354
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3491,
+          "low": 0.3442,
+          "high": 0.354
+        },
+        "pr_auc": {
+          "value": 0.1899,
+          "low": 0.1706,
+          "high": 0.2088
+        },
+        "brier": {
+          "value": 0.0403,
+          "low": 0.036,
+          "high": 0.0452
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0659,
+        "precision_at_top_1pct": {
+          "value": 0.4411,
+          "low": 0.3896,
+          "high": 0.4904
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3506,
+          "low": 0.3447,
+          "high": 0.3571
+        },
+        "pr_auc": {
+          "value": 0.2334,
+          "low": 0.217,
+          "high": 0.2486
+        },
+        "brier": {
+          "value": 0.0563,
+          "low": 0.0494,
+          "high": 0.0628
+        }
+      },
+      "held_out_areas": {
+        "mondays": 61,
+        "rows": 712663,
+        "base_rate": 0.0504,
+        "precision_at_top_1pct": {
+          "value": 0.291,
+          "low": 0.2551,
+          "high": 0.3308
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3287,
+          "low": 0.3192,
+          "high": 0.3386
+        },
+        "pr_auc": {
+          "value": 0.1807,
+          "low": 0.1622,
+          "high": 0.1994
+        },
+        "brier": {
+          "value": 0.0448,
+          "low": 0.0404,
+          "high": 0.0497
+        }
+      },
+      "calibration": [
+        [
+          0.0064,
+          0.0053,
+          439072
+        ],
+        [
+          0.0109,
+          0.0096,
+          439072
+        ],
+        [
+          0.0146,
+          0.0131,
+          439072
+        ],
+        [
+          0.0192,
+          0.0181,
+          439072
+        ],
+        [
+          0.0262,
+          0.0229,
+          439072
+        ],
+        [
+          0.0335,
+          0.0296,
+          439072
+        ],
+        [
+          0.045,
+          0.0387,
+          439072
+        ],
+        [
+          0.0624,
+          0.0546,
+          439072
+        ],
+        [
+          0.0923,
+          0.082,
+          439072
+        ],
+        [
+          0.2133,
+          0.1813,
+          439071
+        ]
+      ]
+    },
+    "M_lightgbm_without_traffic": {
+      "all": {
+        "mondays": 61,
+        "rows": 4390719,
+        "base_rate": 0.0455,
+        "precision_at_top_1pct": {
+          "value": 0.317,
+          "low": 0.2834,
+          "high": 0.3544
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3483,
+          "low": 0.3436,
+          "high": 0.3532
+        },
+        "pr_auc": {
+          "value": 0.1903,
+          "low": 0.1711,
+          "high": 0.209
+        },
+        "brier": {
+          "value": 0.0403,
+          "low": 0.036,
+          "high": 0.0452
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0659,
+        "precision_at_top_1pct": {
+          "value": 0.4425,
+          "low": 0.3906,
+          "high": 0.4922
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3508,
+          "low": 0.3449,
+          "high": 0.3574
+        },
+        "pr_auc": {
+          "value": 0.2343,
+          "low": 0.2176,
+          "high": 0.2489
+        },
+        "brier": {
+          "value": 0.0562,
+          "low": 0.0494,
+          "high": 0.0627
+        }
+      },
+      "held_out_areas": {
+        "mondays": 61,
+        "rows": 712663,
+        "base_rate": 0.0504,
+        "precision_at_top_1pct": {
+          "value": 0.2935,
+          "low": 0.2592,
+          "high": 0.3315
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3279,
+          "low": 0.3172,
+          "high": 0.3386
+        },
+        "pr_auc": {
+          "value": 0.1817,
+          "low": 0.1631,
+          "high": 0.2007
+        },
+        "brier": {
+          "value": 0.0448,
+          "low": 0.0404,
+          "high": 0.0496
+        }
+      },
+      "calibration": [
+        [
+          0.0064,
+          0.0053,
+          439072
+        ],
+        [
+          0.0107,
+          0.0096,
+          439072
+        ],
+        [
+          0.0148,
+          0.0133,
+          439072
+        ],
+        [
+          0.0191,
+          0.018,
+          439072
+        ],
+        [
+          0.0262,
+          0.023,
+          439072
+        ],
+        [
+          0.0333,
+          0.0296,
+          439072
+        ],
+        [
+          0.0447,
+          0.039,
+          439072
+        ],
+        [
+          0.062,
+          0.0545,
+          439072
+        ],
+        [
+          0.0916,
+          0.0818,
+          439072
+        ],
+        [
+          0.2118,
+          0.1811,
+          439071
+        ]
+      ]
+    }
+  },
+  "percentage_check": {
+    "raw": {
+      "table": [
+        [
+          0.0046,
+          0.0081,
+          374291
+        ],
+        [
+          0.01,
+          0.0108,
+          374291
+        ],
+        [
+          0.0161,
+          0.0153,
+          374291
+        ],
+        [
+          0.0227,
+          0.0206,
+          374291
+        ],
+        [
+          0.03,
+          0.0261,
+          374291
+        ],
+        [
+          0.0386,
+          0.0334,
+          374291
+        ],
+        [
+          0.0492,
+          0.0448,
+          374291
+        ],
+        [
+          0.0637,
+          0.0618,
+          374291
+        ],
+        [
+          0.0879,
+          0.0883,
+          374290
+        ],
+        [
+          0.1705,
+          0.1839,
+          374290
+        ]
+      ],
+      "largest_gap": 0.0134
+    },
+    "calibrated": {
+      "table": [
+        [
+          0.0062,
+          0.0081,
+          374291
+        ],
+        [
+          0.0095,
+          0.0107,
+          374291
+        ],
+        [
+          0.0132,
+          0.0155,
+          374291
+        ],
+        [
+          0.0168,
+          0.0205,
+          374291
+        ],
+        [
+          0.0233,
+          0.0261,
+          374291
+        ],
+        [
+          0.0294,
+          0.0332,
+          374291
+        ],
+        [
+          0.0376,
+          0.045,
+          374291
+        ],
+        [
+          0.0502,
+          0.0617,
+          374291
+        ],
+        [
+          0.0723,
+          0.0884,
+          374290
+        ],
+        [
+          0.1589,
+          0.1838,
+          374290
+        ]
+      ],
+      "largest_gap": 0.0249
+    },
+    "scores_year_2": {
+      "all": {
+        "mondays": 52,
+        "rows": 3742908,
+        "base_rate": 0.0493,
+        "precision_at_top_1pct": {
+          "value": 0.3391,
+          "low": 0.302,
+          "high": 0.3779
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3399,
+          "low": 0.335,
+          "high": 0.3446
+        },
+        "pr_auc": {
+          "value": 0.1906,
+          "low": 0.1698,
+          "high": 0.2085
+        },
+        "brier": {
+          "value": 0.0436,
+          "low": 0.0388,
+          "high": 0.0486
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0659,
+        "precision_at_top_1pct": {
+          "value": 0.4462,
+          "low": 0.3952,
+          "high": 0.4962
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3434,
+          "low": 0.3375,
+          "high": 0.3497
+        },
+        "pr_auc": {
+          "value": 0.2256,
+          "low": 0.2088,
+          "high": 0.2412
+        },
+        "brier": {
+          "value": 0.0567,
+          "low": 0.0499,
+          "high": 0.0632
+        }
+      },
+      "held_out_areas": {
+        "mondays": 52,
+        "rows": 607516,
+        "base_rate": 0.0544,
+        "precision_at_top_1pct": {
+          "value": 0.3199,
+          "low": 0.2812,
+          "high": 0.3598
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3243,
+          "low": 0.3147,
+          "high": 0.3332
+        },
+        "pr_auc": {
+          "value": 0.1845,
+          "low": 0.1657,
+          "high": 0.2022
+        },
+        "brier": {
+          "value": 0.0482,
+          "low": 0.0435,
+          "high": 0.0533
+        }
+      },
+      "calibration": [
+        [
+          0.0062,
+          0.0081,
+          374291
+        ],
+        [
+          0.0095,
+          0.0107,
+          374291
+        ],
+        [
+          0.0132,
+          0.0155,
+          374291
+        ],
+        [
+          0.0168,
+          0.0205,
+          374291
+        ],
+        [
+          0.0233,
+          0.0261,
+          374291
+        ],
+        [
+          0.0294,
+          0.0332,
+          374291
+        ],
+        [
+          0.0376,
+          0.045,
+          374291
+        ],
+        [
+          0.0502,
+          0.0617,
+          374291
+        ],
+        [
+          0.0723,
+          0.0884,
+          374290
+        ],
+        [
+          0.1589,
+          0.1838,
+          374290
+        ]
+      ]
+    }
+  },
+  "model_v02": {
+    "version": "forecast-chicago-0.2",
+    "made": "2026-10-30",
+    "model": "B1 logistic regression, same settings and inputs as forecast-chicago-0.1",
+    "trained_on_mondays": [
+      "2012-01-02",
+      "2026-09-28"
+    ],
+    "calibrator": "isotonic, fitted on ['2025-10-06', '2026-09-28'] predictions of a B1 trained before that year",
+    "features": [
+      "reports_30d",
+      "reports_90d",
+      "reports_365d",
+      "reports_same_30d_last_year",
+      "reports_7d",
+      "reports_14d",
+      "reports_all_before",
+      "reports_same_season_3y",
+      "years_with_reports_5y",
+      "duplicate_reports_30d",
+      "duplicate_reports_90d",
+      "days_since_last_report",
+      "neighbour_reports_7d",
+      "neighbour_reports_30d",
+      "neighbour_reports_90d",
+      "neighbour_reports_365d",
+      "freeze_thaw_7d",
+      "freeze_thaw_14d",
+      "freeze_thaw_30d",
+      "below_freezing_days_30d",
+      "rain_mm_7d",
+      "rain_mm_30d",
+      "heavy_rain_days_30d",
+      "snow_mm_7d",
+      "snow_mm_30d",
+      "hot_days_30d",
+      "days_since_freeze",
+      "highway_code",
+      "length_m",
+      "lanes",
+      "surface_code",
+      "slope_pct",
+      "low_spot_m",
+      "flood_1pct",
+      "flood_02pct",
+      "probably_bridge",
+      "traffic_band",
+      "heavy_vehicle_band",
+      "bus_routes",
+      "week_of_year",
+      "month",
+      "new_311_system"
+    ],
+    "training_sample": {
+      "positives": 3677547,
+      "negatives": 42750373,
+      "positive_fraction": 0.3143632190104543,
+      "negative_fraction": 0.03143632190104543
+    },
+    "fingerprints": {
+      "b1_logistic_v0.2.joblib": "f658dc120267a4555fce9e5e9a51ec14672a75f5ae70a3810dffcfd2840f1b8f",
+      "b1_calibrator_v0.2.joblib": "2b85686895c532dd35f6dbc709384113df7e4903ae274e448538cd8c7d76b8b4"
+    },
+    "replaces_for_the_app": "forecast-chicago-0.1"
+  },
+  "criteria": {
+    "fresh_b1_beats_b0": true,
+    "fresh_b1_to_b0_ratio": 1.32,
+    "calibrated_largest_gap": 0.0249,
+    "percentages_close": false,
+    "suggestion": "show levels only"
+  }
+}

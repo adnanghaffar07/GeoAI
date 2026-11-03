@@ -4,6 +4,7 @@ Covers AC-02 (projects of another organization are invisible), AC-03 (blocked ce
 project level), AC-09 (drawn and uploaded areas), AC-11 (archived = read-only).
 """
 
+import uuid
 from collections.abc import Callable
 from typing import Any
 
@@ -12,8 +13,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.permissions import PROJECT_ROLE_PERMISSIONS, Perm
+from app.core.permissions import CONDITIONS, PROJECT_ROLE_PERMISSIONS, Perm
 from app.models import ProjectMember
+from app.models.forecast import DEFAULT_VISIBLE_ROLES
 from tests.factories import (
     add_member,
     add_to_project,
@@ -219,6 +221,21 @@ PROJECT_ENDPOINTS: list[tuple[str, str, str, Any]] = [
     ("GET", "/audit-events", Perm.PROJECT_AUDIT_VIEW, None),
     ("GET", "/images", Perm.IMAGE_STATUS_VIEW, None),
     ("POST", "/images", Perm.IMAGE_UPLOAD, "photo"),
+    # Road risk (F4c)
+    ("GET", "/forecast-settings", Perm.RISK_VIEW, None),
+    ("PUT", "/forecast-settings", Perm.RISK_CONFIGURE, {"enabled": False}),
+    ("GET", "/risk", Perm.RISK_VIEW, None),
+    ("GET", "/risk/map", Perm.RISK_VIEW, None),
+    ("GET", "/weather", Perm.RISK_VIEW, None),
+    ("POST", "/risk-runs", Perm.RISK_CONFIGURE, None),
+    ("GET", "/alerts", Perm.ALERT_VIEW, None),
+    ("GET", "/risk/export?format=csv", Perm.RISK_VIEW, None),
+    (
+        "POST",
+        f"/road-sections/{uuid.uuid4()}/inspections",
+        Perm.INSPECTION_PLAN,
+        {"owner_user_id": str(uuid.uuid4()), "planned_date": "2026-11-02"},
+    ),
     ("POST", "/archive", Perm.PROJECT_ARCHIVE, None),  # last: it ends editing
 ]
 
@@ -234,7 +251,14 @@ def test_every_blocked_project_permission_is_refused(
     project = create_project(admin)
     add_to_project(admin, project["id"], person.user.id, role)
     client = sign_in(make_client(), person.email)
-    allowed = PROJECT_ROLE_PERMISSIONS[role]
+    allowed = set(PROJECT_ROLE_PERMISSIONS[role])
+    # F4d: road risk is shown to reviewers, viewers and field collectors only when the project
+    # allows it; by default field collectors are not included.
+    if (
+        CONDITIONS.get((role, Perm.RISK_VIEW)) == "project_setting"
+        and role not in DEFAULT_VISIBLE_ROLES
+    ):
+        allowed.discard(Perm.RISK_VIEW)
 
     for method, path, permission, body in PROJECT_ENDPOINTS:
         url = f"/api/v1/projects/{project['id']}{path}"

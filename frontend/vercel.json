@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://popular-reprint-frequencies-after.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://farms-vcr-purchases-stem.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

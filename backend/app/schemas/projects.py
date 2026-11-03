@@ -121,6 +121,8 @@ class ProjectDetail(ProjectSummary):
     archived_at: datetime | None
     # What the caller may do here; screens show buttons from this list.
     my_permissions: list[str]
+    # F4d: road-risk forecasting is switched on for this project (the tab shows with risk.view).
+    road_risk_enabled: bool = False
 
 
 class ProjectMemberOut(BaseModel):

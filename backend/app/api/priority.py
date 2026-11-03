@@ -124,11 +124,7 @@ def list_inspections(
         if not ctx.has(Perm.INSPECTION_RECORD):
             raise PermissionDeniedError()
         mine = True
-    query = (
-        select(Inspection)
-        .join(Finding, Finding.id == Inspection.finding_id)
-        .where(Finding.project_id == ctx.project.id)
-    )
+    query = select(Inspection).where(Inspection.project_id == ctx.project.id)
     if not include_closed:
         query = query.where(Inspection.status.in_(ACTIVE_INSPECTION_STATES))
     if mine:
@@ -136,15 +132,16 @@ def list_inspections(
     inspections = list(
         db.scalars(query.order_by(Inspection.planned_date, Inspection.id).limit(500))
     )
-    findings = {
-        f.id: f
-        for f in db.scalars(
-            select(Finding).where(Finding.id.in_([i.finding_id for i in inspections]))
-        )
-    }
+    finding_ids = [i.finding_id for i in inspections if i.finding_id is not None]
+    findings = {f.id: f for f in db.scalars(select(Finding).where(Finding.id.in_(finding_ids)))}
     finding_outs = {out.id: out for out in findings_service.to_out(db, list(findings.values()))}
+    roads = service.roads_of(db, inspections)
     items = [
-        AssignedInspection(inspection=out, finding=finding_outs[out.finding_id])
+        AssignedInspection(
+            inspection=out,
+            finding=finding_outs[out.finding_id] if out.finding_id else None,
+            road=roads.get(out.section_id) if out.section_id else None,
+        )
         for out in service.to_out(db, inspections)
     ]
     return Page(items=items, page=1, page_size=len(items), total=len(items))
@@ -195,11 +192,19 @@ def finding_inspections(
 # ------------------------------------------------------------------ one inspection
 def _inspection(
     db: Session, current: CurrentUser, inspection_id: uuid.UUID
-) -> tuple[ProjectContext, Finding, Inspection]:
-    finding_id = db.scalar(select(Inspection.finding_id).where(Inspection.id == inspection_id))
-    if finding_id is None:
+) -> tuple[ProjectContext, Finding | None, Inspection]:
+    """The inspection with its finding (none for a road inspection, F4d)."""
+    row = db.execute(
+        select(Inspection.finding_id, Inspection.project_id).where(Inspection.id == inspection_id)
+    ).first()
+    if row is None:
         raise NotFoundError("Inspection not found.")
-    ctx, finding = _finding(db, current, finding_id)
+    finding_id, project_id = row
+    finding: Finding | None = None
+    if finding_id is not None:
+        ctx, finding = _finding(db, current, finding_id)
+    else:
+        ctx = load_project_context(db, current.user, project_id)
     inspection = db.get(Inspection, inspection_id)
     if inspection is None:
         raise NotFoundError("Inspection not found.")

@@ -1,6 +1,6 @@
 # Screens (P2)
 
-**Status:** Approved by owner and **frozen**, 2026-10-14. **Amended 2026-10-20** (owner approved: simpler navigation for non-technical users). See section 4.
+**Status:** Approved by owner and **frozen**, 2026-10-14. **Amended 2026-10-20** (owner approved: simpler navigation for non-technical users). See section 4. **Amended 2026-10-28** (new screens and survey-area tools). See section 5.
 **Source:** spec section 4 "UI UX screens and behavior", "Visual design", "Accessibility", "Loading and failure states", the suggested dashboard, and the wireframes in section 5.
 
 ## In plain words
@@ -22,7 +22,7 @@ It is a written plan, not the final look. Visual design is done while building e
 - Every page starts with its name and **one plain sentence saying what it is for**.
 - Menu items appear only if the user's permissions allow them. The screens read the user's permission keys from `/auth/me`, so a policy change never needs screen changes.
 - On phones the menu collapses into a button.
-- Inside a project there are **at most six tabs**: Overview, Photos, Findings, Priority (or "My inspections" for field collectors), Reports, Settings.
+- Inside a project there are **at most six tabs**: Overview, Photos, Findings, Priority (or "My inspections" for field collectors), Reports, Settings. *(F4d, 2026-11-02: a seventh tab "Road risk" appears only where road-risk forecasting is on and the person may see it; Settings gains a "Road risk" section for project managers.)*
 
 ### Look
 - Calm, professional, generous spacing.
@@ -234,3 +234,33 @@ Approved by the owner to make the app easier for non-technical users. **No featu
 | Home (was "Overview") | Charts only | "What to do next" first, then "Numbers and charts" |
 | Wording | Technical terms (AI score, weights, scale v1, version N) | Everyday words; project rules kept (AI certainty is never severity; locations are approximate unless confirmed; placeholders marked as samples) |
 | Feedback | Errors only | Short "saved" notices; offline strip; session-ended redirect; crash and app-updated pages; central console logging |
+
+## 5. Changes after the freeze (2026-10-23 to 2026-10-28)
+
+**New screens**
+
+**S22 Request access**: `/request-access` (CR-004)
+- Who: anyone (linked from S01 Sign in: "New organization? → Request access")
+- Main button: **Send request**
+- Shows: organization name, city or agency, your name, work email, phone (optional), "What would you like to use it for?" (optional); no password
+- Special: field errors under each box; a waiting request for the same email or too many requests are explained; success page "Request sent … You cannot sign in yet"
+- Requirements: FR-56
+
+**S23 Organization requests**: `/platform/requests` (CR-004)
+- Who: platform admins only (others see "Page not found"); menu group **Platform** with a yellow count of waiting requests
+- Tabs: **Waiting** (count) · **Approved** · **Rejected**
+- Each request: organization, city or agency, contact, email, phone, note, date sent
+- Actions: **Approve** (optional note) → **Approve and create organization** → one-time invitation link with **Copy** and plain instructions; **Reject** (reason required); Approved tab: who approved and when, **Make a new invite link**
+- States: loading, error with retry, empty message per tab
+- Requirements: FR-57
+
+**Changed screens**
+
+| Screen | Change | Requirement |
+|--------|--------|-------------|
+| Project Overview, Photos, upload page, Home | Yellow card "N photos are waiting for the AI check" with **Check N photos now**; Home "What to do next" item for managers, admins and collectors | FR-60 |
+| Photos, Findings, Review, Reports | "TRIAL MODEL: accuracy not approved" label; an empty trial result reads "Trial model found nothing. Check the photo yourself." | FR-61 |
+| S05 New project / project Settings: Survey area | **Find a road, address or area** (search by name, address, neighbourhood, city or coordinates; results marked Road / Area / Location); **Road width** 20 / 30 / 50 m; "When I choose a place: Add to the area / Replace the area" (defaults to Add after the first choice); map tools **Draw an area** (was "Draw a shape"), **Draw a road**, **Move or adjust**, **Clear all**; a drawn road or a new area is joined to the existing shapes; "Adding to the area…" while the server joins them | FR-58, FR-59 |
+| All screens | Hand (pointer) cursor on everything clickable; "not allowed" cursor on switched-off buttons | — |
+
+Planned, not built: "Road risk" tab and forecast alerts (forecasting track, `04-design/forecasting-roadmap.md` §7.4).

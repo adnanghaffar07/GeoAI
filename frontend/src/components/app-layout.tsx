@@ -1,11 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
-import { Archive, Building2, FolderKanban, History, LayoutDashboard, Menu, Tags, UserRound, Users, X, type LucideIcon } from 'lucide-react'
+import { Archive, Bell, Building2, FolderKanban, History, LayoutDashboard, Menu, Tags, UserRound, Users, X, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
 import { listOrganizationRequests, platformQueryKeys } from '@/api/platform'
+import { alertQueryKeys, listNotifications } from '@/api/road-risk'
 import { useAuth } from '@/auth/auth-context'
 import { BrandName } from '@/components/brand-mark'
+import { PageNav } from '@/components/page-nav'
 import { SignOutButton } from '@/components/sign-out-button'
 import { cn } from '@/lib/utils'
 
@@ -32,6 +34,9 @@ const SETTINGS_ITEMS: NavItem[] = [
   { to: '/settings/retention', label: 'Data retention', icon: Archive, permission: 'org.retention.edit' },
 ]
 
+/** Road-risk alerts (F4e): shown to people who manage a project, with the unread count. */
+const ALERTS_ITEM: NavItem = { to: '/notifications', label: 'Alerts', icon: Bell }
+
 /** Platform admins only (CR-004). */
 const PLATFORM_ITEM: NavItem = { to: '/platform/requests', label: 'Organization requests', icon: Building2 }
 
@@ -46,6 +51,12 @@ const initials = (name: string) =>
 /** App frame: dark left menu on desktop, a top bar with a slide-down menu on phones (ui-screens §1). */
 export function AppLayout() {
   const auth = useAuth()
+  const notifications = useQuery({
+    queryKey: alertQueryKeys.all,
+    queryFn: ({ signal }) => listNotifications(signal),
+    enabled: Boolean(auth.me),
+    refetchInterval: 60_000,
+  })
   const location = useLocation()
   const [menuOpen, setMenuOpen] = useState(false)
   const allowed = (item: NavItem) => !item.permission || auth.can(item.permission)
@@ -85,7 +96,7 @@ export function AppLayout() {
       <aside
         id="main-menu"
         className={cn(
-          'w-full flex-col gap-7 bg-asphalt-900 px-4 pt-4 pb-5 text-asphalt-200 md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto md:pt-6',
+          'w-full flex-col gap-7 bg-gradient-to-b from-asphalt-900 to-asphalt-950 px-4 pt-4 pb-5 text-asphalt-200 md:sticky md:top-0 md:flex md:h-screen md:w-64 md:shrink-0 md:overflow-y-auto md:pt-6',
           menuOpen ? 'flex' : 'hidden',
         )}
       >
@@ -97,6 +108,9 @@ export function AppLayout() {
           {mainItems.map((item) => (
             <MenuLink key={item.to} item={item} onNavigate={() => setMenuOpen(false)} />
           ))}
+          {notifications.data?.manages_projects && (
+            <MenuLink item={ALERTS_ITEM} badge={notifications.data.unread_count} onNavigate={() => setMenuOpen(false)} />
+          )}
           {settingsItems.length > 0 && (
             <>
               <p className="mt-5 mb-1 px-3 text-xs font-semibold tracking-wide text-asphalt-300 uppercase">Organization settings</p>
@@ -126,6 +140,7 @@ export function AppLayout() {
 
       <main id="main" className="min-w-0 flex-1 px-4 py-8 sm:px-6 md:px-10 md:py-10">
         <div key={location.pathname.split('/').slice(0, 3).join('/')} className="page-enter mx-auto max-w-6xl">
+          <PageNav />
           <Outlet />
         </div>
       </main>

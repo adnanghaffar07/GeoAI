@@ -20,7 +20,7 @@ RUN pip install --index-url https://download.pytorch.org/whl/cpu "torch==2.14.1"
 # Install dependencies first, so this layer is cached until pyproject.toml changes.
 COPY pyproject.toml ./
 RUN mkdir app && touch app/__init__.py \
-    && pip install -e ".[dev]"
+    && pip install -e ".[dev,forecast]"
 
 COPY . .
 

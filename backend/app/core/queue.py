@@ -40,3 +40,17 @@ def send_report_job(report_id: uuid.UUID) -> None:
     from app.workers.celery_app import celery_app  # imported here: only needed when sending
 
     celery_app.send_task("reports.generate", args=[str(report_id)], retry=False)
+
+
+def send_forecast_setup(settings_id: uuid.UUID) -> None:
+    """Ask the worker to set up road-risk forecasting for one project (F4b/F4c)."""
+    from app.workers.celery_app import celery_app  # imported here: only needed when sending
+
+    celery_app.send_task("forecast.setup_area", args=[str(settings_id)], retry=False)
+
+
+def send_forecast_tick() -> None:
+    """Ask the worker to run the forecasting jobs that are due now (F4c "update now")."""
+    from app.workers.celery_app import celery_app  # imported here: only needed when sending
+
+    celery_app.send_task("forecast.tick", retry=False)

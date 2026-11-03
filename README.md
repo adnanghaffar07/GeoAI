@@ -80,6 +80,13 @@ The app analyses photos with the **TEST DETECTOR** (made-up results) unless you 
 
 Notes: about 3-4 seconds per photo on a normal PC; one photo at a time; the worker needs about 2 GB of memory (Docker Desktop → Settings → Resources: give Docker at least 6 GB). If the model file is missing or wrong, "Check new photos" says so and nothing is queued.
 
+## Live demo (temporary)
+
+- Screens: https://geo-ai-liart.vercel.app (Vercel, built from the `frontend` folder of the `development` branch). `frontend/vercel.json` forwards `/api` to the backend.
+- Backend: this computer (Docker), reached through a Cloudflare quick tunnel: `cloudflared tunnel --url http://localhost:8000`. The tunnel address changes every time it starts: put the new address in `frontend/vercel.json` and push.
+- `.env` for the live demo: `PUBLIC_APP_URL=https://geo-ai-liart.vercel.app` (exactly, no slash at the end) and `SESSION_COOKIE_SECURE=true`.
+- Works only while this computer, Docker and the tunnel are running. Demo data only. Full steps: `documentation/GeoInfraLens AI - Technical Document and User Manual.docx` §14.
+
 ## Troubleshooting
 
 - **`Set POSTGRES_USER in .env`**: you have not created `.env`. Run `copy .env.example .env`.

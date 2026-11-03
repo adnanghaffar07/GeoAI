@@ -1,0 +1,16 @@
+# Area: City of Naperville, Illinois. Level 1 only (risk factors): no pothole history yet (F3 waits for PI-21).
+# Trial area for the any-area pipeline (owner decision D2, 2026-10-29).
+name: City of Naperville
+schema: naperville
+level: 1
+# projected_crs is worked out from the area's centre (NAD83 / UTM zone 16N here)
+
+boundary:
+  # The city boundary in OpenStreetMap: a city-level boundary named Naperville inside the State of Illinois.
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"="Naperville"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Illinois"]'
+
+weather_stations: auto                      # chosen by `forecasting.run area-check` (rule D3 in config/sources.yaml)
+
+traffic_counts: idot                        # Illinois traffic counts (regional source in config/sources.yaml)
+# No bus routes configured (Pace suburban buses are not published in a form we load yet): shown as missing.

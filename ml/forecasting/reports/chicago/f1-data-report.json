@@ -1,0 +1,818 @@
+{
+  "report": {
+    "loaded_at": "2026-10-29 15:07:39.593204+00",
+    "osm_extract_date": "2026-10-28T21:47:28Z",
+    "load_details": {
+      "counts": {
+        "cook_pci.rows": 44090,
+        "cook_pci.loaded": 44090,
+        "USW00014819.days": 5866,
+        "USW00094846.days": 5868,
+        "bus_routes.routes": 127,
+        "flood_zones.polygons": 3159,
+        "traffic_counts.lines": 4655,
+        "potholes_current.rows": 429231,
+        "potholes_current.loaded": 429231,
+        "USW00014819.PRCP.missing": 9,
+        "USW00014819.SNOW.missing": 5658,
+        "USW00014819.SNWD.missing": 5011,
+        "potholes_historical.rows": 560458,
+        "potholes_historical.loaded": 559071,
+        "potholes_current.duplicates": 135467,
+        "potholes_historical.duplicates": 164349,
+        "potholes_current.legacy_records": 4,
+        "potholes_current.location_missing": 1878,
+        "potholes_historical.location_missing": 871,
+        "USW00014819.TMAX.rejected_quality_flag": 4,
+        "USW00014819.TMIN.rejected_quality_flag": 3,
+        "USW00094846.SNOW.rejected_quality_flag": 1,
+        "USW00094846.SNWD.rejected_quality_flag": 2,
+        "potholes_historical.skipped_repeated_id": 1387,
+        "potholes_historical.location_outside_chicago": 6
+      },
+      "sections": {
+        "osm_ways": 35087,
+        "sections_built": 73445,
+        "ways_missing_nodes": 0,
+        "pieces_shorter_than_min": 10023,
+        "pieces_shorter_than_min_km": 160.4,
+        "pieces_between_intersections": 61463,
+        "sections_outside_city_removed": 1466
+      },
+      "static_layers": {
+        "soil": {
+          "kept": false,
+          "rule": "drop if > 0.8",
+          "missing_share": 0.935
+        },
+        "flood": true,
+        "traffic": {
+          "busy_bands": [
+            5000,
+            15000,
+            30000
+          ],
+          "max_count_year_for_training": null
+        },
+        "elevation": true,
+        "bus_routes": true
+      },
+      "held_out_community_areas": [
+        1,
+        5,
+        6,
+        19,
+        28,
+        34,
+        64,
+        70,
+        72,
+        75
+      ]
+    },
+    "sections": {
+      "count": 71979,
+      "km": 6316.2,
+      "length_m_min_median_max": [
+        "30.0",
+        "100.0",
+        "130.0"
+      ],
+      "by_highway": [
+        [
+          "residential",
+          46759,
+          "4354.8"
+        ],
+        [
+          "secondary",
+          12947,
+          "946.0"
+        ],
+        [
+          "tertiary",
+          8509,
+          "724.0"
+        ],
+        [
+          "primary",
+          2276,
+          "167.0"
+        ],
+        [
+          "unclassified",
+          1289,
+          "111.6"
+        ],
+        [
+          "secondary_link",
+          116,
+          "7.1"
+        ],
+        [
+          "primary_link",
+          56,
+          "4.2"
+        ],
+        [
+          "tertiary_link",
+          27,
+          "1.5"
+        ]
+      ],
+      "with_lanes_tag_pct": "20.3",
+      "with_surface_tag_pct": "34.4",
+      "held_out_areas": [
+        [
+          1,
+          "Rogers Park",
+          717
+        ],
+        [
+          5,
+          "North Center",
+          773
+        ],
+        [
+          6,
+          "Lake View",
+          1220
+        ],
+        [
+          19,
+          "Belmont Cragin",
+          1426
+        ],
+        [
+          28,
+          "Near West Side",
+          2377
+        ],
+        [
+          34,
+          "Armour Square",
+          380
+        ],
+        [
+          64,
+          "Clearing",
+          802
+        ],
+        [
+          70,
+          "Ashburn",
+          1736
+        ],
+        [
+          72,
+          "Beverly",
+          1100
+        ],
+        [
+          75,
+          "Morgan Park",
+          1152
+        ]
+      ]
+    },
+    "potholes": {
+      "by_source": [
+        [
+          "potholes_current",
+          429231,
+          135467,
+          1878,
+          0,
+          "2018-12-18",
+          "2026-10-28"
+        ],
+        [
+          "potholes_historical",
+          559071,
+          164349,
+          871,
+          6,
+          "2009-01-12",
+          "2018-12-17"
+        ]
+      ],
+      "by_year_before_test": [
+        [
+          "2009",
+          3,
+          0,
+          3
+        ],
+        [
+          "2010",
+          608,
+          57,
+          549
+        ],
+        [
+          "2011",
+          80158,
+          17418,
+          62630
+        ],
+        [
+          "2012",
+          43237,
+          4552,
+          38627
+        ],
+        [
+          "2013",
+          69568,
+          16967,
+          52534
+        ],
+        [
+          "2014",
+          132145,
+          62268,
+          69731
+        ],
+        [
+          "2015",
+          59676,
+          12055,
+          47511
+        ],
+        [
+          "2016",
+          51423,
+          13494,
+          37821
+        ],
+        [
+          "2017",
+          61765,
+          19807,
+          41874
+        ],
+        [
+          "2018",
+          60773,
+          17833,
+          42831
+        ],
+        [
+          "2019",
+          84097,
+          40199,
+          43211
+        ],
+        [
+          "2020",
+          39967,
+          7044,
+          32779
+        ],
+        [
+          "2021",
+          38557,
+          6980,
+          31391
+        ],
+        [
+          "2022",
+          48041,
+          14307,
+          33576
+        ]
+      ],
+      "test_period_total_only": 218284
+    },
+    "system_switch": {
+      "before": {
+        "from": "2016-12-18",
+        "to": "2018-12-18",
+        "usable_per_week": 822.9,
+        "duplicate_pct": 30.5
+      },
+      "after": {
+        "from": "2018-12-18",
+        "to": "2020-12-18",
+        "usable_per_week": 718.0,
+        "duplicate_pct": 38.4
+      },
+      "after_to_before_ratio": 0.87
+    },
+    "coverage": {
+      "usable_reports_before_test": 535068,
+      "within_20m_of_a_section": 484769
+    },
+    "weather": {
+      "stations": [
+        [
+          "USW00014819",
+          "2010-10-01",
+          "2022-07-03",
+          4292,
+          "0.1",
+          "0.1",
+          "0.2",
+          "95.2"
+        ],
+        [
+          "USW00094846",
+          "2010-10-01",
+          "2022-07-03",
+          4294,
+          "0.0",
+          "0.0",
+          "0.0",
+          "0.0"
+        ]
+      ],
+      "freeze_thaw_days_per_winter": [
+        [
+          "USW00014819",
+          "2010",
+          54
+        ],
+        [
+          "USW00014819",
+          "2011",
+          59
+        ],
+        [
+          "USW00014819",
+          "2012",
+          75
+        ],
+        [
+          "USW00014819",
+          "2013",
+          54
+        ],
+        [
+          "USW00014819",
+          "2014",
+          58
+        ],
+        [
+          "USW00014819",
+          "2015",
+          49
+        ],
+        [
+          "USW00014819",
+          "2016",
+          46
+        ],
+        [
+          "USW00014819",
+          "2017",
+          70
+        ],
+        [
+          "USW00014819",
+          "2018",
+          77
+        ],
+        [
+          "USW00014819",
+          "2019",
+          72
+        ],
+        [
+          "USW00014819",
+          "2020",
+          64
+        ],
+        [
+          "USW00014819",
+          "2021",
+          60
+        ],
+        [
+          "USW00094846",
+          "2010",
+          54
+        ],
+        [
+          "USW00094846",
+          "2011",
+          67
+        ],
+        [
+          "USW00094846",
+          "2012",
+          82
+        ],
+        [
+          "USW00094846",
+          "2013",
+          58
+        ],
+        [
+          "USW00094846",
+          "2014",
+          60
+        ],
+        [
+          "USW00094846",
+          "2015",
+          61
+        ],
+        [
+          "USW00094846",
+          "2016",
+          57
+        ],
+        [
+          "USW00094846",
+          "2017",
+          81
+        ],
+        [
+          "USW00094846",
+          "2018",
+          78
+        ],
+        [
+          "USW00094846",
+          "2019",
+          74
+        ],
+        [
+          "USW00094846",
+          "2020",
+          61
+        ],
+        [
+          "USW00094846",
+          "2021",
+          63
+        ]
+      ]
+    },
+    "cook_county_pci": {
+      "by_township": [
+        [
+          "Barrington",
+          1705,
+          "312.9",
+          1705,
+          "43.1",
+          "61.5",
+          "77.5"
+        ],
+        [
+          "Bloom",
+          5574,
+          "696.9",
+          5574,
+          "38.2",
+          "60.3",
+          "90.2"
+        ],
+        [
+          "Lake",
+          21263,
+          "1957.6",
+          21263,
+          "40.2",
+          "58.3",
+          "81.4"
+        ],
+        [
+          "Palos",
+          3237,
+          "462.3",
+          3237,
+          "43.3",
+          "60.6",
+          "79.8"
+        ],
+        [
+          "Stickney",
+          2254,
+          "255.9",
+          2254,
+          "44.0",
+          "60.1",
+          "79.1"
+        ],
+        [
+          "Thornton",
+          10057,
+          "1086.3",
+          10057,
+          "42.8",
+          "60.5",
+          "90.2"
+        ]
+      ],
+      "pieces_inside_chicago": 21108
+    },
+    "static_layers": {
+      "sections": 71979,
+      "coverage": [
+        [
+          "Elevation (middle)",
+          71979,
+          100.0
+        ],
+        [
+          "Slope",
+          71979,
+          100.0
+        ],
+        [
+          "Low spot",
+          71976,
+          100.0
+        ],
+        [
+          "Flood zone answered",
+          71979,
+          100.0
+        ],
+        [
+          "In 1% flood zone",
+          303,
+          0.4
+        ],
+        [
+          "In 0.2% flood zone",
+          155,
+          0.2
+        ],
+        [
+          "Soil drainage class",
+          0,
+          0.0
+        ],
+        [
+          "Soil mapped as urban land",
+          70240,
+          97.6
+        ],
+        [
+          "Traffic count (any year)",
+          24899,
+          34.6
+        ],
+        [
+          "Traffic count used in F2 (any year, as a busy-ness level)",
+          24899,
+          34.6
+        ],
+        [
+          "Heavy-vehicle count",
+          24899,
+          34.6
+        ],
+        [
+          "Bus routes answered",
+          71979,
+          100.0
+        ],
+        [
+          "On at least one bus route",
+          16710,
+          23.2
+        ]
+      ],
+      "ranges": [
+        [
+          "slope %",
+          "0.00",
+          "0.15",
+          "1.15",
+          "37.08"
+        ],
+        [
+          "vehicles per day",
+          "20",
+          "11700",
+          "27200",
+          "178300"
+        ],
+        [
+          "elevation m",
+          "170.6",
+          "182.1",
+          "195.6",
+          "207.9"
+        ],
+        [
+          "low spot m",
+          "-13.26",
+          "0.00",
+          "0.54",
+          "9.48"
+        ]
+      ],
+      "traffic_years": [
+        [
+          "2017",
+          5
+        ],
+        [
+          "2018",
+          825
+        ],
+        [
+          "2022",
+          16803
+        ],
+        [
+          "2023",
+          500
+        ],
+        [
+          "2024",
+          2
+        ],
+        [
+          "2025",
+          6764
+        ]
+      ],
+      "soil_classes": [
+        [
+          "(none)",
+          71979
+        ]
+      ],
+      "used": {
+        "soil": {
+          "kept": false,
+          "rule": "drop if > 0.8",
+          "missing_share": 0.935
+        },
+        "flood": true,
+        "traffic": {
+          "busy_bands": [
+            5000,
+            15000,
+            30000
+          ],
+          "max_count_year_for_training": null
+        },
+        "elevation": true,
+        "bus_routes": true
+      },
+      "max_count_year": 9999
+    }
+  },
+  "sources": {
+    "bus_routes": {
+      "bytes": 1901711,
+      "chicago_terms_confirmed_at": "2026-10-29T14:30:27+00:00",
+      "columns": null,
+      "downloaded_at": "2026-10-29T14:30:27+00:00",
+      "file": "bus_routes.geojson",
+      "licence": "City of Chicago Data Portal Terms of Use: public data provided \"as is\"; the City may require users to name the source and version of a dataset. Not republished by GeoInfraLens; used for research only.",
+      "query": null,
+      "rows": null,
+      "sha256": "cb9c74d8a38282000d29a6d0f5831bf01bd7ce917ab344a3444dadbc0c746acd",
+      "url": "https://data.cityofchicago.org/resource/6uva-a5ei.geojson?$limit=5000"
+    },
+    "community_areas": {
+      "bytes": 2072102,
+      "chicago_terms_confirmed_at": "2026-10-28T21:47:41+00:00",
+      "columns": null,
+      "downloaded_at": "2026-10-28T21:47:41+00:00",
+      "file": "community_areas.geojson",
+      "licence": "City of Chicago Data Portal Terms of Use: public data provided \"as is\"; the City may require users to name the source and version of a dataset. Not republished by GeoInfraLens; used for research only.",
+      "query": null,
+      "rows": null,
+      "sha256": "3468ac30bd813fa17d755b12a911a43c44f251465604bbe8e1ca1b1b540dca66",
+      "url": "https://data.cityofchicago.org/resource/igwz-8jzy.geojson?$limit=1000"
+    },
+    "cook_county_pci": {
+      "bytes": 28837940,
+      "columns": null,
+      "downloaded_at": "2026-10-29T13:38:57+00:00",
+      "file": "cook_county_pci.geojson",
+      "licence": "Cook County DOTH map service; no licence or terms stated on the service (checked 2026-10-29). Internal checking only until CCDOTH gives written permission.",
+      "query": null,
+      "rows": 44090,
+      "sha256": "a4fc51a2e4e1d3bd8739ebc9a4b0e5fd423110ce6e6ae16d1c5669cbfddb2913",
+      "url": "https://gis12.cookcountyil.gov/arcgis/rest/services/Pavement_Condition_Index/MapServer"
+    },
+    "elevation": {
+      "bytes": 4196537,
+      "columns": null,
+      "downloaded_at": "2026-10-29T14:28:51+00:00",
+      "file": "elevation_samples.csv",
+      "licence": "USGS 3D Elevation Program (3DEP), US government public domain",
+      "query": null,
+      "rows": 135810,
+      "sha256": "591c71fd6664fb6e4c13fac5d018b75badfe82e1093aebed9bda8784e5a12e58",
+      "url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer"
+    },
+    "flood_zones": {
+      "bytes": 2647102,
+      "columns": null,
+      "downloaded_at": "2026-10-29T15:03:18+00:00",
+      "file": "flood_zones.geojson",
+      "licence": "FEMA National Flood Hazard Layer (effective maps), US government public data; for information, not insurance decisions",
+      "query": null,
+      "rows": 3159,
+      "sha256": "497c7ca9ef4d106f81220cc2be4d390df2f07a027a53ce7dcc7028184cdb5ad3",
+      "url": "https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28"
+    },
+    "osm_roads": {
+      "bytes": 33927688,
+      "columns": null,
+      "downloaded_at": "2026-10-28T21:48:51+00:00",
+      "file": "osm_roads.json",
+      "licence": "OpenStreetMap contributors, ODbL 1.0 (credit; share-alike for derived databases)",
+      "query": "[out:json][timeout:900];\narea[\"wikidata\"=\"Q1297\"][\"boundary\"=\"administrative\"]->.city;\nway(area.city)[\"highway\"~\"^(primary|secondary|tertiary|residential|unclassified|primary_link|secondary_link|tertiary_link)$\"][\"area\"!=\"yes\"][\"access\"!~\"^(private|no)$\"];\nout body;\n>;\nout skel qt;\n",
+      "rows": null,
+      "sha256": "3f131d59622549b1da81083d36155d24158906f6ce661942017851553ba14efa",
+      "url": "https://overpass-api.de/api/interpreter"
+    },
+    "potholes_current": {
+      "bytes": 55179899,
+      "chicago_terms_confirmed_at": "2026-10-28T21:47:40+00:00",
+      "columns": [
+        "sr_number",
+        "sr_type",
+        "sr_short_code",
+        "created_date",
+        "status",
+        "duplicate",
+        "legacy_record",
+        "latitude",
+        "longitude"
+      ],
+      "downloaded_at": "2026-10-28T21:47:40+00:00",
+      "file": "potholes_current.csv",
+      "licence": "City of Chicago Data Portal Terms of Use: public data provided \"as is\"; the City may require users to name the source and version of a dataset. Not republished by GeoInfraLens; used for research only.",
+      "query": "sr_short_code = 'PHF' AND created_date >= '2018-12-18T00:00:00'",
+      "rows": 429231,
+      "sha256": "eebc4bf604549ae218f344e9be98852bfa5e10439ca1e4c37a47d32b7f9e1643",
+      "url": "https://data.cityofchicago.org/resource/v6vf-nfxy.csv"
+    },
+    "potholes_historical": {
+      "bytes": 58353982,
+      "chicago_terms_confirmed_at": "2026-10-28T21:41:22+00:00",
+      "columns": [
+        "service_request_number",
+        "creation_date",
+        "status",
+        "type_of_service_request",
+        "latitude",
+        "longitude"
+      ],
+      "downloaded_at": "2026-10-28T21:41:22+00:00",
+      "file": "potholes_historical.csv",
+      "licence": "City of Chicago Data Portal Terms of Use: public data provided \"as is\"; the City may require users to name the source and version of a dataset. Not republished by GeoInfraLens; used for research only.",
+      "query": "creation_date < '2018-12-18T00:00:00'",
+      "rows": 560458,
+      "sha256": "4e4626e7c0816adb79e2facfa3d1fea7ae478984e9d4047c7f02a32b759762a4",
+      "url": "https://data.cityofchicago.org/resource/7as2-ds3y.csv"
+    },
+    "soils": {
+      "bytes": 17087893,
+      "columns": null,
+      "downloaded_at": "2026-10-29T14:30:22+00:00",
+      "file": "soils.json",
+      "licence": "USDA NRCS SSURGO via Soil Data Access, US government public domain",
+      "query": null,
+      "rows": 7370,
+      "sha256": "7fdd22308ece74eb4ca423ff11245a21f57253899028705c41b4a7d14e9bc294",
+      "url": "https://SDMDataAccess.sc.egov.usda.gov/Tabular/post.rest"
+    },
+    "traffic_counts": {
+      "bytes": 4814674,
+      "columns": null,
+      "downloaded_at": "2026-10-29T14:29:56+00:00",
+      "file": "traffic_counts.geojson",
+      "licence": "IDOT Traffic Count Program (State of Illinois); no licence stated on the service (checked 2026-10-29), research use",
+      "query": null,
+      "rows": 4655,
+      "sha256": "d2bac5fef81b54f116eb5ea15e7bbb1a4de478af9d956c69d6aee97800cc1fe3",
+      "url": "https://services2.arcgis.com/aIrBD8yn1TDTEXoz/ArcGIS/rest/services/ADT_COMP_2020Dissolved/FeatureServer"
+    },
+    "weather_USW00014819": {
+      "bytes": 2763980,
+      "columns": null,
+      "downloaded_at": "2026-10-28T21:47:43+00:00",
+      "file": "weather_USW00014819.csv",
+      "licence": "NOAA GHCN-Daily, CC0 public domain (attribution requested)",
+      "query": null,
+      "rows": 10763,
+      "sha256": "54dc454b808f67f000c5dc6c95370bd9ccf2bea2b46e28fa657c6da528c33572",
+      "url": "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/USW00014819.csv"
+    },
+    "weather_USW00094846": {
+      "bytes": 10963778,
+      "columns": null,
+      "downloaded_at": "2026-10-28T21:47:43+00:00",
+      "file": "weather_USW00094846.csv",
+      "licence": "NOAA GHCN-Daily, CC0 public domain (attribution requested)",
+      "query": null,
+      "rows": 29232,
+      "sha256": "004884c899642fac03c00bebdfafc7a2e21ee3d74dbb2d369e1bdabc4589d603",
+      "url": "https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/USW00094846.csv"
+    }
+  }
+}

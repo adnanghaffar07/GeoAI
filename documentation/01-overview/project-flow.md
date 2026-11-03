@@ -30,11 +30,14 @@ Roles exist at **two levels**:
 
 Every request is checked on the server against both. This includes image downloads, job status, and exports.
 
+*(Added 2026-10-28, CR-004)* Above all organizations is the **platform admin**, given only by a server command. New organizations send **Request access** from the sign-in page; a platform admin approves (the organization and an admin invitation link are created) or rejects.
+
 ## 3. End-to-end workflow
 
 | Step | User action | System behavior |
 |------|-------------|-----------------|
-| 1. Create project | Manager draws or uploads the survey boundary, picks finding types, team, and dates | Saves the boundary and configuration; shows an empty project with an upload action |
+| 0. Join *(CR-004)* | Organization requests access; platform admin approves; contact opens the invitation link | Creates the organization, its starting settings and the first admin account |
+| 1. Create project | Manager sets the survey area (search a road, address or area; draw areas or roads; or upload a file), picks finding types, team, and dates | Saves the boundary and configuration; roads become strips of the chosen width and all parts are joined into one valid area |
 | 2. Submit photos | Collector selects photos and confirms consent and location | Validates files, extracts EXIF metadata and GPS, flags missing GPS, shows per-file progress, skips exact duplicates |
 | 3. Analyze | Manager or collector starts analysis | Creates background jobs; shows queued / processing / completed / failed |
 | 4. Generate findings | User opens the results | Stores candidate type, confidence, bounding box, source location, model version |

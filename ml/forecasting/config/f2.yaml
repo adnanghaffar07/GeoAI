@@ -1,0 +1,27 @@
+# Forecasting F2 settings (plan: documentation/04-design/forecasting-f2-plan.md). Periods, target and measures come from
+# acceptance-thresholds.yaml (frozen F0 rules); this file only holds how the learning table and models are built.
+version: 1
+seed: 20261029
+
+neighbour_distance_m: 200
+snow_station: USW00094846                 # O'Hare: Midway misses 95% of snowfall (decision 2026-10-29)
+traffic_bands: [5000, 15000, 30000]       # vehicles per day: quiet / medium / busy / very busy (decision B)
+heavy_vehicle_bands: [250, 1000, 2500]    # heavy vehicles per day, same idea
+
+purge_days: 30                            # a row is used only if its 30-day answer window ends before the next period starts
+
+training_sample:                          # keeps the training rows in laptop memory; weights keep probabilities right
+  max_rows: 2500000
+  b1_max_rows: 1000000                    # B1 is a linear model: a random million rows is plenty
+  negative_fraction: 0.10                 # starting point; both fractions shrink together if max_rows would be exceeded
+
+lightgbm_grid:                            # small fixed list; chosen on validation PR-AUC only
+  - {num_leaves: 31, learning_rate: 0.05, n_estimators: 400, min_child_samples: 200}
+  - {num_leaves: 63, learning_rate: 0.05, n_estimators: 600, min_child_samples: 200}
+  - {num_leaves: 15, learning_rate: 0.1, n_estimators: 300, min_child_samples: 200}
+  # improvement round 2026-10-29: slower learning, more trees, some randomness between trees
+  - {num_leaves: 31, learning_rate: 0.03, n_estimators: 1200, min_child_samples: 500, colsample_bytree: 0.8, subsample: 0.8, subsample_freq: 1}
+  - {num_leaves: 63, learning_rate: 0.02, n_estimators: 1500, min_child_samples: 1000, colsample_bytree: 0.7, subsample: 0.8, subsample_freq: 1}
+
+traffic_features: [traffic_band, heavy_vehicle_band]   # removed for the "without traffic" model
+bootstrap_ap_bins: 2000

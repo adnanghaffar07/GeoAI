@@ -19,6 +19,7 @@ from app.api import (
     priority,
     projects,
     reports,
+    road_risk,
 )
 
 v1_router = APIRouter(prefix="/v1")
@@ -40,6 +41,8 @@ v1_router.include_router(priority.finding_router)
 v1_router.include_router(priority.inspection_router)
 v1_router.include_router(reports.project_router)
 v1_router.include_router(reports.report_router)
+v1_router.include_router(road_risk.project_router)
+v1_router.include_router(road_risk.notification_router)
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router)

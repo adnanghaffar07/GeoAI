@@ -1,0 +1,64 @@
+# Forecasting: NATIONAL data sources, used for every area (plan: documentation/04-design/forecasting-any-area-plan.md).
+# Everything about one place (its 311 data, boundary, stations, bus routes, ...) is in config/areas/<area>.yaml.
+# Rules for what we do with the data: documentation/04-design/forecasting-f0-ground-rules.md (approved and frozen 2026-10-28).
+# If a service renames a column or a dataset, the download stops with a clear message; fix the name here, never in code.
+
+weather:
+  url_template: https://www.ncei.noaa.gov/data/global-historical-climatology-network-daily/access/{station}.csv
+  station_list_url: https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-stations.txt
+  inventory_url: https://www.ncei.noaa.gov/pub/data/ghcn/daily/ghcnd-inventory.txt
+  licence: NOAA GHCN-Daily, CC0 public domain (attribution requested)
+  start_date: 2010-10-01                    # history for the first 2011 inputs
+
+# Owner decision D3 (2026-10-29): how weather stations are chosen for an area whose file says `weather_stations: auto`.
+station_choice:
+  max_distance_km: 30                       # from the area's edge (its box)
+  min_complete_share: 0.9                   # at least 90% of days with max/min temperature, and with rain
+  years: 10                                 # measured over the last 10 full years
+  max_stations: 3                           # the nearest stations that pass; each section uses its nearest one
+  max_candidates: 8                         # at most this many station files are downloaded to measure completeness
+
+osm:
+  overpass_url: https://overpass-api.de/api/interpreter
+  licence: OpenStreetMap contributors, ODbL 1.0 (credit; share-alike for derived databases)
+  timeout_s: 900
+
+# ---------- F1b static layers (approved 2026-10-29; plan: documentation/04-design/forecasting-f1b-plan.md) ----------
+# Each is optional: if one fails to download, the others still load and the report shows what is missing.
+elevation:
+  url: https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer
+  batch_size: 500                       # points per request; start, middle and end of every section
+  licence: USGS 3D Elevation Program (3DEP), US government public domain
+
+flood_zones:
+  # FEMA's server answered HTTP 500 to one big request (2026-10-29), so we ask for small squares, only the zones
+  # that matter (1% and 0.2%; not "minimal hazard", which covers most of the city), with shapes simplified to ~5 m.
+  layer_url: https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28
+  where: "SFHA_TF = 'T' OR ZONE_SUBTY LIKE '%0.2 PCT%'"
+  out_fields: [OBJECTID, FLD_ZONE, ZONE_SUBTY, SFHA_TF, DFIRM_ID]
+  tile_deg: 0.05
+  max_allowable_offset_deg: 0.00005     # about 5 m
+  licence: FEMA National Flood Hazard Layer (effective maps), US government public data; for information, not insurance decisions
+
+soils:
+  url: https://SDMDataAccess.sc.egov.usda.gov/Tabular/post.rest
+  tile_deg: 0.05                        # the area's box is queried in small squares
+  drop_if_missing_share_above: 0.8      # F1b rule: drop soil if more than 80% of sections get no drainage class
+  licence: USDA NRCS SSURGO via Soil Data Access, US government public domain
+
+matching: {distance_m: 15, max_angle_deg: 20}   # a count line or bus route belongs to a section if this close and parallel
+
+# ---------- State or regional sources: an area file names the ones it uses (e.g. `traffic_counts: idot`) ----------
+regional:
+  idot:                                 # Illinois only
+    base_url: https://services2.arcgis.com/aIrBD8yn1TDTEXoz/ArcGIS/rest/services/ADT_COMP_2020Dissolved/FeatureServer
+    layers: {0: AADT}
+    out_fields: [OBJECTID, ROAD_NAME, AADT, AADT_YR, HCV_AADT, HCV_AADTYR]
+    page_size: 1000
+    limit_to_area_box: true
+    tag_field: layer_name
+    # Owner decision 2026-10-29 (option B): most counts are dated 2022-2025, so F2 uses the latest count of any year as a
+    # "how busy is this road" level (bands), and trains with and without traffic to check it does not leak the future.
+    max_count_year: null
+    busy_bands: [5000, 15000, 30000]    # quiet < 5,000 <= medium < 15,000 <= busy < 30,000 <= very busy (vehicles per day)
+    licence: IDOT Traffic Count Program (State of Illinois); no licence stated on the service (checked 2026-10-29), research use

@@ -16,6 +16,7 @@ import {
   type PriorityItem,
 } from '@/api/priority'
 import { projectQueryKeys, type ProjectDetail } from '@/api/projects'
+import { roadName, roadTypeLabel } from '@/api/road-risk'
 import { ErrorMessage } from '@/components/error-message'
 import { InspectionDialog, PlanInspectionDialog } from '@/components/inspections/inspection-dialogs'
 import { Button } from '@/components/ui/button'
@@ -75,6 +76,8 @@ function PriorityRanking({ project }: { project: ProjectDetail }) {
           finding to see exactly where its score comes from.
         </p>
       )}
+
+      {hasProjectPermission(project, 'inspection.record') && <AssignedToMe project={project} />}
 
       {hasProjectPermission(project, 'priority.configure') && options.data && list.data && (
         <PrioritySettings project={project} options={options.data} current={list.data.config} />
@@ -517,26 +520,41 @@ function MyInspections({ project }: { project: ProjectDetail }) {
   return (
     <div className="space-y-4">
       <PageIntro title="My inspections">
-        Findings you have been asked to go and check on site. Open one to record what you found.
+        Findings and roads you have been asked to go and check on site. Open one to record what you found.
       </PageIntro>
       {list.isPending && <SkeletonRows rows={3} />}
       {list.isError && <ErrorMessage title="Could not load your inspections" error={list.error} onRetry={() => void list.refetch()} />}
       {list.isSuccess &&
         (list.data.items.length === 0 ? (
           <EmptyState icon={<ListChecks />} title="No inspections for you right now">
-            When a project manager asks you to check a finding on site, it appears here.
+            When a project manager asks you to check a finding or a road on site, it appears here.
           </EmptyState>
         ) : (
           <ul className="space-y-2">
-            {list.data.items.map(({ inspection, finding }) => (
+            {list.data.items.map(({ inspection, finding, road }) => (
               <li key={inspection.id} className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
                 <div>
-                  <p className="font-medium">{typeLabel(finding.type_key)}</p>
+                  {finding ? (
+                    <p className="font-medium">{typeLabel(finding.type_key)}</p>
+                  ) : (
+                    <p className="flex flex-wrap items-center gap-2 font-medium">
+                      {roadName(road?.name ?? null)}
+                      <span className="pill bg-asphalt-100 text-asphalt-700">Road</span>
+                    </p>
+                  )}
                   <p className="text-xs text-asphalt-600">
                     {INSPECTION_LABELS[inspection.status]} · planned for{' '}
                     {new Date(`${inspection.planned_date}T00:00:00`).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                   </p>
-                  <LocationLine location={finding.location} confirmed={finding.location_quality === 'reviewer_confirmed'} />
+                  {finding ? (
+                    <LocationLine location={finding.location} confirmed={finding.location_quality === 'reviewer_confirmed'} />
+                  ) : (
+                    road && (
+                      <p className="text-xs text-asphalt-600">
+                        {roadTypeLabel(road.road_type)} · {Math.round(road.length_m)} m
+                      </p>
+                    )
+                  )}
                 </div>
                 <Button variant="secondary" onClick={() => setOpen(inspection.id)}>
                   Record result
@@ -545,7 +563,42 @@ function MyInspections({ project }: { project: ProjectDetail }) {
             ))}
           </ul>
         ))}
-      {selected && <InspectionDialog project={project} finding={selected.finding} onClose={() => setOpen(null)} />}
+      {selected && <InspectionDialog project={project} finding={selected.finding} road={selected.road} onClose={() => setOpen(null)} />}
     </div>
+  )
+}
+
+/** Inspections assigned to me, for people who see the full ranking (managers, reviewers). */
+function AssignedToMe({ project }: { project: ProjectDetail }) {
+  const [open, setOpen] = useState<string | null>(null)
+  const list = useQuery({ queryKey: priorityQueryKeys.inspections(project.id, true), queryFn: ({ signal }) => listInspections(project.id, true, signal) })
+  const items = list.data?.items ?? []
+  if (items.length === 0) return null
+  const selected = items.find((item) => item.inspection.id === open)
+  return (
+    <section role="region" className="panel space-y-3 border-l-4 border-l-lane-500 p-4" aria-label="Assigned to me">
+      <h3 className="flex items-center gap-2 font-semibold">
+        <ClipboardCheck className="size-4" aria-hidden />
+        Assigned to me ({items.length})
+      </h3>
+      <ul className="divide-y divide-asphalt-100 text-sm">
+        {items.map(({ inspection, finding, road }) => (
+          <li key={inspection.id} className="flex flex-wrap items-center justify-between gap-3 py-2">
+            <span>
+              <span className="font-medium">{finding ? typeLabel(finding.type_key) : roadName(road?.name ?? null)}</span>
+              {!finding && <span className="pill ml-2 bg-asphalt-100 text-asphalt-700">Road</span>}
+              <span className="block text-xs text-asphalt-600">
+                {INSPECTION_LABELS[inspection.status]} · planned for{' '}
+                {new Date(`${inspection.planned_date}T00:00:00`).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+              </span>
+            </span>
+            <Button variant="secondary" onClick={() => setOpen(inspection.id)}>
+              Record result
+            </Button>
+          </li>
+        ))}
+      </ul>
+      {selected && <InspectionDialog project={project} finding={selected.finding} road={selected.road} onClose={() => setOpen(null)} />}
+    </section>
   )
 }

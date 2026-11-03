@@ -106,10 +106,28 @@ class Inspection(Base):
             postgresql_where=text("status IN ('planned', 'inspected')"),
         ),
         Index("ix_inspections_finding_created", "finding_id", "created_at"),
+        # F4d: an inspection is of a finding or of a road section, never both or neither.
+        CheckConstraint("(finding_id IS NULL) <> (section_id IS NULL)", name="finding_or_section"),
+        # Only one open inspection per road section in a project.
+        Index(
+            "uq_inspections_one_open_per_section",
+            "project_id",
+            "section_id",
+            unique=True,
+            postgresql_where=text("section_id IS NOT NULL AND status IN ('planned', 'inspected')"),
+        ),
+        Index("ix_inspections_project_created", "project_id", "created_at"),
     )
 
     id: Mapped[uuid.UUID] = uuid_pk()
-    finding_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("findings.id", ondelete="RESTRICT"))
+    project_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("projects.id", ondelete="RESTRICT"))
+    # Empty for a road inspection (F4d), which has `section_id` instead.
+    finding_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("findings.id", ondelete="RESTRICT")
+    )
+    section_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("forecast_sections.id", ondelete="RESTRICT")
+    )
     owner_user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     planned_date: Mapped[date] = mapped_column(Date)
     status: Mapped[str] = mapped_column(String(20), default="planned", server_default="planned")
@@ -133,3 +151,7 @@ class Inspection(Base):
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     created_at: Mapped[datetime] = created_at_column()
     updated_at: Mapped[datetime] = updated_at_column()
+    # F4: the road-risk level that suggested this inspection (forecasting roadmap section 8).
+    risk_level_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("risk_levels.id", ondelete="RESTRICT")
+    )

@@ -1,0 +1,32 @@
+# Level 1 risk-factor cut-offs (any-area plan FA3, owner decision D5). Written by `forecasting.run risk-cutoffs-draft`.
+# Levels are plain labels, never a percentage. Change `status` to APPROVED only with the owner's OK (decisions log).
+status: APPROVED
+approved: '2026-10-30'   # owner: option 1, two groups (decisions log)
+drafted: '2026-10-30'
+drafted_from: Chicago training Mondays (2012-01-02 to 2021-05-31), held-out areas
+  left out
+rule: 'medium = 75th, high = 95th percentile (dips: 10th and 2nd); freeze, frost and
+  snow on Nov-Apr Mondays'
+fixed_levels: flood zone, traffic, heavy vehicles and bus routes use fixed levels
+  (see risk_factors.py)
+risk_factors: [freeze_thaw_14d, below_freezing_days_30d, snow_mm_30d, bus_routes]
+background: [heavy_rain_days_30d, low_spot_m, slope_pct, flood_zone, traffic_band, heavy_vehicle_band]
+cutoffs:
+  freeze_thaw_14d:
+    medium: 7.0
+    high: 10.0
+  below_freezing_days_30d:
+    medium: 10.0
+    high: 17.0
+  heavy_rain_days_30d:
+    medium: 1.0
+    high: 2.0
+  snow_mm_30d:
+    medium: 241.0
+    high: 664.0
+  low_spot_m:
+    medium: -0.26
+    high: -0.82
+  slope_pct:
+    medium: 0.31
+    high: 1.03

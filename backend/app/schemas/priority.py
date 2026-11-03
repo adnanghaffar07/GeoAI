@@ -113,9 +113,20 @@ class InspectionReopen(BaseModel):
         return self
 
 
+class RoadOut(BaseModel):
+    """The road section of a road inspection (F4d). No risk level: that needs road-risk access."""
+
+    section_id: uuid.UUID
+    name: str | None
+    road_type: str
+    length_m: float
+
+
 class InspectionOut(BaseModel):
     id: uuid.UUID
-    finding_id: uuid.UUID
+    project_id: uuid.UUID
+    finding_id: uuid.UUID | None  # empty for a road inspection (F4d)
+    section_id: uuid.UUID | None  # the road section of a road inspection
     owner_user_id: uuid.UUID
     owner_name: str | None
     planned_date: date
@@ -150,7 +161,8 @@ class PriorityList(BaseModel):
 
 
 class AssignedInspection(BaseModel):
-    """An open inspection with its finding, for the "inspections" list."""
+    """An open inspection with its finding or, for a road inspection (F4d), its road."""
 
     inspection: InspectionOut
-    finding: FindingOut
+    finding: FindingOut | None
+    road: RoadOut | None = None

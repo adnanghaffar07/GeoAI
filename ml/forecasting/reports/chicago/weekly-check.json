@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "mondays": [
+    {
+      "monday": "2012-01-02",
+      "same": true,
+      "sections": 71979,
+      "differing_inputs": []
+    },
+    {
+      "monday": "2019-05-20",
+      "same": true,
+      "sections": 71979,
+      "differing_inputs": []
+    },
+    {
+      "monday": "2026-02-23",
+      "same": true,
+      "sections": 71979,
+      "differing_inputs": []
+    },
+    {
+      "monday": "2026-09-21",
+      "same": true,
+      "sections": 71979,
+      "differing_inputs": []
+    },
+    {
+      "monday": "2026-09-28",
+      "same": true,
+      "sections": 71979,
+      "differing_inputs": []
+    }
+  ]
+}

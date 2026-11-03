@@ -3,6 +3,17 @@
 from app.models.analysis import AnalysisJob, Finding, FindingImage
 from app.models.audit import AuditEvent
 from app.models.base import Base
+from app.models.forecast import (
+    Alert,
+    AlertRead,
+    ForecastMonitoring,
+    ForecastSection,
+    ForecastSettings,
+    RiskFactorValue,
+    RiskLevel,
+    RiskRun,
+    WeatherOutlook,
+)
 from app.models.image import Image
 from app.models.invitation import Invitation, PasswordReset
 from app.models.organization import ORG_ROLES, Organization, OrganizationMembership
@@ -18,12 +29,17 @@ __all__ = [
     "ORG_ROLES",
     "PROJECT_ROLES",
     "REQUEST_STATUSES",
+    "Alert",
+    "AlertRead",
     "AnalysisJob",
     "AuditEvent",
     "Base",
     "Finding",
     "FindingImage",
     "FindingType",
+    "ForecastMonitoring",
+    "ForecastSection",
+    "ForecastSettings",
     "Image",
     "Inspection",
     "Invitation",
@@ -37,7 +53,11 @@ __all__ = [
     "ProjectMember",
     "Report",
     "ReviewEvent",
+    "RiskFactorValue",
+    "RiskLevel",
+    "RiskRun",
     "SeverityRubric",
     "User",
     "UserSession",
+    "WeatherOutlook",
 ]

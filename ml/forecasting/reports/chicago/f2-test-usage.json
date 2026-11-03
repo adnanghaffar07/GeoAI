@@ -1,0 +1,8 @@
+{
+  "status": "finished",
+  "started_at": "2026-10-29T20:44:56+00:00",
+  "main_model": "without_traffic",
+  "note": "Started 2026-10-29 with main model 'with_traffic' by mistake at the script question; set to 'without_traffic' as agreed before the test, before any main-model test result was seen. See project-decisions.md 2026-10-29.",
+  "finished_at": "2026-10-29T21:21:33+00:00",
+  "outcome": "PARTIAL"
+}

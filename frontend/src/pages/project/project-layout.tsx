@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { ClipboardCheck, FileText, Images, LayoutDashboard, ListOrdered, ScanSearch, Settings, type LucideIcon } from 'lucide-react'
-import { Link, NavLink, Outlet, useLocation, useOutletContext, useParams } from 'react-router'
+import { ClipboardCheck, FileText, Gauge, Images, LayoutDashboard, ListOrdered, ScanSearch, Settings, type LucideIcon } from 'lucide-react'
+import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router'
 
 import { getProject, projectQueryKeys, projectRoleLabel, type ProjectDetail } from '@/api/projects'
 import { ErrorMessage } from '@/components/error-message'
@@ -15,15 +15,18 @@ interface Tab {
   permission?: string[]
   /** Other pages that belong to this tab (it stays highlighted there), e.g. Upload belongs to Photos. */
   alsoActiveOn?: string[]
+  /** Shown only when this is true for the project (e.g. road risk switched on). */
+  when?: (project: ProjectDetail) => boolean
 }
 
-/** Six tabs at most. Upload is a button on Photos; Team and History live under Settings. */
+/** Six tabs at most (seven where road risk is on, F4d). Upload is a button on Photos; Team and History live under Settings. */
 const TABS: Tab[] = [
   { to: '', label: 'Overview', icon: LayoutDashboard },
   { to: 'photos', label: 'Photos', icon: Images, permission: ['image.status.view'], alsoActiveOn: ['upload'] },
   { to: 'findings', label: 'Findings', icon: ScanSearch, permission: ['finding.view_verified'], alsoActiveOn: ['review'] },
   { to: 'priority', label: 'Priority', icon: ListOrdered, permission: ['priority.view'] },
   { to: 'priority', label: 'My inspections', icon: ClipboardCheck, permission: ['inspection.record'] },
+  { to: 'road-risk', label: 'Road risk', icon: Gauge, permission: ['risk.view'], when: (project) => Boolean(project.road_risk_enabled) },
   { to: 'reports', label: 'Reports', icon: FileText, permission: ['report.view_all', 'report.view_shared'] },
   { to: 'settings', label: 'Settings', icon: Settings },
 ]
@@ -38,7 +41,9 @@ export function ProjectLayout() {
   if (project.isError) return <ErrorMessage title="Could not open the project" error={project.error} onRetry={() => void project.refetch()} />
 
   const detail = project.data
-  const allowed = TABS.filter((tab) => !tab.permission || tab.permission.some((key) => detail.my_permissions.includes(key)))
+  const allowed = TABS.filter(
+    (tab) => (!tab.permission || tab.permission.some((key) => detail.my_permissions.includes(key))) && (!tab.when || tab.when(detail)),
+  )
   // One tab per page: people who see the priority list get "Priority", others "My inspections".
   const tabs = allowed.filter((tab, index) => allowed.findIndex((other) => other.to === tab.to) === index)
   const roles = detail.my_roles.map(projectRoleLabel).join(', ') || 'Organization administrator'
@@ -46,15 +51,12 @@ export function ProjectLayout() {
   return (
     <section className="space-y-6">
       <header className="space-y-3">
-        <NavLink to="/projects" className="text-sm link">
-          All projects
-        </NavLink>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="text-[1.75rem] font-semibold tracking-tight">{detail.name}</h1>
           {detail.archived && <span className="pill bg-asphalt-100 text-asphalt-700">Archived (read-only)</span>}
         </div>
         <p className="text-sm text-asphalt-500">Your role here: {roles}</p>
-        <nav aria-label="Project" className="-mx-4 flex gap-1 overflow-x-auto border-b border-asphalt-100 px-4 text-sm [scrollbar-width:none] sm:mx-0 sm:px-0">
+        <nav aria-label="Project" className="-mx-4 flex gap-1 overflow-x-auto rounded-2xl border border-asphalt-100 bg-white/80 p-1.5 px-4 text-sm shadow-[0_1px_2px_rgb(27_38_51/0.04)] backdrop-blur [scrollbar-width:none] sm:mx-0 sm:px-1.5">
           {tabs.map((tab) => {
             const href = tab.to === '' ? `/projects/${detail.id}` : `/projects/${detail.id}/${tab.to}`
             const section = location.pathname.slice(`/projects/${detail.id}/`.length).split('/')[0] ?? ''
@@ -65,11 +67,11 @@ export function ProjectLayout() {
                 to={href}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  '-mb-px flex shrink-0 items-center gap-2 border-b-[3px] px-3 py-2.5 whitespace-nowrap font-medium text-asphalt-500 transition-colors hover:text-asphalt-900',
-                  active ? 'border-lane-500 font-semibold text-asphalt-900' : 'border-transparent',
+                  'flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 whitespace-nowrap font-medium text-asphalt-500 transition-colors hover:bg-asphalt-50 hover:text-asphalt-900',
+                  active ? 'bg-asphalt-900 font-semibold text-white shadow-sm hover:bg-asphalt-900 hover:text-white' : '',
                 )}
               >
-                <tab.icon className={cn('size-4', active ? 'text-asphalt-900' : 'text-asphalt-400')} aria-hidden />
+                <tab.icon className={cn('size-4', active ? 'text-lane-400' : 'text-asphalt-400')} aria-hidden />
                 {tab.label}
               </Link>
             )

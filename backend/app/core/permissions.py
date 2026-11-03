@@ -60,6 +60,10 @@ class Perm:
     REPORT_SHARE = "report.share"
     REPORT_VIEW_SHARED = "report.view_shared"
     REPORT_VIEW_ALL = "report.view_all"
+    # Road-risk forecasting (F4c; forecasting-f4-plan.md section 4, roadmap sections 7.3 and 7.5)
+    RISK_VIEW = "risk.view"
+    RISK_CONFIGURE = "risk.configure"
+    ALERT_VIEW = "alert.view"
 
 
 P = Perm
@@ -116,6 +120,9 @@ _PROJECT_MANAGER = frozenset(
         P.REPORT_SHARE,
         P.REPORT_VIEW_SHARED,
         P.REPORT_VIEW_ALL,
+        P.RISK_VIEW,
+        P.RISK_CONFIGURE,
+        P.ALERT_VIEW,  # roadmap 7.5: alerts go to project managers only
     }
 )
 
@@ -135,6 +142,7 @@ PROJECT_ROLE_PERMISSIONS: dict[str, frozenset[str]] = {
             P.FINDING_VIEW_VERIFIED,
             P.FINDING_CREATE_MANUAL,
             P.INSPECTION_RECORD,  # Q7
+            P.RISK_VIEW,  # F4d: only if the project's manager allows it (CONDITIONS)
         }
     ),
     "technical_reviewer": frozenset(
@@ -154,6 +162,7 @@ PROJECT_ROLE_PERMISSIONS: dict[str, frozenset[str]] = {
             P.PRIORITY_VIEW,
             P.INSPECTION_RECORD,  # Q7
             P.REPORT_VIEW_SHARED,  # Q8: view, not generate
+            P.RISK_VIEW,
         }
     ),
     "viewer": frozenset(
@@ -163,6 +172,7 @@ PROJECT_ROLE_PERMISSIONS: dict[str, frozenset[str]] = {
             P.FINDING_VIEW_VERIFIED,
             P.PRIORITY_VIEW,
             P.REPORT_VIEW_SHARED,
+            P.RISK_VIEW,
         }
     ),
 }
@@ -183,6 +193,11 @@ CONDITIONS: dict[tuple[str, str], str] = {
     ("field_collector", P.INSPECTION_RECORD): "assigned_owner",
     ("technical_reviewer", P.INSPECTION_RECORD): "assigned_owner",
     ("viewer", P.IMAGE_VIEW): "verified_findings_only",
+    # F4d (owner request 2026-10-30): the project manager ticks who else can see road risk
+    # (forecast_settings.visible_to_roles; default reviewers and viewers, not field collectors).
+    ("technical_reviewer", P.RISK_VIEW): "project_setting",
+    ("viewer", P.RISK_VIEW): "project_setting",
+    ("field_collector", P.RISK_VIEW): "project_setting",
 }
 
 

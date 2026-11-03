@@ -29,6 +29,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Road-risk forecasting jobs (F4b): the ml/forecasting code, mounted at /ml. Pinned to the versions
+# that trained the B1 model on the owner's laptop, so the saved model loads exactly (F4b design 3).
+forecast = [
+    "scikit-learn==1.9.1",
+    "numpy==2.5.4",
+    "scipy==1.18.1",
+    "joblib==1.6.0",
+    "shapely==2.2.0",
+    "pyproj==3.8.0",
+    "pyyaml==6.0.3",
+    "requests>=2.31,<3.0",
+]
 dev = [
     "pytest>=8.3,<10.0",
     "httpx2>=2.13,<3.0",                 # HTTP client used by FastAPI's TestClient
@@ -86,7 +98,7 @@ strict = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["geoalchemy2.*", "cv2.*", "weasyprint.*", "torchvision.*"]
+module = ["geoalchemy2.*", "cv2.*", "weasyprint.*", "torchvision.*", "forecasting.*"]
 ignore_missing_imports = true
 
 # ---------- pytest ----------

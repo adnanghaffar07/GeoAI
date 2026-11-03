@@ -1,5 +1,7 @@
 # Testing guide: Phases 5, 6 and 7 together
 
+> **Note 2026-10-28 (screens changed after this guide was written):** "Upload photos" is now a button on Overview and Photos (not a tab); "Check new photos" is now the yellow card "N photos are waiting for the AI check" with **Check N photos now**; Team and History are under the project **Settings** tab; "Draw a shape" is now **Draw an area** (plus **Draw a road** and place search). With `ANALYSIS_MODEL_VERSION=frcnn-rdd2022-0.1` results show "TRIAL MODEL: accuracy not approved" instead of the TEST DETECTOR label. The Word technical document (`documentation/`) has the current screenshots.
+
 The owner tests these three phases together on their own computer, with the AI agent guiding step by step.
 Everything here was already tested in the cloud workspace (backend 204 tests, frontend 57 tests, browser walk-throughs).
 This guide confirms it works on the owner's computer.

@@ -63,6 +63,13 @@ Installed at setup (2026-10-14): FastAPI 0.143, SQLAlchemy 2.1, Alembic 1.20, Ge
 
 Added later, when first needed: Recharts 3.10.1 (Overview dashboard charts, MIT licence; loaded only on the Overview pages), WeasyPrint (P7, needs extra system libraries in Docker), Terra Draw (P4), shadcn/ui components (added one at a time with `npx shadcn add <name>`; `components.json` is already configured).
 
+Added after P7 (2026-10-19 to 2026-10-28):
+- **PyTorch 2.14.1 + torchvision 0.29.1 (CPU build) in the backend image**, for the trial model `frcnn-rdd2022-0.1` (CR-003). Imported only when the worker first analyses a photo; about 1.5 GB of memory; the worker runs one job at a time.
+- **OpenStreetMap Nominatim** for the place search on the survey-area map (free, called from the browser only when the person presses Search; replaceable with `VITE_GEOCODER_URL`).
+- **PostGIS `ST_Buffer` / `ST_Union`** (no new library) to turn roads into strips and join areas (`POST /geo/area-from-place`).
+- **Terra Draw line mode** for "Draw a road".
+- **Hosting for the demo:** Vercel (frontend, `vercel.json` forwards `/api`), backend in Docker on the developer laptop exposed with a **Cloudflare quick tunnel**. This is temporary; P10 decides real hosting (options in the Word technical document §14 and the Oracle free-server guide).
+
 ## 6. Deferred (not in V1 unless a real need appears)
 
 | Item | Reason |

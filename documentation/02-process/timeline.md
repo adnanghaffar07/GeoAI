@@ -1,6 +1,6 @@
 # Rough Timeline (P1)
 
-**Status:** First estimate, 2026-10-14. Will be updated at the end of every phase.
+**Status:** First estimate, 2026-10-14. **Updated 2026-10-28** with what actually happened (section at the end).
 
 ## In plain words
 
@@ -35,3 +35,18 @@ After those arrive, expect **4–8 weeks** of labelling, training, and testing. 
 
 - Skipping the "if time allows" features (road suggestions, duplicate merging).
 - Fast, complete answers from the customer.
+
+## What actually happened (updated 2026-10-28)
+
+The main line went much faster than estimated: P2–P7 were built between 2026-10-14 and 2026-10-15, then improved through 2026-10-28.
+
+| Phase | Estimate | Actual |
+|-------|----------|--------|
+| P1–P2 | 1–2 weeks | 2026-10-13 to 10-14 |
+| P3–P7 | 10–15 weeks | Built 2026-10-14 to 10-15; owner sign-off of P5–P7 still pending |
+| P8 (public data) | 4–8 weeks after data | 2026-10-15 to 10-22 (training on Colab, slowed by free GPU limits); TRIAL only |
+| Improvements | — | 2026-10-20 to 10-28: UI pass, AI-check banner, platform admin and organization sign-up, place search, roads |
+| P9 | 2 weeks | Not started (about 6–8 working days of build work plus owner testing, estimate 2026-10-26) |
+| P10 | 1–2 weeks | Demo online (Vercel + laptop tunnel); real hosting depends on PI-18 |
+| P11 | 1 week | Word technical document and user manual delivered 2026-10-28 (first handover document) |
+| Forecasting track (V2, draft) | — | 6–8 weeks for data and proof of concept, 2–3 weeks to add to the app; suburbs and field pilot depend on the cities and the winter season |

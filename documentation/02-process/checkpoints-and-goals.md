@@ -106,10 +106,11 @@ A phase passes only when **all** its boxes are ticked **and** the project owner 
 - [ ] Owner sign-off
 
 ### P8: ML baseline
+*(Status 2026-10-28: P8.0–P8.2, P8.4, P8.5 done with public RDD2022 data; final test NOT PASSED; model connected as a labelled TRIAL under CR-003. The boxes below stay open until the partner items exist.)*
 - [ ] Data rights confirmed in writing
 - [ ] Labeling guide approved by a qualified reviewer
-- [ ] Train/validation/test split is geographically and temporally separated
-- [ ] Per-class precision and recall reported with sample counts
+- [x] Train/validation/test split is geographically and temporally separated (public data: Czech Republic locked as the test country, near-duplicates removed, 2026-10-16)
+- [x] Per-class precision and recall reported with sample counts (`ml/reports/test-report.md`, 2026-10-22)
 - [ ] Weak conditions documented
 - [ ] Thresholds agreed with the partner **before** tuning
 - [ ] Model meets thresholds; integrated under a new model version

@@ -1,7 +1,9 @@
-import { ArrowRight, Camera, CircleCheckBig, ClipboardList, Hourglass, MapPinOff, SearchCheck, Sparkles, type LucideIcon } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { ArrowRight, Bell, Camera, CircleCheckBig, ClipboardList, Hourglass, MapPinOff, SearchCheck, Sparkles, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
 import type { Dashboard } from '@/api/dashboard'
+import { alertQueryKeys, listNotifications } from '@/api/road-risk'
 
 interface Step {
   key: string
@@ -119,7 +121,20 @@ function buildNextSteps(data: Dashboard, projectId: string | null): Step[] {
 
 /** "What to do next": the few things this person can act on now, each with one button. */
 export function NextSteps({ data, projectId }: { data: Dashboard; projectId: string | null }) {
-  const steps = buildNextSteps(data, projectId)
+  const alerts = useQuery({ queryKey: alertQueryKeys.all, queryFn: ({ signal }) => listNotifications(signal) })
+  // F4e: unread open road-risk alerts first (project managers only; the server sends none to others).
+  const alertSteps: Step[] = (alerts.data?.items ?? [])
+    .filter((alert) => !alert.read && !alert.closed_at && (!projectId || alert.project_id === projectId))
+    .slice(0, 3)
+    .map((alert) => ({
+      key: `alert-${alert.id}`,
+      icon: Bell,
+      text: alert.title,
+      project: projectId ? undefined : alert.project_name,
+      action: 'See the roads',
+      to: `/notifications/${alert.id}`,
+    }))
+  const steps = [...alertSteps, ...buildNextSteps(data, projectId)]
 
   return (
     <section aria-labelledby="next-steps-heading" className="panel overflow-hidden">

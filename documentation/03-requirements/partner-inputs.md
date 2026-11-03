@@ -1,6 +1,6 @@
 # Partner Inputs (P1)
 
-**Status:** All inputs are **PLACEHOLDER** as of 2026-10-14. No pilot partner has confirmed anything yet.
+**Status:** All inputs are **PLACEHOLDER** as of 2026-10-14. No pilot partner has confirmed anything yet. *(Checked again 2026-10-28: still none confirmed. See section 5 for what changed meanwhile.)*
 **Source:** spec "Inputs needed before kickoff", "Project setup fields", "Validation plan", "Privacy", GIS steps 4–6, and step 7 (priority).
 
 These are decisions **only the pilot partner can make**. We never invent them. Until a partner confirms an input,
@@ -170,3 +170,20 @@ This follows the owner's rule that decisions can change later without touching s
 13. What should the reports and exports contain, and in which coordinate system?
 14. What minimum per-class accuracy must the AI reach before it is used?
 15. Are there hosting, security, or data-residency requirements?
+
+---
+
+## 5. Updates since P1 (2026-10-28)
+
+- **PI-17 (model pass marks):** still BLOCKED. The trained model `frcnn-rdd2022-0.1` took its one-time final test on 2026-10-22 against the placeholder marks and did **not** pass (pothole recall 8%, surface cracking 17%, pavement deterioration 34%). It runs only as a labelled TRIAL (CR-003).
+- **PI-04 (training rights):** still BLOCKED. Improving the model with the client's own road photos needs this written permission, including for training on Google Colab.
+- **PI-11 (road source):** survey areas can now be set from OpenStreetMap (place search and road strips). Source and licence (ODbL) are noted in `project-decisions.md`.
+- **PI-18 (hosting):** the current live demo runs the screens on Vercel and the backend on the developer laptop through a Cloudflare tunnel, with DEMO data only. Pilot hosting still needs the partner's decision.
+- **Forecasting track (CR-005 approved 2026-10-28):** three new inputs, details in `04-design/forecasting-f0-ground-rules.md` §11:
+
+| ID | Input | Status | Needed before |
+|----|-------|--------|---------------|
+| PI-20 | Forecast pass marks | PLACEHOLDER | F2 decision, F4 |
+| PI-21 | Pavement condition ratings and repair history for Naperville, Aurora, Oswego | Not requested yet | F3 |
+| PI-22 | Engineering check of the forecast target and inputs | Academic / engineering partner | F2 report |
+| PI-23 | Cook County DOTH: written permission to use the 2025 pavement condition (PCI) data, and older surveys (2022, 2019) if available | Team lead suggested the data 2026-10-29; not requested yet | Before any use beyond internal checking; older surveys before F3 |

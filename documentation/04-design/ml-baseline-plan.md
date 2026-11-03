@@ -1,6 +1,6 @@
 # ML Baseline Plan (P8)
 
-**Status:** P8.0 **approved by the owner on 2026-10-16** ("move to next phase lets start"). Sections 3 and 4 are now **frozen** (change control). Pass marks remain PLACEHOLDER until the partner confirms PI-17. P8.1 in progress. Once approved, sections 3 and 4 are **frozen**: changing them after training starts needs a line in `project-decisions.md` with the reason (change control), so we can never "move the goalposts" after seeing results.
+**Status:** P8.0 **approved by the owner on 2026-10-16** ("move to next phase lets start"). Sections 3 and 4 are now **frozen** (change control). Pass marks remain PLACEHOLDER until the partner confirms PI-17. *(Status 2026-10-28: P8.0–P8.2, P8.4 and P8.5 done; final test NOT PASSED; P8.7 done as a labelled TRIAL under CR-003; P8.3 and P8.8 waiting for local photos and PI-04. Forecasting is a separate track: `04-design/forecasting-roadmap.md`.)* Once approved, sections 3 and 4 are **frozen**: changing them after training starts needs a line in `project-decisions.md` with the reason (change control), so we can never "move the goalposts" after seeing results.
 **Source:** `02-process/project-phases.md` (P8), `02-process/checkpoints-and-goals.md` (P8 checklist), `04-design/model-output-contract.md`, `03-requirements/partner-inputs.md` (PI-04, PI-05, PI-07, PI-17).
 **Machine-readable copy of the pass scores:** `ml/config/acceptance-thresholds.yaml` (the evaluation script in P8.5 reads it).
 

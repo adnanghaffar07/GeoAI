@@ -1,0 +1,910 @@
+{
+  "models": {
+    "version": "forecast-chicago-0.1",
+    "trained_at": "2026-10-29",
+    "features": [
+      "reports_30d",
+      "reports_90d",
+      "reports_365d",
+      "reports_same_30d_last_year",
+      "reports_7d",
+      "reports_14d",
+      "reports_all_before",
+      "reports_same_season_3y",
+      "years_with_reports_5y",
+      "duplicate_reports_30d",
+      "duplicate_reports_90d",
+      "days_since_last_report",
+      "neighbour_reports_7d",
+      "neighbour_reports_30d",
+      "neighbour_reports_90d",
+      "neighbour_reports_365d",
+      "freeze_thaw_7d",
+      "freeze_thaw_14d",
+      "freeze_thaw_30d",
+      "below_freezing_days_30d",
+      "rain_mm_7d",
+      "rain_mm_30d",
+      "heavy_rain_days_30d",
+      "snow_mm_7d",
+      "snow_mm_30d",
+      "hot_days_30d",
+      "days_since_freeze",
+      "highway_code",
+      "length_m",
+      "lanes",
+      "surface_code",
+      "slope_pct",
+      "low_spot_m",
+      "flood_1pct",
+      "flood_02pct",
+      "probably_bridge",
+      "traffic_band",
+      "heavy_vehicle_band",
+      "bus_routes",
+      "week_of_year",
+      "month",
+      "new_311_system"
+    ],
+    "features_without_traffic": [
+      "reports_30d",
+      "reports_90d",
+      "reports_365d",
+      "reports_same_30d_last_year",
+      "reports_7d",
+      "reports_14d",
+      "reports_all_before",
+      "reports_same_season_3y",
+      "years_with_reports_5y",
+      "duplicate_reports_30d",
+      "duplicate_reports_90d",
+      "days_since_last_report",
+      "neighbour_reports_7d",
+      "neighbour_reports_30d",
+      "neighbour_reports_90d",
+      "neighbour_reports_365d",
+      "freeze_thaw_7d",
+      "freeze_thaw_14d",
+      "freeze_thaw_30d",
+      "below_freezing_days_30d",
+      "rain_mm_7d",
+      "rain_mm_30d",
+      "heavy_rain_days_30d",
+      "snow_mm_7d",
+      "snow_mm_30d",
+      "hot_days_30d",
+      "days_since_freeze",
+      "highway_code",
+      "length_m",
+      "lanes",
+      "surface_code",
+      "slope_pct",
+      "low_spot_m",
+      "flood_1pct",
+      "flood_02pct",
+      "probably_bridge",
+      "bus_routes",
+      "week_of_year",
+      "month",
+      "new_311_system"
+    ],
+    "best_params": {
+      "num_leaves": 63,
+      "learning_rate": 0.02,
+      "n_estimators": 1500,
+      "min_child_samples": 1000,
+      "colsample_bytree": 0.7,
+      "subsample": 0.8,
+      "subsample_freq": 1
+    },
+    "grid": [
+      {
+        "params": {
+          "num_leaves": 31,
+          "learning_rate": 0.05,
+          "n_estimators": 400,
+          "min_child_samples": 200
+        },
+        "validation_pr_auc": 0.246
+      },
+      {
+        "params": {
+          "num_leaves": 63,
+          "learning_rate": 0.05,
+          "n_estimators": 600,
+          "min_child_samples": 200
+        },
+        "validation_pr_auc": 0.2459
+      },
+      {
+        "params": {
+          "num_leaves": 15,
+          "learning_rate": 0.1,
+          "n_estimators": 300,
+          "min_child_samples": 200
+        },
+        "validation_pr_auc": 0.2455
+      },
+      {
+        "params": {
+          "num_leaves": 31,
+          "learning_rate": 0.03,
+          "n_estimators": 1200,
+          "min_child_samples": 500,
+          "colsample_bytree": 0.8,
+          "subsample": 0.8,
+          "subsample_freq": 1
+        },
+        "validation_pr_auc": 0.247
+      },
+      {
+        "params": {
+          "num_leaves": 63,
+          "learning_rate": 0.02,
+          "n_estimators": 1500,
+          "min_child_samples": 1000,
+          "colsample_bytree": 0.7,
+          "subsample": 0.8,
+          "subsample_freq": 1
+        },
+        "validation_pr_auc": 0.2474
+      }
+    ],
+    "training_sample": {
+      "positives": 2859384,
+      "negatives": 26806248,
+      "positive_fraction": 0.45126282109876786,
+      "negative_fraction": 0.04512628210987679
+    },
+    "train_mondays": [
+      "2012-01-02",
+      "2021-05-31"
+    ],
+    "validation_mondays": [
+      "2021-07-05",
+      "2022-05-30"
+    ],
+    "fingerprints": {
+      "b0_table.json": "1288fbd96acbe502010ef7a307489b4501ddbdf32b54f83588ea3e575ef84984",
+      "b1_logistic.joblib": "e8a52fa796a67f574c10af38f998b14697b1f039932ea549fd94b9792b6620d3",
+      "m_lightgbm.txt": "f44671493c7d2ed1f1c25b278f6f8e63318eda3903b3b2da323aa9891b8f165a",
+      "m_lightgbm_without_traffic.txt": "cf201df8e9864222473fd15747c0680954af9700416c4b19f44ab4642226e254",
+      "m_calibrator.joblib": "a52c358cfbc24185f02147afb4715e15ce3fd77789b44a1e7009e02ceb97d33f",
+      "m_calibrator_without_traffic.joblib": "708ac8087549efe54ed77ab4849e4e3f9a08aca41ddbd89d3da407d2ecb98fd2"
+    },
+    "feature_importance_gain": [
+      [
+        "reports_365d",
+        14860908.3
+      ],
+      [
+        "week_of_year",
+        7026104.4
+      ],
+      [
+        "days_since_last_report",
+        6822287.4
+      ],
+      [
+        "reports_same_season_3y",
+        5574471.3
+      ],
+      [
+        "month",
+        2354205.1
+      ],
+      [
+        "below_freezing_days_30d",
+        2038191.9
+      ],
+      [
+        "snow_mm_30d",
+        1906849.9
+      ],
+      [
+        "new_311_system",
+        1769713.2
+      ],
+      [
+        "reports_all_before",
+        1724912.9
+      ],
+      [
+        "years_with_reports_5y",
+        1249237.3
+      ],
+      [
+        "freeze_thaw_30d",
+        1136446.2
+      ],
+      [
+        "neighbour_reports_365d",
+        1110906.2
+      ],
+      [
+        "rain_mm_30d",
+        818945.6
+      ],
+      [
+        "neighbour_reports_30d",
+        696280.9
+      ],
+      [
+        "length_m",
+        681979.9
+      ],
+      [
+        "duplicate_reports_90d",
+        665725.7
+      ],
+      [
+        "reports_90d",
+        597512.5
+      ],
+      [
+        "highway_code",
+        575329.4
+      ],
+      [
+        "days_since_freeze",
+        538476.7
+      ],
+      [
+        "neighbour_reports_90d",
+        433955.9
+      ],
+      [
+        "rain_mm_7d",
+        389672.7
+      ],
+      [
+        "duplicate_reports_30d",
+        374424.8
+      ],
+      [
+        "traffic_band",
+        349726.5
+      ],
+      [
+        "low_spot_m",
+        345478.8
+      ],
+      [
+        "freeze_thaw_14d",
+        315274.4
+      ],
+      [
+        "snow_mm_7d",
+        287611.3
+      ],
+      [
+        "slope_pct",
+        273584.5
+      ],
+      [
+        "neighbour_reports_7d",
+        267408.9
+      ],
+      [
+        "bus_routes",
+        220174.7
+      ],
+      [
+        "lanes",
+        172139.6
+      ],
+      [
+        "freeze_thaw_7d",
+        142271.0
+      ],
+      [
+        "surface_code",
+        122778.4
+      ],
+      [
+        "heavy_rain_days_30d",
+        119101.5
+      ],
+      [
+        "heavy_vehicle_band",
+        117190.4
+      ],
+      [
+        "hot_days_30d",
+        115915.0
+      ],
+      [
+        "reports_same_30d_last_year",
+        76920.1
+      ],
+      [
+        "reports_30d",
+        28482.6
+      ],
+      [
+        "reports_7d",
+        14082.3
+      ],
+      [
+        "reports_14d",
+        13534.0
+      ],
+      [
+        "flood_02pct",
+        2676.9
+      ],
+      [
+        "flood_1pct",
+        1756.7
+      ],
+      [
+        "probably_bridge",
+        119.9
+      ]
+    ]
+  },
+  "validation": {
+    "B0_rule": {
+      "all": {
+        "mondays": 48,
+        "rows": 3454992,
+        "base_rate": 0.0639,
+        "precision_at_top_1pct": {
+          "value": 0.2762,
+          "low": 0.2279,
+          "high": 0.3224
+        },
+        "recall_at_top_10pct": {
+          "value": 0.2504,
+          "low": 0.243,
+          "high": 0.258
+        },
+        "pr_auc": {
+          "value": 0.1462,
+          "low": 0.1167,
+          "high": 0.1725
+        },
+        "brier": {
+          "value": 0.0584,
+          "low": 0.0485,
+          "high": 0.0676
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0822,
+        "precision_at_top_1pct": {
+          "value": 0.3402,
+          "low": 0.2704,
+          "high": 0.4168
+        },
+        "recall_at_top_10pct": {
+          "value": 0.239,
+          "low": 0.2304,
+          "high": 0.2485
+        },
+        "pr_auc": {
+          "value": 0.1721,
+          "low": 0.1356,
+          "high": 0.2035
+        },
+        "brier": {
+          "value": 0.0726,
+          "low": 0.0584,
+          "high": 0.0881
+        }
+      },
+      "held_out_areas": {
+        "mondays": 48,
+        "rows": 560784,
+        "base_rate": 0.0692,
+        "precision_at_top_1pct": {
+          "value": 0.2748,
+          "low": 0.2281,
+          "high": 0.3218
+        },
+        "recall_at_top_10pct": {
+          "value": 0.2468,
+          "low": 0.2367,
+          "high": 0.2575
+        },
+        "pr_auc": {
+          "value": 0.1485,
+          "low": 0.12,
+          "high": 0.1738
+        },
+        "brier": {
+          "value": 0.0628,
+          "low": 0.0526,
+          "high": 0.0728
+        }
+      },
+      "calibration": [
+        [
+          0.0732,
+          0.0332,
+          345500
+        ],
+        [
+          0.0732,
+          0.0277,
+          345500
+        ],
+        [
+          0.0732,
+          0.0265,
+          345499
+        ],
+        [
+          0.0732,
+          0.0235,
+          345499
+        ],
+        [
+          0.0732,
+          0.0206,
+          345499
+        ],
+        [
+          0.0732,
+          0.0395,
+          345499
+        ],
+        [
+          0.0732,
+          0.1006,
+          345499
+        ],
+        [
+          0.0732,
+          0.105,
+          345499
+        ],
+        [
+          0.0988,
+          0.0769,
+          345499
+        ],
+        [
+          0.1782,
+          0.1854,
+          345499
+        ]
+      ]
+    },
+    "B1_logistic": {
+      "all": {
+        "mondays": 48,
+        "rows": 3454992,
+        "base_rate": 0.0639,
+        "precision_at_top_1pct": {
+          "value": 0.3571,
+          "low": 0.302,
+          "high": 0.4111
+        },
+        "recall_at_top_10pct": {
+          "value": 0.31,
+          "low": 0.304,
+          "high": 0.3163
+        },
+        "pr_auc": {
+          "value": 0.2416,
+          "low": 0.2026,
+          "high": 0.2699
+        },
+        "brier": {
+          "value": 0.0549,
+          "low": 0.0454,
+          "high": 0.0641
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0822,
+        "precision_at_top_1pct": {
+          "value": 0.4304,
+          "low": 0.3463,
+          "high": 0.5185
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3094,
+          "low": 0.3037,
+          "high": 0.3155
+        },
+        "pr_auc": {
+          "value": 0.2827,
+          "low": 0.2483,
+          "high": 0.3095
+        },
+        "brier": {
+          "value": 0.0686,
+          "low": 0.0548,
+          "high": 0.0835
+        }
+      },
+      "held_out_areas": {
+        "mondays": 48,
+        "rows": 560784,
+        "base_rate": 0.0692,
+        "precision_at_top_1pct": {
+          "value": 0.3616,
+          "low": 0.3038,
+          "high": 0.4188
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3042,
+          "low": 0.2939,
+          "high": 0.3152
+        },
+        "pr_auc": {
+          "value": 0.2398,
+          "low": 0.2032,
+          "high": 0.2661
+        },
+        "brier": {
+          "value": 0.0594,
+          "low": 0.0494,
+          "high": 0.0692
+        }
+      },
+      "calibration": [
+        [
+          0.0073,
+          0.01,
+          345500
+        ],
+        [
+          0.0142,
+          0.0147,
+          345500
+        ],
+        [
+          0.0203,
+          0.0201,
+          345499
+        ],
+        [
+          0.0267,
+          0.0264,
+          345499
+        ],
+        [
+          0.0337,
+          0.0325,
+          345499
+        ],
+        [
+          0.0417,
+          0.0424,
+          345499
+        ],
+        [
+          0.0516,
+          0.0578,
+          345499
+        ],
+        [
+          0.0661,
+          0.0794,
+          345499
+        ],
+        [
+          0.0908,
+          0.1134,
+          345499
+        ],
+        [
+          0.1693,
+          0.2422,
+          345499
+        ]
+      ]
+    },
+    "M_lightgbm": {
+      "all": {
+        "mondays": 48,
+        "rows": 3454992,
+        "base_rate": 0.0639,
+        "precision_at_top_1pct": {
+          "value": 0.3641,
+          "low": 0.3102,
+          "high": 0.4163
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3162,
+          "low": 0.3102,
+          "high": 0.3225
+        },
+        "pr_auc": {
+          "value": 0.2474,
+          "low": 0.2093,
+          "high": 0.2746
+        },
+        "brier": {
+          "value": 0.0539,
+          "low": 0.0447,
+          "high": 0.0627
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0822,
+        "precision_at_top_1pct": {
+          "value": 0.4327,
+          "low": 0.3499,
+          "high": 0.5191
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3138,
+          "low": 0.3075,
+          "high": 0.3207
+        },
+        "pr_auc": {
+          "value": 0.2873,
+          "low": 0.2526,
+          "high": 0.3122
+        },
+        "brier": {
+          "value": 0.0669,
+          "low": 0.0538,
+          "high": 0.0809
+        }
+      },
+      "held_out_areas": {
+        "mondays": 48,
+        "rows": 560784,
+        "base_rate": 0.0692,
+        "precision_at_top_1pct": {
+          "value": 0.3803,
+          "low": 0.3255,
+          "high": 0.4336
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3113,
+          "low": 0.3001,
+          "high": 0.3228
+        },
+        "pr_auc": {
+          "value": 0.2451,
+          "low": 0.2109,
+          "high": 0.2694
+        },
+        "brier": {
+          "value": 0.0583,
+          "low": 0.0487,
+          "high": 0.0676
+        }
+      },
+      "calibration": [
+        [
+          0.0071,
+          0.0071,
+          345500
+        ],
+        [
+          0.0132,
+          0.0133,
+          345500
+        ],
+        [
+          0.0181,
+          0.018,
+          345499
+        ],
+        [
+          0.0258,
+          0.0259,
+          345499
+        ],
+        [
+          0.0332,
+          0.0331,
+          345499
+        ],
+        [
+          0.0437,
+          0.0437,
+          345499
+        ],
+        [
+          0.0579,
+          0.0578,
+          345499
+        ],
+        [
+          0.0776,
+          0.0776,
+          345499
+        ],
+        [
+          0.1129,
+          0.1129,
+          345499
+        ],
+        [
+          0.2494,
+          0.2495,
+          345499
+        ]
+      ]
+    },
+    "M_lightgbm_without_traffic": {
+      "all": {
+        "mondays": 48,
+        "rows": 3454992,
+        "base_rate": 0.0639,
+        "precision_at_top_1pct": {
+          "value": 0.3652,
+          "low": 0.3102,
+          "high": 0.4177
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3159,
+          "low": 0.3097,
+          "high": 0.3225
+        },
+        "pr_auc": {
+          "value": 0.2466,
+          "low": 0.2092,
+          "high": 0.274
+        },
+        "brier": {
+          "value": 0.0539,
+          "low": 0.0448,
+          "high": 0.0627
+        }
+      },
+      "winter_nov_apr": {
+        "mondays": 26,
+        "rows": 1871454,
+        "base_rate": 0.0822,
+        "precision_at_top_1pct": {
+          "value": 0.4349,
+          "low": 0.3512,
+          "high": 0.5229
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3134,
+          "low": 0.3065,
+          "high": 0.3209
+        },
+        "pr_auc": {
+          "value": 0.2866,
+          "low": 0.252,
+          "high": 0.3118
+        },
+        "brier": {
+          "value": 0.067,
+          "low": 0.0538,
+          "high": 0.081
+        }
+      },
+      "held_out_areas": {
+        "mondays": 48,
+        "rows": 560784,
+        "base_rate": 0.0692,
+        "precision_at_top_1pct": {
+          "value": 0.3809,
+          "low": 0.3246,
+          "high": 0.4357
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3113,
+          "low": 0.3001,
+          "high": 0.3229
+        },
+        "pr_auc": {
+          "value": 0.2445,
+          "low": 0.2106,
+          "high": 0.269
+        },
+        "brier": {
+          "value": 0.0583,
+          "low": 0.0487,
+          "high": 0.0677
+        }
+      },
+      "calibration": [
+        [
+          0.0071,
+          0.0071,
+          345500
+        ],
+        [
+          0.0134,
+          0.0133,
+          345500
+        ],
+        [
+          0.0183,
+          0.0184,
+          345499
+        ],
+        [
+          0.0259,
+          0.0259,
+          345499
+        ],
+        [
+          0.0331,
+          0.033,
+          345499
+        ],
+        [
+          0.0434,
+          0.0436,
+          345499
+        ],
+        [
+          0.058,
+          0.0578,
+          345499
+        ],
+        [
+          0.078,
+          0.0781,
+          345499
+        ],
+        [
+          0.1132,
+          0.1132,
+          345499
+        ],
+        [
+          0.2484,
+          0.2484,
+          345499
+        ]
+      ]
+    }
+  },
+  "base_rate_by_year": [
+    [
+      "2012",
+      0.0872
+    ],
+    [
+      "2013",
+      0.1238
+    ],
+    [
+      "2014",
+      0.1496
+    ],
+    [
+      "2015",
+      0.1099
+    ],
+    [
+      "2016",
+      0.0906
+    ],
+    [
+      "2017",
+      0.0976
+    ],
+    [
+      "2018",
+      0.0928
+    ],
+    [
+      "2019",
+      0.0741
+    ],
+    [
+      "2020",
+      0.0548
+    ],
+    [
+      "2021",
+      0.0476
+    ],
+    [
+      "2022",
+      0.1044
+    ]
+  ]
+}

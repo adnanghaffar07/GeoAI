@@ -1,0 +1,68 @@
+# Area: City of Chicago. Level 2 (tested forecast, B1) and Level 1 (risk factors).
+# Everything here used to live in config/sources.yaml (until 2026-10-29); the values are unchanged, so Chicago gives
+# the same results (checked by `forecasting.run same-results-check`). National sources: config/sources.yaml.
+name: City of Chicago
+schema: chicago                          # database schema inside the `forecast` database (owner decision D1)
+projected_crs: EPSG:26916                # NAD83 / UTM zone 16N, used to measure meters
+level: 2                                 # has pothole history: tested forecast (model card: 07-ml/model-card-forecast-chicago.md)
+
+boundary:
+  osm_area_filter: '["wikidata"="Q1297"]["boundary"="administrative"]'   # City of Chicago
+
+# Reports outside this box are kept but flagged "location outside" (never moved or guessed).
+bbox: {min_lon: -87.95, min_lat: 41.62, max_lon: -87.50, max_lat: 42.03}
+
+portal:
+  base_url: https://data.cityofchicago.org
+  app_token_env: SOCRATA_APP_TOKEN          # optional; a free token raises the portal's rate limit
+  page_size: 50000
+  terms_url: https://www.chicago.gov/city/en/narr/foia/data_disclaimer.html
+  licence: >-
+    City of Chicago Data Portal Terms of Use: public data provided "as is"; the City may require users to name the
+    source and version of a dataset. Not republished by GeoInfraLens; used for research only.
+
+potholes_historical:
+  dataset_id: 7as2-ds3y                     # "311 Service Requests - Pot Holes Reported - Historical" (old 311 system)
+  # Only the columns we keep (privacy, F0 section 9): no street address, ward or free text is ever downloaded.
+  select: [service_request_number, creation_date, status, type_of_service_request, latitude, longitude]
+  where: "creation_date < '2018-12-18T00:00:00'"
+  duplicate_statuses: ["Completed - Dup", "Open - Dup"]
+
+potholes_current:
+  dataset_id: v6vf-nfxy                     # "311 Service Requests" (new 311 system from 2018-12-18)
+  select: [sr_number, sr_type, sr_short_code, created_date, status, duplicate, legacy_record, latitude, longitude]
+  where: "sr_short_code = 'PHF' AND created_date >= '2018-12-18T00:00:00'"
+
+system_switch_date: 2018-12-18             # F0 section 5: check counts are comparable before and after
+
+districts:                                  # used to keep only roads inside the city, and for the held-out place check
+  dataset_id: igwz-8jzy                     # "Boundaries - Community Areas" (77 areas)
+  number_fields: [area_numbe, area_number, area_num_1]
+  name_fields: [community, name]
+  expected_count: 77
+  held_out: f0                              # the 10 areas fixed by F0 (acceptance-thresholds.yaml, seed 20261028)
+
+weather_stations:
+  - {id: USW00094846, name: "Chicago O'Hare International Airport", lat: 41.9950, lon: -87.9336}
+  - {id: USW00014819, name: "Chicago Midway Airport", lat: 41.7861, lon: -87.7522}
+snow_station: USW00094846                   # O'Hare: Midway misses 95% of snowfall (decision 2026-10-29)
+
+traffic_counts: idot                        # regional source in config/sources.yaml
+
+bus_routes:
+  dataset_id: 6uva-a5ei                     # "CTA - Bus Routes", City of Chicago Data Portal
+  route_fields: [route, rt, ROUTE, RT]
+  name_fields: [name, NAME, route_name, NAME1]
+
+# Team lead's suggestion (2026-10-29): Cook County DOTH pavement condition (PCI 0-100) per road piece, 2025 survey,
+# six suburban townships. Only one survey year and no licence stated, so it is used for CHECKING only (photo AI and
+# forecast checks, F3), never as a training label or in the product, until CCDOTH gives written permission.
+cook_county_pci:
+  base_url: https://gis12.cookcountyil.gov/arcgis/rest/services/Pavement_Condition_Index/MapServer
+  survey_year: 2025
+  layers: {0: Barrington, 1: Bloom, 2: Lake, 3: Palos, 4: Stickney, 5: Thornton}
+  out_fields: [OBJECTID, FULLSTNA, LCITY, RCITY, LineMiles, PCIsegment]
+  page_size: 2000
+  licence: >-
+    Cook County DOTH map service; no licence or terms stated on the service (checked 2026-10-29). Internal checking only
+    until CCDOTH gives written permission.

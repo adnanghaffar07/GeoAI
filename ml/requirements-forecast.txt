@@ -1,0 +1,12 @@
+# Forecasting track. Runs on the owner's laptop, no GPU.
+# F1 data pipeline
+requests>=2.31
+pyyaml>=6.0
+shapely>=2.0
+pyproj>=3.6
+psycopg[binary]>=3.2,<4.0
+# F2 learning table and models
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+lightgbm>=4.3

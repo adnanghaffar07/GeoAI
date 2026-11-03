@@ -134,6 +134,13 @@ No calendar dates yet. A realistic timeline is estimated at the end of P1, once 
   - Evaluation report and limitations
 - **Integration gate:** the model meets the per-class thresholds agreed in advance, then replaces the stand-in detector under a new model version.
 
+**Status 2026-10-28:** done with public data as a labelled TRIAL (CR-003); the integration gate was **not** met (final test not passed). Next: local photos after PI-04.
+
+## P8F: Forecasting (V2 research track, proposed)
+- **Goal:** predict which road sections are likely to be damaged in the next 30–90 days and help decide where to inspect first.
+- **Status:** CR-005 approved 2026-10-28. F0 ground rules drafted (`04-design/forecasting-f0-ground-rules.md`), waiting for approval; then F1.
+- **Phases:** F0 ground rules → F1 data pipeline → F2 Chicago proof of concept → F3 suburbs → F4 app integration → F5 field pilot → F6 sign-off.
+
 ## P9: System testing and hardening
 - **Goal:** prove the acceptance criteria.
 - **Work:**

@@ -8,12 +8,16 @@ import {
   INSPECTION_LABELS,
   inspectionHistory,
   planInspection,
+  planRoadInspection,
   priorityQueryKeys,
   recordInspection,
   reopenInspection,
+  roadInspectionHistory,
+  type InspectedRoad,
   type Inspection,
 } from '@/api/priority'
 import { listProjectMembers, projectQueryKeys, type ProjectDetail } from '@/api/projects'
+import { roadName, roadRiskQueryKeys, roadTypeLabel } from '@/api/road-risk'
 import { useAuth } from '@/auth/auth-context'
 import { ErrorMessage } from '@/components/error-message'
 import { LocationLine } from '@/components/findings/location-line'
@@ -94,34 +98,67 @@ function OwnerAndDate({
   )
 }
 
-async function refresh(queryClient: ReturnType<typeof useQueryClient>, project: ProjectDetail, findingId: string) {
+/** What is inspected: a verified finding, or a road section from the road-risk screens (F4d). */
+interface SubjectProps {
+  finding?: Finding | null
+  road?: InspectedRoad | null
+}
+
+function historyKey(project: ProjectDetail, { finding, road }: SubjectProps) {
+  return finding ? priorityQueryKeys.history(finding.id) : roadRiskQueryKeys.inspections(project.id, road?.section_id ?? '')
+}
+
+function SubjectHeader({ finding, road }: SubjectProps) {
+  if (finding) {
+    return (
+      <div className="space-y-0.5 text-sm text-asphalt-600">
+        <p className="font-medium text-asphalt-900">{typeLabel(finding.type_key)}</p>
+        <LocationLine location={finding.location} confirmed={finding.location_quality === 'reviewer_confirmed'} />
+      </div>
+    )
+  }
+  return (
+    <div className="space-y-0.5 text-sm text-asphalt-600">
+      <p className="font-medium text-asphalt-900">{roadName(road?.name ?? null)}</p>
+      {road && road.length_m > 0 && (
+        <p>
+          Road section · {roadTypeLabel(road.road_type)} · {Math.round(road.length_m)} m
+        </p>
+      )}
+    </div>
+  )
+}
+
+async function refresh(queryClient: ReturnType<typeof useQueryClient>, project: ProjectDetail, subject: SubjectProps) {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: priorityQueryKeys.all(project.id) }),
-    queryClient.invalidateQueries({ queryKey: priorityQueryKeys.history(findingId) }),
+    queryClient.invalidateQueries({ queryKey: historyKey(project, subject) }),
     queryClient.invalidateQueries({ queryKey: projectQueryKeys.detail(project.id) }),
     queryClient.invalidateQueries({ queryKey: ['projects', project.id, 'findings'] }),
+    queryClient.invalidateQueries({ queryKey: roadRiskQueryKeys.all(project.id) }),
   ])
 }
 
-/** FR-43: plan a field inspection (owner and date). */
-export function PlanInspectionDialog({ project, finding, onClose }: { project: ProjectDetail; finding: Finding; onClose: () => void }) {
+/** FR-43: plan a field inspection (owner and date) of a finding or, from road risk, a road. */
+export function PlanInspectionDialog({ project, finding, road, onClose }: SubjectProps & { project: ProjectDetail; onClose: () => void }) {
   const queryClient = useQueryClient()
   const [owner, setOwner] = useState('')
   const [day, setDay] = useState(dateIn(7))
   const plan = useMutation({
-    mutationFn: () => planInspection(finding.id, { owner_user_id: owner, planned_date: day }),
+    mutationFn: () => {
+      const body = { owner_user_id: owner, planned_date: day }
+      if (finding) return planInspection(finding.id, body)
+      return planRoadInspection(project.id, road?.section_id ?? '', body)
+    },
     onSuccess: async () => {
-      await refresh(queryClient, project, finding.id)
+      await refresh(queryClient, project, { finding, road })
       onClose()
     },
     meta: { success: 'Inspection planned.' },
   })
   return (
     <Dialog title="Plan inspection" onClose={onClose}>
-      <div className="space-y-0.5 text-sm text-asphalt-600">
-        <p className="font-medium text-asphalt-900">{typeLabel(finding.type_key)}</p>
-        <LocationLine location={finding.location} confirmed={finding.location_quality === 'reviewer_confirmed'} />
-      </div>
+      <SubjectHeader finding={finding} road={road} />
       <form
         className="space-y-4"
         onSubmit={(event) => {
@@ -145,19 +182,26 @@ export function PlanInspectionDialog({ project, finding, onClose }: { project: P
 }
 
 /** S13: record the result (inspected / resolved with a note or photo), or reopen. */
-export function InspectionDialog({ project, finding, onClose }: { project: ProjectDetail; finding: Finding; onClose: () => void }) {
-  const history = useQuery({ queryKey: priorityQueryKeys.history(finding.id), queryFn: ({ signal }) => inspectionHistory(finding.id, signal) })
+export function InspectionDialog({ project, finding, road, onClose }: SubjectProps & { project: ProjectDetail; onClose: () => void }) {
+  const history = useQuery({
+    queryKey: historyKey(project, { finding, road }),
+    queryFn: ({ signal }) => (finding ? inspectionHistory(finding.id, signal) : roadInspectionHistory(project.id, road?.section_id ?? '', signal)),
+  })
   const current = history.data?.at(-1)
   const earlier = history.data?.slice(0, -1).reverse() ?? []
   return (
     <Dialog title="Inspection" onClose={onClose}>
-      <div className="space-y-0.5 text-sm text-asphalt-600">
-        <p className="font-medium text-asphalt-900">{typeLabel(finding.type_key)}</p>
-        <LocationLine location={finding.location} confirmed={finding.location_quality === 'reviewer_confirmed'} />
-      </div>
+      <SubjectHeader finding={finding} road={road} />
       {history.isPending && <SkeletonRows rows={2} />}
       {history.isError && <ErrorMessage title="Could not load the inspection" error={history.error} onRetry={() => void history.refetch()} />}
-      {current && <CurrentInspection key={`${current.id}:${current.status}:${current.has_evidence}`} project={project} finding={finding} inspection={current} />}
+      {current && (
+        <CurrentInspection
+          key={`${current.id}:${current.status}:${current.has_evidence}`}
+          project={project}
+          subject={{ finding, road }}
+          inspection={current}
+        />
+      )}
       {earlier.length > 0 && (
         <section className="space-y-2">
           <h3 className="font-medium">Earlier inspections</h3>
@@ -212,7 +256,7 @@ function InspectionSummary({ inspection }: { inspection: Inspection }) {
   )
 }
 
-function CurrentInspection({ project, finding, inspection }: { project: ProjectDetail; finding: Finding; inspection: Inspection }) {
+function CurrentInspection({ project, subject, inspection }: { project: ProjectDetail; subject: SubjectProps; inspection: Inspection }) {
   const queryClient = useQueryClient()
   const { me } = useAuth()
   const [note, setNote] = useState('')
@@ -229,7 +273,7 @@ function CurrentInspection({ project, finding, inspection }: { project: ProjectD
     (hasProjectPermission(project, 'inspection.plan') || inspection.owner_user_id === me?.user.id)
   const canReopen = !project.archived && hasProjectPermission(project, 'inspection.reopen') && inspection.status === 'resolved'
 
-  const done = () => refresh(queryClient, project, finding.id)
+  const done = () => refresh(queryClient, project, subject)
   const record = useMutation({
     mutationFn: (status: 'inspected' | 'resolved') => recordInspection(inspection.id, { status, outcome_note: note.trim() || undefined }),
     onSuccess: done,

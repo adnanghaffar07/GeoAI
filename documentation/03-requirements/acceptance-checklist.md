@@ -104,3 +104,16 @@ When every line passes, version 1 is finished. Each test points to the requireme
 | AC-48 | The app handles the expected number of photos; timings are measured and recorded. | NFR-11 | Auto + Manual | P9 | |
 | AC-49 | A backup is restored successfully onto a fresh server. | NFR-12 | Manual | P10 | |
 | AC-50 | Monitoring alerts on failed jobs and slow queues. | NFR-12 | Manual | P10 | |
+
+## 9. Added after sign-off (change control)
+
+| # | Test | Proves | How | When | ✅ |
+|---|------|--------|-----|------|----|
+| AC-53 | A visitor sends "Request access"; nothing but the request is created; a second waiting request for the same email and the 6th request in an hour from one address are refused; a filled robot field is silently ignored. | FR-56 | Auto | CR-004 || ✅ 2026-10-28 |
+| AC-54 | Only a platform admin can list, approve or reject requests (others: 401/403); approving creates the organization and an invitation that makes the contact its admin; a request can be decided only once; a rejection needs a reason; a new link replaces the old one. | FR-57 | Auto + Manual | CR-004 || ✅ 2026-10-28 |
+| AC-55 | The platform admin role can be given or removed only with the server command; it is recorded in the history; unknown or deactivated accounts are refused. | FR-57 | Auto | CR-004 || ✅ 2026-10-28 |
+| AC-56 | Searching a place and choosing a result sets the survey area (outline for areas, strip for roads, 150 m around a point); coordinates find the nearest road. | FR-58 | Auto + Manual | 2026-10-28 || ✅ automated with sample answers 2026-10-28; live OpenStreetMap check pending on the owner's site |
+| AC-57 | A 1 km road at 30 m width gives about 30,000 m²; crossing roads join into one valid shape; separate roads become parts of one area; a drawn road is joined to the existing area; the result is accepted when the project is saved. | FR-59 | Auto + Manual | 2026-10-28 || ✅ 2026-10-28 |
+| AC-58 | New photos not yet sent to the AI are counted on Overview, Photos, after upload and on Home, and one button sends them all. | FR-60 | Auto + Manual | 2026-10-23 || ✅ 2026-10-23 |
+| AC-59 | Trial-model results carry the TRIAL label on every screen and in reports; the trial model refuses a model file whose fingerprint differs from the tested one. | FR-61 | Auto | CR-003 || ✅ 2026-10-22 |
+| AC-60 | Re-run AC-53 to AC-59 on the live deployment during P9. | FR-56–FR-61 | Manual | P9 | |

@@ -18,7 +18,7 @@ Each line has a number (like `FR-12`) so we can point to it later: "FR-12 is bui
 
 | ID | Requirement |
 |----|-------------|
-| FR-01 | Users sign in with email and password. There is no public sign-up; people join by invitation only. |
+| FR-01 | Users sign in with email and password. There is no public sign-up; people join by invitation only. *(2026-10-28, CR-004: a new organization may send a public **request**; it creates no account. Accounts are still created only through an invitation link, see FR-56.)* |
 | FR-02 | An organization admin can invite people by email. Invitations expire after 7 days and work only once. |
 | FR-03 | An organization admin can change a person's role or remove them. Removed people lose access immediately. |
 | FR-04 | The roles and what each may do follow `03-requirements/permission-matrix.md`. |
@@ -154,3 +154,16 @@ Each line has a number (like `FR-12`) so we can point to it later: "FR-12 is bui
 
 - Suggesting which road a finding belongs to (the reviewer confirms)
 - Suggesting possible duplicate findings, and letting a reviewer merge them
+
+## 13. Added after sign-off (change control)
+
+| ID | Requirement | Change |
+|----|-------------|--------|
+| FR-56 | A new organization can request access from the sign-in page (organization name, city or agency, contact name, work email, optional phone and note; no password). Requests are limited per network address, one waiting request per email, and protected by a hidden robot trap. | CR-004, 2026-10-28 |
+| FR-57 | A **platform admin** (given only by a server command) sees all requests, approves them (creates the organization, its placeholder settings and a one-time admin invitation link to send) or rejects them with a reason, and can make a new invitation link for an approved request. Every step is recorded. | CR-004, 2026-10-28 |
+| FR-58 | The survey area can be set by searching a road, address, neighbourhood, city or coordinates (OpenStreetMap search; only the typed words are sent). | 2026-10-28 |
+| FR-59 | A road found by search or drawn on the map becomes a strip of a chosen width (20 / 30 / 50 m); areas and roads can be combined; overlapping parts are joined so the saved area is always valid. | 2026-10-28 |
+| FR-60 | New photos that the AI has not checked are counted and shown with one button to send them all (Overview, Photos, after upload, and Home). | 2026-10-23 |
+| FR-61 | Results from the trained but not yet approved model are labelled "TRIAL MODEL: accuracy not approved" everywhere they appear (photos, findings, review, reports); an empty result is never shown as "no damage". | CR-003, 2026-10-22 |
+
+**Version 2 research (not V1):** forecasting which roads are likely to deteriorate (`04-design/forecasting-roadmap.md`, draft, needs CR-005).
