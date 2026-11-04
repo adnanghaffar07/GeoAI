@@ -14,6 +14,7 @@ from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.core.origin_check import origin_check_middleware
 from app.core.request_context import request_id_middleware
+from app.core.security_headers import security_headers_middleware
 
 
 def create_app() -> FastAPI:
@@ -31,6 +32,8 @@ def create_app() -> FastAPI:
     # Middleware runs outermost-last: the request ID is assigned first, then the Origin check.
     app.middleware("http")(origin_check_middleware)
     app.middleware("http")(request_id_middleware)
+    # Outermost (P9): the headers are on every answer, refusals and errors included.
+    app.middleware("http")(security_headers_middleware)
     register_error_handlers(app)
     app.include_router(api_router)
     logging.getLogger("geoinfralens").info(

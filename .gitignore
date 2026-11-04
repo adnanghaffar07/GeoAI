@@ -46,3 +46,6 @@ _backups/
 ml/forecasting/models/*/work/
 *.npy
 *.npz
+
+# P9.5 speed test working copy (the report is copied to documentation\06-demo)
+backend/p9-load-report.md

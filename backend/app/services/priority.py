@@ -258,19 +258,26 @@ def scores_for(
             )
         )
     }
+    now = utc_now()
+    changed = []
     for finding_id, (score, breakdown) in results.items():
         data = breakdown.model_dump()
         row = stored.get(finding_id)
         if row is not None and float(row.score) == score and row.breakdown == data:
             continue  # unchanged: nothing to write
-        statement = pg_insert(PriorityScore).values(
-            id=uuid.uuid4(),
-            finding_id=finding_id,
-            priority_config_id=config.id,
-            score=Decimal(str(score)),
-            breakdown=data,
-            computed_at=utc_now(),
+        changed.append(
+            {
+                "id": uuid.uuid4(),
+                "finding_id": finding_id,
+                "priority_config_id": config.id,
+                "score": Decimal(str(score)),
+                "breakdown": data,
+                "computed_at": now,
+            }
         )
+    # P9.5: one statement per 1,000 changed scores (was one per score: 2.5 s for 2,500 findings).
+    for start in range(0, len(changed), 1000):
+        statement = pg_insert(PriorityScore).values(changed[start : start + 1000])
         db.execute(
             statement.on_conflict_do_update(
                 index_elements=["finding_id", "priority_config_id"],
