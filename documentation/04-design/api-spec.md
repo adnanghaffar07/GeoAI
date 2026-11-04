@@ -277,3 +277,18 @@ Section 3.10 Road risk and alerts (`backend/app/api/road_risk.py`). Owner decisi
 
 Differences from roadmap 7.3 (decided in F4c): risk history is per project (`/projects/{id}/road-sections/{id}/risk`) so permissions follow the project; `weather-summary?days=30` became `/weather` (7-day outlook plus the recent weather inputs); no `horizon` (30 days only).
 
+## Implementation notes (F4d part 2, F4e, CR-006, personal notifications, P9; 2026-11-02 to 11-03, additive)
+
+| Method | Path | Who | Answer |
+|--------|------|-----|--------|
+| GET | `/projects/{id}/road-sections/{section_id}/inspections` | `risk.view` + setting | Inspection history of one road (newest first), InspectionOut list |
+| PUT | `/projects/{id}/forecast-settings` | `risk.configure` | Body may also carry `assistant_enabled` (CR-006, default false). Answer gains `assistant_enabled` |
+| POST | `/projects/{id}/assistant` | `risk.view` + setting; assistant switched on | Body `{question}` (max 500 characters). `{answer, sources [{label, path}], used_model, questions_left_today, label, notice}`. Facts come from the app's own data; the free local model (Ollama) only rephrases and its reply is checked (no percentages, no new numbers); otherwise the built-in answer. 50 questions per person per day (`429` after). Audited `assistant.asked`. `409` when switched off |
+| GET | `/notifications` | signed in | Now `{items, unread_count, manages_projects}`: project alerts of the projects the person manages **plus personal notifications** (type `inspection_assigned`, "You have been asked to inspect … by <day>"). `manages_projects` is true for managers and for anyone with a personal notification (shows the bell) |
+| POST | `/notifications/read-all` | signed in | `204`; marks every listed notification read |
+| GET | `/notifications/{alert_id}` | manager of the alert's project, or the person a personal notification is for | One alert with `details` (roads, reasons, sources; personal: `path`, `planned_by`). `404` otherwise |
+| POST | `/notifications/{alert_id}/read` | same as above | `204` |
+
+Personal notifications are created when an inspection (finding or road) is planned for someone else, and closed when it is resolved (opened again on reopen).
+
+**Every answer (P9.2, 2026-11-03)** carries security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=(self)`, `Cross-Origin-Opener-Policy: same-origin`; `/api/` answers without their own caching rule get `Cache-Control: no-store`. A test (`test_p9_security.py`) fails if any new route answers without sign-in.

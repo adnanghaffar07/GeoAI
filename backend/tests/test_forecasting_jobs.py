@@ -55,7 +55,8 @@ def at(year: int, month: int, day: int, hour: int) -> datetime:
 
 
 def test_daily_is_due_from_six_once_a_day() -> None:
-    assert not forecasting.daily_due(at(2026, 11, 2, 5), None)
+    assert forecasting.daily_due(at(2026, 11, 2, 5), None)  # never run yet: at once, at any hour
+    assert not forecasting.daily_due(at(2026, 11, 2, 5), date(2026, 11, 1))
     assert forecasting.daily_due(at(2026, 11, 2, 6), None)
     assert forecasting.daily_due(at(2026, 11, 2, 6), date(2026, 11, 1))
     assert not forecasting.daily_due(at(2026, 11, 2, 23), date(2026, 11, 2))
@@ -71,7 +72,8 @@ def test_weekly_is_due_from_monday_seven_and_caught_up_later() -> None:
         at(2026, 11, 4, 1), date(2026, 10, 26)
     )  # missed Monday: caught up
     # UTC times are read as Chicago time: 12:30 UTC on a Monday is 06:30 in Chicago (winter)
-    assert not forecasting.weekly_due(datetime(2026, 11, 2, 12, 30, tzinfo=UTC), None)
+    assert not forecasting.weekly_due(datetime(2026, 11, 2, 12, 30, tzinfo=UTC), date(2026, 10, 26))
+    assert forecasting.weekly_due(at(2026, 11, 2, 6), None)  # never run yet: at once
 
 
 def test_off_without_a_forecast_database(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -341,6 +343,25 @@ def test_a_failed_set_up_is_recorded(
 
     monkeypatch.setattr(area_check, "run", no_network)
     row = forecasting.setup(db, row.id)
-    assert row.status == "failed" and "Could not reach" in (row.message or "")
+    assert row.status == "failed"
+    assert row.message == (
+        "Set-up failed. OpenStreetMap could not be reached. "
+        "This is usually a short internet or service problem."
+    )
     run = db.scalar(select(RiskRun).where(RiskRun.kind == "setup"))
     assert run is not None and run.status == "failed"
+
+
+def test_first_results_are_worked_out_right_after_set_up(monkeypatch: pytest.MonkeyPatch) -> None:
+    from types import SimpleNamespace
+
+    from app.workers import forecast_tasks
+
+    ticks: list[object] = []
+    for status, expected in (("ready", 1), ("failed", 1)):
+        monkeypatch.setattr(
+            forecasting, "setup", lambda _db, _id, status=status: SimpleNamespace(status=status)
+        )
+        monkeypatch.setattr(forecasting, "tick", lambda db: ticks.append(db) or {})
+        forecast_tasks.setup_area(str(uuid.uuid4()))
+        assert len(ticks) == expected  # only a finished set-up starts the first run

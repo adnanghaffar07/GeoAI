@@ -24,7 +24,7 @@ Status: ✅ passed · ⏳ to run / owner · ◐ partly · ❌ failed. Updated as
 | AC-45 | Loading, empty, error, success state on every screen | P9.4 walk-through | ⏳ P9.4 |
 | AC-46 | AI accuracy on pilot photos | Needs partner photos (PI-04, PI-17) | ❌ blocked (partner) |
 | AC-47 | Real users complete the main tasks | P9.6 | ⏳ P9.6 |
-| AC-48 | Expected volume handled, timings recorded | P9.5 | ⏳ P9.5 |
+| AC-48 | Expected volume handled, timings recorded | P9.5 `tests/p9_load.py`, `p9-load-report.md` | ✅ (2026-11-03) |
 | AC-49, AC-50 | Backup restore, monitoring | P10 | — (P10) |
 | AC-53 – AC-59 | Request access, platform admin, place search, roads, AI-check banner, trial label | `test_organization_requests.py`, `test_cli.py`, `test_geo.py`, `test_trial_model.py`, frontend tests | ✅ |
 | AC-60 | AC-53 – AC-59 on the live deployment | Manual on https://geo-ai-liart.vercel.app | ⏳ owner |
@@ -46,7 +46,7 @@ Status: ✅ passed · ⏳ to run / owner · ◐ partly · ❌ failed. Updated as
 | P9.2 Security | Built 2026-11-03: `test_p9_security.py` (route sign-in coverage, cross-organization swap for the new features, headers, cookie, secrets scan) and security headers added to every API answer. ✅ 292 passed 2026-11-03. `npm audit`: 1 high in `undici` (test-only, via jsdom) fixed with `npm audit fix` → 0 vulnerabilities (2026-11-03) |
 | P9.3 Failure paths | ✅ 299 passed 2026-11-03. Already covered: DB/queue down, queue down for analysis/reports/set-up, broken detector, failed set-up, bad photos, laptop off (catch-up + data-problem alert). Added `test_p9_failures.py`: report that cannot be built, Update now with worker down, one failing job part, weather and outlook downloads failing, AI model missing or Ollama down. |
 | P9.4 Accessibility | ◐ Automatic checks ✅ 113 frontend tests passed 2026-11-03 (`accessibility.test.tsx`, axe-core, WCAG 2.1 A/AA: sign-in, request access, projects, road risk, road-risk settings, My inspections, alerts). ⏳ owner keyboard walk-through below |
-| P9.5 Performance | ⏳ |
+| P9.5 Performance | ✅ 2026-11-03: all 19 screens and downloads within target at 10,000 photos / 5,004 findings / 1,000 inspections / 6,003 roads (`p9-load-report.md`). First run found the priority list slow the first time (2.55 s: scores saved one by one); fixed by saving in batches (0.95 s). Slowest: road risk ~1.1-1.3 s, PDF report ~21 s. |
 | P9.6 Usability | ⏳ owner / team lead |
 | P9.7 Fixes and sign-off | ⏳ |
 

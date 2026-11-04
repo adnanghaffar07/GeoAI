@@ -14,7 +14,11 @@ TICK_TASK = "forecast.tick"
 @celery_app.task(name=SETUP_TASK)
 def setup_area(settings_id: str) -> None:
     with get_session_factory()() as db:
-        forecasting.setup(db, uuid.UUID(settings_id))
+        row = forecasting.setup(db, uuid.UUID(settings_id))
+        if row.status == "ready":
+            # Work out the first results now instead of waiting for the next hourly check, so the
+            # Road risk page fills in a few minutes after set-up (owner feedback 2026-11-04).
+            forecasting.tick(db)
 
 
 @celery_app.task(name=TICK_TASK)

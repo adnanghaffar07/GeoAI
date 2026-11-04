@@ -115,7 +115,10 @@ def test_weather_download_failing_is_recorded_and_retried(
         select(RiskRun).where(RiskRun.kind == "daily_factors", RiskRun.status == "failed")
     )
     assert run is not None and run.message is not None
-    assert run.message.startswith("Weather or risk factors failed") and "noaa" in run.message
+    assert run.message == (
+        "Weather and risk factors could not be updated. The weather history service (NOAA) could not be reached. "
+        "This is usually a short internet or service problem."
+    )
     row = _row(db, s)
     db.refresh(row)
     assert row.last_daily_run == date(2026, 10, 30)  # not marked done: the next hour tries again
@@ -135,7 +138,10 @@ def test_outlook_download_failing_is_recorded(s: Setup, db: Session) -> None:
     )
     db.commit()
     run = db.scalar(select(RiskRun).where(RiskRun.kind == "outlook", RiskRun.status == "failed"))
-    assert run is not None and "Weather outlook failed" in (run.message or "")
+    assert run is not None and run.message == (
+        "Weather outlook could not be updated. The National Weather Service did not answer in time. "
+        "This is usually a short internet or service problem."
+    )
     assert db.scalar(select(func.count()).select_from(WeatherOutlook)) == before
 
 
@@ -170,3 +176,25 @@ def test_assistant_answers_without_the_model(
     body = reply.json()
     assert body["used_model"] is False and body["answer"] and body["sources"]
     assert "ollama" not in body["answer"].lower() and "not found" not in body["answer"]
+
+
+@pytest.mark.parametrize(
+    ("error", "expected"),
+    [
+        (
+            "HTTPSConnectionPool(host='www.ncei.noaa.gov', port=443): Read timed out.",
+            "The weather history service (NOAA) did not answer in time. This is usually a short internet or service problem.",
+        ),
+        (
+            "https://data.cityofchicago.org/x answered HTTP 503 after 3 tries",
+            "Chicago's open data portal was busy or had a problem on its side. This is usually a short internet or service problem.",
+        ),
+        (
+            "Name or service not known",
+            "A data service could not be reached. Check that the internet is on.",
+        ),
+        ("area too large", "Unexpected problem: area too large"),
+    ],
+)
+def test_download_problems_are_explained_in_plain_words(error: str, expected: str) -> None:
+    assert forecasting.plain_reason(error) == expected

@@ -93,9 +93,21 @@ function RoadRisk({ project, status }: { project: ProjectDetail; status: Forecas
   const list = useQuery({
     queryKey: roadRiskQueryKeys.list(project.id, level, page),
     queryFn: ({ signal }) => getRiskList(project.id, { level, page, pageSize: PAGE_SIZE }, signal),
+    // Set up, but the first results are still being worked out: look again every 15 seconds.
+    refetchInterval: (query) => (query.state.data && !query.state.data.levels_run && !query.state.data.factors_run ? 15_000 : false),
   })
-  const mapData = useQuery({ queryKey: roadRiskQueryKeys.map(project.id), queryFn: ({ signal }) => getRiskMap(project.id, signal) })
-  const weather = useQuery({ queryKey: roadRiskQueryKeys.weather(project.id), queryFn: ({ signal }) => getWeather(project.id, signal) })
+  const firstRun = Boolean(list.data && !list.data.levels_run && !list.data.factors_run)
+  const mapData = useQuery({
+    queryKey: roadRiskQueryKeys.map(project.id),
+    queryFn: ({ signal }) => getRiskMap(project.id, signal),
+    refetchInterval: firstRun ? 15_000 : false,
+  })
+  const weather = useQuery({
+    queryKey: roadRiskQueryKeys.weather(project.id),
+    queryFn: ({ signal }) => getWeather(project.id, signal),
+    refetchInterval: firstRun ? 15_000 : false,
+  })
+  const checkNow = () => void Promise.all([list.refetch(), mapData.refetch(), weather.refetch()])
   const canPlan = hasProjectPermission(project, 'inspection.plan') && !project.archived
   const lastPage = list.data ? Math.max(1, Math.ceil(list.data.total / PAGE_SIZE)) : 1
   const update = (changes: Record<string, string | null>) => {
@@ -167,7 +179,25 @@ function RoadRisk({ project, status }: { project: ProjectDetail; status: Forecas
         </div>
         {list.isPending && <SkeletonRows rows={4} />}
         {list.isError && <ErrorMessage title="Could not load the road list" error={list.error} onRetry={() => void list.refetch()} />}
+        {list.isSuccess && firstRun && (
+          <div className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-sm" role="status">
+            <div className="flex items-start gap-3">
+              <Hourglass className="mt-0.5 size-5 shrink-0 animate-pulse text-lane-600" aria-hidden />
+              <div>
+                <p className="font-medium">Working out the first results…</p>
+                <p className="text-asphalt-600">
+                  The roads are ready; the weather and risk factors are being worked out now. This usually takes a few minutes (longer on a
+                  slow internet connection). This page fills in by itself.
+                </p>
+              </div>
+            </div>
+            <Button variant="secondary" busy={list.isFetching} onClick={checkNow}>
+              Check now
+            </Button>
+          </div>
+        )}
         {list.isSuccess &&
+          !firstRun &&
           (list.data.items.length === 0 ? (
             <EmptyState icon={<ListChecks />} title={level ? 'No roads at this level' : 'No road levels yet'}>
               {level

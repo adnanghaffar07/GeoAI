@@ -442,8 +442,12 @@ Each phase adds its tables with one migration, which is tested both forwards and
 |-----------|------|--------|-----|
 | 0007 | 2026-10-28 | `users.is_platform_admin` bool, default false | CR-004: platform admin |
 | 0008 | 2026-10-28 | New table `organization_requests` (below) | CR-004: organizations request access, platform admin approves |
+| 0009 | 2026-10-30 | New tables `forecast_settings`, `forecast_sections`, `risk_runs`, `risk_levels`, `risk_factor_values`, `weather_outlooks`, `alerts`, `alert_reads`, `forecast_monitoring`; optional `inspections.risk_level_id` | Road-risk forecasting in the app (F4b; columns in `04-design/forecasting-f4b-design.md`) |
+| 0010 | 2026-10-30 | `forecast_settings.visible_to_roles` (JSON, default technical reviewers and viewers); `inspections.project_id` (filled from the finding, required), `inspections.section_id` (→ forecast_sections), `inspections.finding_id` now optional, rule "exactly one of finding or road", one open inspection per road | F4d: who sees road risk; road inspections without a finding. The downgrade refuses while road inspections exist |
+| 0011 | 2026-11-02 | `forecast_settings.assistant_enabled` bool, default false | CR-006: "Ask about road risk" on/off per project |
+| 0012 | 2026-11-03 | `alerts.user_id` (→ users, optional; set = personal notification), index `(user_id, created_at)`, alert type `inspection_assigned` | The person asked to inspect is notified |
 
-Both are **add-only**: no existing column or row changes meaning, and both downgrade cleanly.
+All are **add-only** except 0010, which makes `inspections.finding_id` optional (existing rows keep their finding); every migration downgrades cleanly (0010 only while no road inspections exist).
 
 **`organization_requests`**: a new organization asking to use the app. Nothing else is created until a platform admin approves.
 | Column | Type | Notes |
@@ -464,4 +468,4 @@ Index: `(status, created_at)` for the review lists. Approval creates the organiz
 
 Not stored: survey-area helper results (`POST /geo/area-from-place` only calculates; the shape is saved as the project's `boundary` like any drawn area).
 
-Planned, not built (forecasting track, draft): `road_sections`, `weather_stations`, `weather_daily`, `section_features`, `risk_runs`, `risk_scores`, `inspections.risk_score_id` (see `04-design/forecasting-roadmap.md` §7.1).
+Forecasting (built, migrations 0009–0012): the app database holds the tables above; the bulk forecasting data (weather history, 311 reports, section features) lives in the separate `forecast` database (`ml/forecasting/README.md`). The roadmap's draft names (`road_sections`, `risk_scores`, `inspections.risk_score_id`) became `forecast_sections`, `risk_levels` and `inspections.risk_level_id`.

@@ -63,7 +63,7 @@ const LIST: RiskList = {
   notice: 'Risk estimate, not a confirmed defect.',
 }
 
-function renderAt(project: ProjectDetail, route: string, status: ForecastStatusInfo = STATUS) {
+function renderAt(project: ProjectDetail, route: string, status: ForecastStatusInfo = STATUS, list: RiskList = LIST) {
   const sent: { url: string; method: string; body: unknown }[] = []
   vi.spyOn(globalThis, 'fetch').mockImplementation((input, init) => {
     const url = String(input)
@@ -85,7 +85,7 @@ function renderAt(project: ProjectDetail, route: string, status: ForecastStatusI
     if (url.endsWith('/v1/projects/p1')) return Promise.resolve(json(project))
     if (url.includes('/forecast-settings')) return Promise.resolve(json(status))
     if (url.includes('/risk/map')) return Promise.resolve(json({ type: 'FeatureCollection', features: [] }))
-    if (url.includes('/risk?')) return Promise.resolve(json(LIST))
+    if (url.includes('/risk?')) return Promise.resolve(json(list))
     if (url.includes('/weather')) return Promise.resolve(json({ outlook: null, recent: null }))
     if (url.includes('/members')) return Promise.resolve(json(page([{ id: 'm1', user_id: 'u2', email: 'bo@city.test', full_name: 'Bo Worker', role: 'field_collector', added_at: '' }])))
     if (url.includes('/inspections?mine=true'))
@@ -111,6 +111,13 @@ describe('Road risk', () => {
   it('shows the tab only where road risk is on and allowed', async () => {
     renderAt(MANAGER, '/projects/p1/road-risk')
     expect(await screen.findByRole('link', { name: 'Road risk' })).toBeInTheDocument()
+  })
+
+  it('says the first results are being worked out right after set-up, with Check now', async () => {
+    renderAt(MANAGER, '/projects/p1/road-risk', STATUS, { ...LIST, items: [], total: 0, levels_run: null, factors_run: null })
+    expect(await screen.findByText('Working out the first results…')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Check now' })).toBeInTheDocument()
+    expect(screen.queryByText('No road levels yet')).not.toBeInTheDocument()
   })
 
   it('hides the tab when road risk is off', async () => {

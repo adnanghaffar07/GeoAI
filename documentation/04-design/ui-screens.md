@@ -264,3 +264,24 @@ Approved by the owner to make the app easier for non-technical users. **No featu
 | All screens | Hand (pointer) cursor on everything clickable; "not allowed" cursor on switched-off buttons | — |
 
 Planned, not built: "Road risk" tab and forecast alerts (forecasting track, `04-design/forecasting-roadmap.md` §7.4).
+
+## 6. Changes after the freeze (2026-10-30 to 2026-11-03)
+
+**New screens** (details in `04-design/forecasting-f4d-design.md`, `forecasting-f4e-design.md`, `cr-006-ask-road-risk-proposal.md`)
+
+| Screen | Address | Who | What |
+|--------|---------|-----|------|
+| Road risk tab | `/projects/{id}/road-risk` | `risk.view` (managers; other roles if the manager allows) | TRIAL FORECAST label and notice, level meaning, map + list (high / medium / low, plain reasons), weather strip, project alerts, "Ask about road risk" box (when switched on), downloads; set-up progress ("Step N of 4") while setting up |
+| Road page | `/projects/{id}/road-risk/{section_id}` | `risk.view` | Level history, reasons, risk factors, inspections of the road, **Plan inspection** |
+| Road-risk settings | `/projects/{id}/settings/road-risk` | `risk.configure` | Switch on/off, Update now, who else can see it, assistant on/off |
+| Alerts | `/notifications`, `/notifications/{id}` | managers; anyone with a personal notification | List (unread first, Mark all as read); alert page with roads, reasons, source, suggested action, Plan inspection; personal: "Open my inspections" |
+
+**Changed screens**
+
+| Change | Where |
+|--------|-------|
+| **Back + breadcrumb** on every page except Home; Back goes one level up (not browser history) | All pages (`components/page-nav.tsx`) |
+| Visual refresh, same colours: rounded cards with shadow, gradient buttons, pill project tabs, gradient menu, bigger titles | Whole app |
+| Bell / **Alerts** menu item with unread count | Main menu |
+| **Assigned to me** section; road inspections in My inspections | Priority tab |
+| "Road risk" tab appears only when road risk is on and allowed | Project tabs |

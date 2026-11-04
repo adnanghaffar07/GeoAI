@@ -68,6 +68,13 @@ Added after P7 (2026-10-19 to 2026-10-28):
 - **OpenStreetMap Nominatim** for the place search on the survey-area map (free, called from the browser only when the person presses Search; replaceable with `VITE_GEOCODER_URL`).
 - **PostGIS `ST_Buffer` / `ST_Union`** (no new library) to turn roads into strips and join areas (`POST /geo/area-from-place`).
 - **Terra Draw line mode** for "Draw a road".
+
+Added for forecasting and P9 (2026-10-30 to 2026-11-03):
+- **Celery Beat** (`beat` service) runs the hourly `forecast.tick`; a separate PostgreSQL database `forecast` holds the bulk forecasting data; LightGBM / NumPy in `ml/forecasting` (CR-005).
+- **Free weather and city data:** NOAA (daily weather), the National Weather Service 7-day forecast, Chicago 311 open data. Requests name the app only (no personal email).
+- **Ollama 0.5.7** in Docker with the free model **qwen2.5:0.5b** (about 0.4 GB) for "Ask about road risk" (CR-006); optional: without it the built-in answer is used.
+- **axe-core** (test-only) for automatic accessibility checks in the frontend tests (P9.4).
+- **Live demo:** Vercel (screens) + a Cloudflare quick tunnel to the backend on the owner's laptop (`scripts/start-live.bat`); always-on hosting is P10.
 - **Hosting for the demo:** Vercel (frontend, `vercel.json` forwards `/api`), backend in Docker on the developer laptop exposed with a **Cloudflare quick tunnel**. This is temporary; P10 decides real hosting (options in the Word technical document §14 and the Oracle free-server guide).
 
 ## 6. Deferred (not in V1 unless a real need appears)

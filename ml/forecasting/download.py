@@ -110,12 +110,22 @@ def download_socrata_csv(
 
 
 def download_file(session: requests.Session, url: str, out_path: Path, *, method: str = "GET", sleep=time.sleep, **kwargs: Any) -> None:
-    response = request_with_retries(session, method, url, sleep=sleep, stream=True, **kwargs)
+    """Download to a .part file, then rename. A connection that drops or stalls while the file is
+    coming in is retried too (not only the first answer), so one slow moment does not fail the job."""
     tmp_path = out_path.with_suffix(".part")
-    with tmp_path.open("wb") as handle:
-        for block in response.iter_content(1 << 20):
-            handle.write(block)
-    tmp_path.replace(out_path)
+    for attempt in range(1, RETRIES + 1):
+        response = request_with_retries(session, method, url, sleep=sleep, stream=True, **kwargs)
+        try:
+            with tmp_path.open("wb") as handle:
+                for block in response.iter_content(1 << 20):
+                    handle.write(block)
+        except requests.RequestException as error:
+            if attempt == RETRIES:
+                raise RuntimeError(f"Could not reach {url}: the download stopped ({error})") from error
+            sleep(10 * attempt)
+            continue
+        tmp_path.replace(out_path)
+        return
 
 
 def download_arcgis_layers(

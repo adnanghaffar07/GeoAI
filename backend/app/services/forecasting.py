@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
@@ -87,8 +88,11 @@ def local_now(now: datetime) -> datetime:
 
 
 def daily_due(now: datetime, last: date | None) -> bool:
+    """From 06:00 once a day; never run yet (just set up, or "Update now") = at once."""
+    if last is None:
+        return True
     local = local_now(now)
-    return local.hour >= DAILY_HOUR and (last is None or last < local.date())
+    return local.hour >= DAILY_HOUR and last < local.date()
 
 
 def this_monday(now: datetime) -> date:
@@ -97,11 +101,14 @@ def this_monday(now: datetime) -> date:
 
 
 def weekly_due(now: datetime, last: date | None) -> bool:
+    """From Monday 07:00 once a week; never run yet = at once."""
+    if last is None:
+        return True
     local = local_now(now)
     monday = this_monday(now)
     if local.date() == monday and local.hour < WEEKLY_HOUR:
         return False
-    return last is None or last < monday
+    return last < monday
 
 
 # ---------- switching on and setting up ----------
@@ -275,7 +282,7 @@ def setup(db: Session, settings_id: uuid.UUID, session: Any = None) -> ForecastS
         db.rollback()
         row = db.get(ForecastSettings, settings_id)
         run = db.get(RiskRun, run.id)
-        row.status, row.message = "failed", f"Set-up failed: {str(error)[:500]}"
+        row.status, row.message = "failed", f"Set-up failed. {plain_reason(error)}"
         _finish(run, "failed", row.message)
         logger.warning("Forecast set-up failed for project %s: %s", row.project_id, error)
     db.commit()
@@ -345,7 +352,11 @@ def daily(
         except Exception as error:  # noqa: BLE001
             for row in rows:
                 run = _start_run(db, row.project_id, "daily_factors", today, LEVEL1)
-                _finish(run, "failed", f"Weather or risk factors failed: {str(error)[:400]}")
+                _finish(
+                    run,
+                    "failed",
+                    f"Weather and risk factors could not be updated. {plain_reason(error)}",
+                )
             db.commit()
             logger.warning("Daily forecasting failed for area %s: %s", area_key, error)
             continue
@@ -385,13 +396,50 @@ def _refresh_weather(fconn: Any, area: Any, session: Any) -> dict[str, Any]:
     return {f"weather_{k}": v for k, v in last.items()}
 
 
+# Plain words for download problems (shown in alerts and settings; details go to the log).
+_SOURCES = [
+    ("ncei.noaa.gov", "The weather history service (NOAA)"),
+    ("weather.gov", "The National Weather Service"),
+    ("cityofchicago.org", "Chicago's open data portal"),
+    ("overpass", "OpenStreetMap"),
+]
+
+
+def plain_reason(error: BaseException | str) -> str:
+    text_ = str(error)
+    low = text_.lower()
+    who = next((name for key, name in _SOURCES if key in low), None)
+    if any(w in low for w in ("timed out", "timeout", "did not answer")):
+        what = "did not answer in time"
+    elif any(
+        w in low
+        for w in (
+            "could not reach",
+            "connection",
+            "name or service",
+            "resolve",
+            "unreachable",
+            "download stopped",
+        )
+    ):
+        what = "could not be reached"
+    elif re.search(r"\b(429|5\d\d)\b", low):
+        what = "was busy or had a problem on its side"
+    else:
+        return f"Unexpected problem: {text_[:300]}"
+    if who:
+        return f"{who} {what}. This is usually a short internet or service problem."
+    return f"A data service {what}. Check that the internet is on."
+
+
 def _outlook(db: Session, row: ForecastSettings, today: date, session: Any, nws: Any) -> None:
     area = project_area(db, row.project_id)
     run = _start_run(db, row.project_id, "outlook", today, "nws")
     try:
         out = nws.fetch_outlook(session, area.lat, area.lon, today)
     except Exception as error:  # noqa: BLE001
-        _finish(run, "failed", f"Weather outlook failed: {str(error)[:400]}")
+        _finish(run, "failed", f"Weather outlook could not be updated. {plain_reason(error)}")
+        logger.warning("Weather outlook failed for project %s: %s", row.project_id, error)
         return
     issued = datetime.fromisoformat(out["issued_at"]) if out.get("issued_at") else datetime.now(UTC)
     db.add(
@@ -440,7 +488,7 @@ def weekly(db: Session, now: datetime, session: Any = None) -> dict[str, Any]:
     except Exception as error:  # noqa: BLE001
         for row in rows:
             run = _start_run(db, row.project_id, "weekly_levels", monday, version)
-            _finish(run, "failed", f"Weekly levels failed: {str(error)[:400]}")
+            _finish(run, "failed", f"Weekly levels could not be updated. {plain_reason(error)}")
         db.commit()
         logger.warning("Weekly Chicago levels failed: %s", error)
         return {"projects": 0, "failed": str(error)}

@@ -117,3 +117,15 @@ When every line passes, version 1 is finished. Each test points to the requireme
 | AC-58 | New photos not yet sent to the AI are counted on Overview, Photos, after upload and on Home, and one button sends them all. | FR-60 | Auto + Manual | 2026-10-23 || ✅ 2026-10-23 |
 | AC-59 | Trial-model results carry the TRIAL label on every screen and in reports; the trial model refuses a model file whose fingerprint differs from the tested one. | FR-61 | Auto | CR-003 || ✅ 2026-10-22 |
 | AC-60 | Re-run AC-53 to AC-59 on the live deployment during P9. | FR-56–FR-61 | Manual | P9 | |
+| AC-61 | Road risk is off until a project manager switches it on; set-up shows its progress; areas over 500 km² are refused. | CR-005 | Auto | F4 || ✅ 2026-11-03 |
+| AC-62 | Road risk shows levels (high / medium / low) and plain reasons, never a percentage or the raw model value; the TRIAL FORECAST label and notice appear on every screen and download. | CR-005, F4-D2 | Auto | F4 || ✅ 2026-11-03 |
+| AC-63 | The project manager chooses which other roles see road risk; hidden roles are refused. | CR-005 | Auto | F4d || ✅ 2026-11-03 |
+| AC-64 | Road inspections: plan, inspected, resolved, reopen; only one open per road; the owner sees it in My inspections. | CR-005 | Auto | F4d || ✅ 2026-11-03 |
+| AC-65 | Daily, weekly and monthly forecasting jobs run when due and catch up after the computer was off. | CR-005 | Auto | F4b || ✅ 2026-11-03 |
+| AC-66 | Alerts: one per event, no repeats, close by themselves, for project managers only. | CR-005 | Auto | F4e || ✅ 2026-11-03 |
+| AC-67 | "Ask about road risk": off by default; answers only from the data, with links; says "I don't know" otherwise; no percentage; 50 a day; kept in history; works without the model. | CR-006 | Auto | CR-006 || ✅ 2026-11-03 |
+| AC-68 | The person asked to inspect gets a personal notification that closes when resolved; "Assigned to me" in Priority. | 2026-11-03 | Auto | P9 || ✅ 2026-11-03 |
+| AC-69 | Every page except Home has Back (one level up) and a breadcrumb. | 2026-11-03 | Auto + Manual | P9 || ✅ automated 2026-11-03; owner walk-through pending |
+| AC-70 | Security headers on every answer; session cookie not readable by scripts; no secrets in the code; every route needs sign-in. | P9.2 | Auto | P9 || ✅ 2026-11-03 |
+
+Results of the whole checklist: `06-demo/p9-results.md`.

@@ -322,3 +322,25 @@ def test_flood_zones_server_error_is_reported(tmp_path):
             out_path=tmp_path / "x",
             sleep=no_sleep,
         )
+
+
+class StallingResponse(FakeResponse):
+    """Answers, then the connection stalls while the file is coming in (the NOAA "Read timed out" of 2026-11-04)."""
+
+    def iter_content(self, _size):
+        yield b"part"
+        raise download.requests.ConnectionError("Read timed out.")
+
+
+def test_download_file_retries_when_the_file_stops_coming_in(tmp_path):
+    out = tmp_path / "weather.csv"
+    session = FakeSession([StallingResponse(body=b"x"), FakeResponse(body=b"all of it")])
+    download.download_file(session, "https://www.ncei.noaa.gov/x.csv", out, sleep=no_sleep)
+    assert out.read_bytes() == b"all of it" and len(session.calls) == 2
+    assert not out.with_suffix(".part").exists()
+
+
+def test_download_file_gives_a_clear_error_after_the_last_try(tmp_path):
+    session = FakeSession([StallingResponse(body=b"x") for _ in range(download.RETRIES)])
+    with pytest.raises(RuntimeError, match="Could not reach https://www.ncei.noaa.gov/x.csv: the download stopped"):
+        download.download_file(session, "https://www.ncei.noaa.gov/x.csv", tmp_path / "w.csv", sleep=no_sleep)

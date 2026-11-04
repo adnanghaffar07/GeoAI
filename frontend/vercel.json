@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://accent-locking-hindu-duke.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://priest-eternal-sunglasses-stephen.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
