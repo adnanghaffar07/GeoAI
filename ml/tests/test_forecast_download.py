@@ -51,6 +51,7 @@ def test_plan_covers_every_source_and_marks_chicago_items():
         "traffic_counts",
         "soils",
         "bus_routes",
+        "hpms",
     }
     assert {name for name, job in jobs.items() if job["portal"]} == {
         "potholes_historical",
@@ -344,3 +345,41 @@ def test_download_file_gives_a_clear_error_after_the_last_try(tmp_path):
     session = FakeSession([StallingResponse(body=b"x") for _ in range(download.RETRIES)])
     with pytest.raises(RuntimeError, match="Could not reach https://www.ncei.noaa.gov/x.csv: the download stopped"):
         download.download_file(session, "https://www.ncei.noaa.gov/x.csv", tmp_path / "w.csv", sleep=no_sleep)
+
+
+def _json(data) -> FakeResponse:
+    return FakeResponse(body=json.dumps(data).encode())
+
+
+HPMS_CFG = {**areas.sources_for("chicago")["hpms"]}
+BOX = {"min_lon": -87.70, "min_lat": 41.85, "max_lon": -87.60, "max_lat": 41.90}
+
+
+def test_hpms_uses_the_state_of_the_area_and_the_newest_year_that_answers(tmp_path):
+    out = tmp_path / "hpms.geojson"
+    line = {"type": "LineString", "coordinates": [[-87.65, 41.87], [-87.64, 41.87]]}
+    piece = {"type": "Feature", "properties": {"iri": 180, "AADT": 12000}, "geometry": line}
+    session = FakeSession([
+        _json({"properties": {"relativeLocation": {"properties": {"state": "IL"}}}}),
+        _json({"error": {"code": 400, "message": "Service not found"}}),  # 2025 not published yet
+        _json({"fields": [{"name": "iri"}, {"name": "AADT"}, {"name": "rutting"}]}),  # 2024
+        _json({"type": "FeatureCollection", "features": [piece]}),
+    ])  # fmt: skip
+    assert download.download_hpms(session, HPMS_CFG, BOX, out, sleep=no_sleep) == 1
+    urls = [call[1] for call in session.calls]
+    assert "HPMS_FULL_IL_2025" in urls[1] and "HPMS_FULL_IL_2024" in urls[2]
+    assert session.calls[3][2]["params"]["outFields"] == "iri,rutting,AADT"  # only fields that exist, in config order
+    saved = json.loads(out.read_text())
+    assert saved["hpms"] == {"state": "IL", "year": 2024, "fields": ["iri", "rutting", "AADT"]}
+
+
+def test_hpms_is_optional_in_a_full_download(tmp_path, monkeypatch):
+    monkeypatch.setattr(download, "plan_downloads", lambda _src, _rules: [
+        {"name": "hpms", "file": "hpms.geojson", "kind": "hpms", "portal": False, "url": "x", "licence": "x"}])  # fmt: skip
+
+    def slow(*_a, **_k):
+        raise RuntimeError("Could not reach geo.dot.gov")
+
+    monkeypatch.setattr(download, "run_job", slow)
+    src = {**CHICAGO, "weather": {**CHICAGO["weather"], "stations": ["USW00094846"]}}
+    download.download_all(tmp_path, src, settings.rules(), terms_confirmed=False, session=FakeSession([]), sleep=no_sleep)  # no SystemExit

@@ -26,7 +26,7 @@ from forecasting import settings
 
 AREAS_DIR = settings.CONFIG_DIR / "areas"
 NAME_PATTERN = re.compile(r"^[a-z][a-z0-9_]{0,40}$")  # also a safe database schema name
-NATIONAL_KEYS = ["weather", "station_choice", "osm", "elevation", "flood_zones", "soils", "matching"]
+NATIONAL_KEYS = ["weather", "station_choice", "osm", "elevation", "flood_zones", "soils", "matching", "hpms"]
 
 
 @dataclass(frozen=True)
@@ -100,7 +100,7 @@ def sources_for(key: str, national: dict[str, Any] | None = None, areas_dir: Pat
     src["boundary"] = boundary
     src["osm"] = dict(src["osm"], **{k: v for k, v in boundary.items() if k.startswith("osm_")})
     for name in ("bbox", "portal", "potholes_historical", "potholes_current", "system_switch_date", "districts",
-                 "bus_routes", "cook_county_pci", "snow_station"):  # fmt: skip
+                 "bus_routes", "cook_county_pci", "snow_station", "city_potholes"):  # fmt: skip
         if name in area:
             src[name] = area[name]
     if "projected_crs" in area:

@@ -139,6 +139,7 @@ def download_arcgis_layers(
     tag_field: str = "township",
     extra_params: dict[str, Any] | None = None,
     sleep: Callable[[float], None] = time.sleep,
+    order_field: str = "OBJECTID",
 ) -> int:
     """Download several layers of an ArcGIS map service as one GeoJSON file; each feature gets its layer name in tag_field."""
     features: list[dict[str, Any]] = []
@@ -149,7 +150,7 @@ def download_arcgis_layers(
                 "where": "1=1",
                 "outFields": ",".join(out_fields),
                 "outSR": 4326,
-                "orderByFields": "OBJECTID",
+                "orderByFields": order_field,
                 "resultOffset": offset,
                 "resultRecordCount": page_size,
                 "f": "geojson",
@@ -170,6 +171,52 @@ def download_arcgis_layers(
     tmp_path.write_text(json.dumps({"type": "FeatureCollection", "features": features}), encoding="utf-8")
     tmp_path.replace(out_path)
     return len(features)
+
+
+def hpms_state(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, float], sleep=time.sleep) -> str:
+    """Two-letter state of the area's middle, from the National Weather Service (already used for the outlook)."""
+    lat, lon = (bbox["min_lat"] + bbox["max_lat"]) / 2, (bbox["min_lon"] + bbox["max_lon"]) / 2
+    url = cfg["state_lookup"].format(lat=f"{lat:.4f}", lon=f"{lon:.4f}")
+    data = json.loads(request_with_retries(session, "GET", url, sleep=sleep).content)
+    state = (((data.get("properties") or {}).get("relativeLocation") or {}).get("properties") or {}).get("state")
+    if not state or len(state) != 2:
+        raise SourceChangedError(f"Could not tell the state of this area from {url}.")
+    return state.upper()
+
+
+def download_hpms(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, float], out_path: Path, sleep=time.sleep) -> int:
+    """HPMS road pieces in the area's box: the newest year that answers, only the fields that exist (US plan step B).
+
+    An area crossing a state line gets the state of its middle only (known limit)."""
+    state = hpms_state(session, cfg, bbox, sleep=sleep)
+    tried = []
+    for year in cfg["years"]:
+        base = cfg["url_template"].format(state=state, year=year)
+        try:
+            info = json.loads(request_with_retries(session, "GET", f"{base}/0", params={"f": "json"}, sleep=sleep).content)
+        except RuntimeError as error:
+            tried.append(f"{year}: {str(error)[:80]}")
+            continue
+        if "error" in info or "fields" not in info:
+            tried.append(f"{year}: not published")
+            continue
+        names = {f["name"].lower(): f["name"] for f in info["fields"]}
+        oid = info.get("objectIdField") or next(
+            (f["name"] for f in info["fields"] if f.get("type") == "esriFieldTypeOID"), "OBJECTID"
+        )  # FHWA's state services spell it "objectid"
+        fields = [names[w] for w in cfg["wanted_fields"] if w in names]
+        if not fields:
+            raise SourceChangedError(f"HPMS {state} {year} has none of the fields {cfg['wanted_fields']}. Update config/sources.yaml.")
+        count = download_arcgis_layers(
+            session, base_url=base, layers={int(k): v for k, v in cfg["layers"].items()}, out_fields=fields,
+            page_size=cfg["page_size"], out_path=out_path, tag_field="hpms", extra_params=bbox_envelope(bbox), sleep=sleep,
+            order_field=oid,
+        )  # fmt: skip
+        data = json.loads(out_path.read_text(encoding="utf-8"))
+        data["hpms"] = {"state": state, "year": year, "fields": fields}
+        out_path.write_text(json.dumps(data), encoding="utf-8")
+        return count
+    raise SourceChangedError(f"No HPMS year answered for {state}: {'; '.join(tried)}")
 
 
 def bbox_envelope(bbox: dict[str, float]) -> dict[str, Any]:
@@ -557,6 +604,28 @@ def plan_downloads(src: dict[str, Any], rules: dict[str, Any]) -> list[dict[str,
                 "licence": src["flood_zones"]["licence"],
             }
         )
+    if "city_potholes" in src:  # US plan step C: a city's own 311 pothole history
+        jobs.append(
+            {
+                "name": "potholes_city",
+                "file": "potholes_city.csv",
+                "kind": "city_potholes",
+                "portal": False,
+                "url": src["city_potholes"]["api"],
+                "licence": src["city_potholes"]["licence"],
+            }
+        )
+    if "hpms" in src:
+        jobs.append(
+            {
+                "name": "hpms",
+                "file": "hpms.geojson",
+                "kind": "hpms",
+                "portal": False,
+                "url": src["hpms"]["url_template"],
+                "licence": src["hpms"]["licence"],
+            }
+        )
     for key in ("traffic_counts",):
         if key in src:
             jobs.append(
@@ -617,7 +686,8 @@ def write_manifest(raw_dir: Path, manifest: dict[str, Any]) -> None:
     (raw_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, sort_keys=True), encoding="utf-8")
 
 
-BBOX_KINDS = {"arcgis_tiled", "soils", "elevation"}  # need the area's box (or map zone) before they can run
+BBOX_KINDS = {"arcgis_tiled", "soils", "elevation", "hpms"}
+OPTIONAL_JOBS = {"hpms"}  # a slow FHWA server never stops an area set-up  # need the area's box (or map zone) before they can run
 
 
 def with_area_box(src: dict[str, Any], raw_dir: Path) -> dict[str, Any]:
@@ -674,6 +744,12 @@ def run_job(
         return 1
     if job["kind"] in BBOX_KINDS or (job["kind"] == "arcgis" and src.get(job["config"], {}).get("limit_to_area_box")):
         src = with_area_box(src, out_path.parent)
+    if job["kind"] == "hpms":
+        return download_hpms(session, src["hpms"], src["bbox"], out_path, sleep=sleep)
+    if job["kind"] == "city_potholes":
+        from forecasting.cities import download_city_potholes
+
+        return download_city_potholes(session, src["city_potholes"], out_path, sleep=sleep)
     if job["kind"] == "arcgis":
         cfg = src[job["config"]]
         return download_arcgis_layers(
@@ -767,6 +843,9 @@ def download_all(
             rows = run_job(session, job, out_path, src, sleep=sleep, rules=rules)
         except (RuntimeError, ValueError, OSError) as error:  # SourceChangedError is a RuntimeError
             print(f"  FAILED: {job['name']}: {error}", flush=True)
+            if job["name"] in OPTIONAL_JOBS and only is None:
+                print("  (optional: the area is set up without it; it is tried again on the next set-up)", flush=True)
+                continue
             failed.append(job["name"])
             continue
         now = datetime.now(UTC_TZ).isoformat(timespec="seconds")

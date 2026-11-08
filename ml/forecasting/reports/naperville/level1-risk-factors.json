@@ -69,6 +69,24 @@
       "medium": 0,
       "low": 0,
       "missing": 11697
+    },
+    "road_roughness": {
+      "high": 168,
+      "medium": 360,
+      "low": 89,
+      "missing": 0
+    },
+    "cracking": {
+      "high": 210,
+      "medium": 148,
+      "low": 138,
+      "missing": 0
+    },
+    "rutting": {
+      "high": 2,
+      "medium": 111,
+      "low": 368,
+      "missing": 0
     }
   },
   "cutoffs": {

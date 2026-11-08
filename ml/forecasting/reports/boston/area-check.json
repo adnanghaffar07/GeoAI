@@ -1,0 +1,205 @@
+{
+  "area": "boston",
+  "name": "City of Boston",
+  "level": 1,
+  "schema": "boston",
+  "map_zone": "EPSG:26919",
+  "box": {
+    "min_lon": -71.1962,
+    "min_lat": 42.2229,
+    "max_lon": -70.7995,
+    "max_lat": 42.402
+  },
+  "area_km2": 246.4,
+  "osm_extract": "2026-11-06T21:38:33Z",
+  "sections_before_boundary_cut": 19713,
+  "km_before_boundary_cut": 1518.3,
+  "weather": {
+    "stations": [
+      {
+        "id": "USC00193624",
+        "name": "Hingham",
+        "lat": 42.2269,
+        "lon": -70.9125
+      },
+      {
+        "id": "USC00193890",
+        "name": "Jamaica Plain",
+        "lat": 42.3031,
+        "lon": -71.1242
+      },
+      {
+        "id": "USW00014739",
+        "name": "Boston",
+        "lat": 42.3606,
+        "lon": -71.0097
+      }
+    ],
+    "snow_station": "USW00014739",
+    "choice": {
+      "rule": {
+        "max_distance_km": 30,
+        "min_complete_share": 0.9,
+        "years": 10,
+        "max_stations": 3,
+        "max_candidates": 8
+      },
+      "measured_from": "2016-01-01",
+      "measured_to": "2025-12-31",
+      "candidates_found": 17,
+      "measured": [
+        {
+          "id": "USC00193624",
+          "lat": 42.2269,
+          "lon": -70.9125,
+          "state": "MA",
+          "name": "HINGHAM",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.983,
+            "rain": 0.977,
+            "snow": 0.985
+          },
+          "file_sha256": "0e3d85d1bed13e730fe908698e780a17d92acf3767d75fffb47ca6a91d4ec417"
+        },
+        {
+          "id": "USC00193890",
+          "lat": 42.3031,
+          "lon": -71.1242,
+          "state": "MA",
+          "name": "JAMAICA PLAIN",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.995,
+            "rain": 0.993,
+            "snow": 0.997
+          },
+          "file_sha256": "a9d76f733dbef4340259abdc5dc067b1fc898eb703c0cae7b0812cd912e299f9"
+        },
+        {
+          "id": "USW00014739",
+          "lat": 42.3606,
+          "lon": -71.0097,
+          "state": "MA",
+          "name": "BOSTON",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "9127ccf0631e43940b3b2ff614c3c9b53d1df39bd1f21c0f652e7c1561e31f9d"
+        },
+        {
+          "id": "USC00190736",
+          "lat": 42.2122,
+          "lon": -71.1136,
+          "state": "MA",
+          "name": "BLUE HILL COOP",
+          "distance_km": 1.2,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 0.999
+          },
+          "file_sha256": "4b9f396ce62db24d42b16482bd65378ff16cd3306a9f964a92d96f6b60d43bc4"
+        },
+        {
+          "id": "USW00014753",
+          "lat": 42.2122,
+          "lon": -71.1136,
+          "state": "MA",
+          "name": "BLUE HILL LCD",
+          "distance_km": 1.2,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "78f73ba32f39a71631be10b08f360b3a3f4b6042bd0be29d16d0ae313eb14ac4"
+        },
+        {
+          "id": "USW00054704",
+          "lat": 42.1911,
+          "lon": -71.1733,
+          "state": "MA",
+          "name": "NORWOOD MEM AP",
+          "distance_km": 3.5,
+          "has_snow": false,
+          "share": {
+            "temperature": 0.989,
+            "rain": 0.988,
+            "snow": 0.0
+          },
+          "file_sha256": "a2c8fd256989250092d45a2bbddce4e3dd4900ee450756c3c385fcd18f5927b9"
+        },
+        {
+          "id": "USC00198757",
+          "lat": 42.1608,
+          "lon": -71.2461,
+          "state": "MA",
+          "name": "WALPOLE 2",
+          "distance_km": 8.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "348baf94b2c3d0f274a1f5a6c80b79873bf6f294e5da42da9b33d6218a2eb8a4"
+        },
+        {
+          "id": "USW00014702",
+          "lat": 42.4681,
+          "lon": -71.2947,
+          "state": "MA",
+          "name": "BEDFORD HANSCOM FLD",
+          "distance_km": 10.9,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.982,
+            "rain": 0.964,
+            "snow": 0.0
+          },
+          "file_sha256": "21de455ec6ffa8811924f72e6aa6b02a74c6cf238e85fb103d0828aa7dbac573"
+        }
+      ],
+      "stations": [
+        {
+          "id": "USC00193624",
+          "name": "Hingham",
+          "lat": 42.2269,
+          "lon": -70.9125
+        },
+        {
+          "id": "USC00193890",
+          "name": "Jamaica Plain",
+          "lat": 42.3031,
+          "lon": -71.1242
+        },
+        {
+          "id": "USW00014739",
+          "name": "Boston",
+          "lat": 42.3606,
+          "lon": -71.0097
+        }
+      ],
+      "snow_station": "USW00014739",
+      "chosen_at": "2026-11-06"
+    }
+  },
+  "layers": {
+    "pothole history (Level 2)": false,
+    "weather (freeze-thaw, rain, snow)": true,
+    "elevation (USGS, national)": true,
+    "flood zones (FEMA, national)": true,
+    "soil (USDA, national)": true,
+    "traffic counts": false,
+    "bus routes": false
+  }
+}

@@ -38,7 +38,13 @@ FACTORS: dict[str, tuple[str, str, str]] = {
     "traffic_band": ("Traffic (vehicles per day: high = 30,000 or more, medium = 15,000-30,000)", "band", "fixed"),
     "heavy_vehicle_band": ("Heavy vehicles (per day: high = 2,500 or more, medium = 1,000-2,500)", "band", "fixed"),
     "bus_routes": ("Bus routes on the road (high = 2 or more, medium = 1)", "routes", "fixed"),
+    # Measured by the state (HPMS), mainly main roads; FHWA's national good / fair / poor limits (23 CFR 490).
+    "road_roughness": ("Road roughness (IRI, inches per mile: high = over 170, medium = 95-170)", "in/mi", "fixed"),
+    "cracking": ("Cracking (% of the lane: high = over 20%, medium = 5-20%)", "%", "fixed"),
+    "rutting": ("Rutting (inches: high = over 0.40, medium = 0.20-0.40)", "in", "fixed"),
 }
+# FHWA limits: (medium from, high above)
+MEASURED_LIMITS = {"road_roughness": (95.0, 170.0), "cracking": (5.0, 20.0), "rutting": (0.20, 0.40)}
 WEATHER_FACTORS = ["freeze_thaw_14d", "below_freezing_days_30d", "heavy_rain_days_30d", "snow_mm_30d"]
 WINTER_ONLY = {"freeze_thaw_14d", "below_freezing_days_30d", "snow_mm_30d"}  # cut-offs measured on Nov-Apr Mondays
 
@@ -58,6 +64,9 @@ def level_of(name: str, value: float | None, cutoffs: dict[str, Any]) -> str:
             return "missing" if int(value) == 0 else {4: "high", 3: "medium"}.get(int(value), "low")
         if name == "bus_routes":
             return "high" if value >= 2 else "medium" if value >= 1 else "low"
+        if name in MEASURED_LIMITS:
+            medium, high = MEASURED_LIMITS[name]
+            return "high" if value > high else "medium" if value >= medium else "low"
     cut = cutoffs[name]
     if direction == "up":
         return "high" if value >= cut["high"] else "medium" if value >= cut["medium"] else "low"
@@ -221,7 +230,7 @@ def write_cutoffs_draft(cutoffs: dict[str, Any], evidence: list[dict[str, Any]],
 
 SECTIONS_SQL = """
 SELECT s.section_id, s.highway, s.length_m, t.low_spot_m, t.slope_pct, t.flood_1pct, t.flood_02pct, t.aadt, t.hcv_aadt,
-       t.bus_routes,
+       t.bus_routes, t.iri, t.cracking_pct, t.rutting_in, t.hpms_aadt, t.hpms_trucks,
        (SELECT w.station_id FROM weather_stations w
         ORDER BY ST_Distance(w.geom::geography, ST_LineInterpolatePoint(s.geom, 0.5)::geography, false), w.station_id LIMIT 1)
 FROM road_sections s LEFT JOIN section_static t USING (section_id)
@@ -285,12 +294,15 @@ def compute(
     """Rows (section_id, as_of, factor, value, level, kind) for every section, and a summary for the report."""
     last = latest_weather_day(conn)
     as_of = as_of or (last + timedelta(days=1) if last else date.today())
+    from forecasting.static import ensure_hpms_columns
+
+    ensure_hpms_columns(conn)  # older area schemas get the HPMS columns (empty until HPMS is downloaded)
     sections = conn.execute(SECTIONS_SQL).fetchall()
     stations = [row[0] for row in conn.execute("SELECT station_id FROM weather_stations ORDER BY station_id")]
     weather = weather_at(conn, stations, as_of) if stations else {}
     snow_station = src.get("snow_station")
     rows: list[tuple] = []
-    for section_id, _highway, _length, low, slope, f1, f02, aadt, hcv, bus, station in sections:
+    for section_id, _highway, _length, low, slope, f1, f02, aadt, hcv, bus, iri, crack, rut, h_aadt, h_trucks, station in sections:
         bridge = (slope is not None and slope > 10) or (low is not None and abs(low) > 5)  # same rule as F2
         w = weather.get(station, {})
         values = {
@@ -301,10 +313,19 @@ def compute(
             "low_spot_m": None if bridge else low,
             "slope_pct": None if bridge else slope,
             "flood_zone": None if f1 is None else (2.0 if f1 else 1.0 if f02 else 0.0),
-            "traffic_band": band(aadt, cfg["traffic_bands"]) if "traffic_counts" in src else None,
-            "heavy_vehicle_band": band(hcv, cfg["heavy_vehicle_bands"]) if "traffic_counts" in src else None,
+            # state counts (Illinois) where there are any; otherwise HPMS (every state, main roads)
+            "traffic_band": band(aadt if aadt is not None else h_aadt, cfg["traffic_bands"])
+            if "traffic_counts" in src or h_aadt is not None
+            else None,
+            "heavy_vehicle_band": band(hcv if hcv is not None else h_trucks, cfg["heavy_vehicle_bands"])
+            if "traffic_counts" in src or h_trucks is not None
+            else None,
             "bus_routes": None if bus is None else float(bus),
         }
+        # Measured condition only where HPMS measured it (most side streets are not measured: no row, not "missing")
+        for name, value in (("road_roughness", iri), ("cracking", crack), ("rutting", rut)):
+            if value is not None:
+                values[name] = value
         for name, value in values.items():
             value = None if value is None or (isinstance(value, float) and np.isnan(value)) else float(value)
             kind = "background" if name in background else "risk"

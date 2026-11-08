@@ -278,7 +278,7 @@ def test_cutoff_draft_from_training_years_only(tmp_path):
         cutoffs["slope_pct"]["medium"] < cutoffs["slope_pct"]["high"]
         and cutoffs["low_spot_m"]["high"] < cutoffs["low_spot_m"]["medium"] < 0
     )
-    assert {row["factor"] for row in evidence} == set(risk_factors.FACTORS)
+    assert {row["factor"] for row in evidence} == set(risk_factors.FACTORS) - set(risk_factors.MEASURED_LIMITS)  # FHWA limits
     for row in evidence:
         assert abs(sum(v["share"] for v in row["levels"].values()) - 1) < 0.01
     assert 0 < base_rate < 1
@@ -346,7 +346,8 @@ def test_level1_area_load_and_risk_factors(tmp_path):
         rows, info = risk_factors.compute(conn, src, settings.load_config("f2.yaml"), CUTOFFS, as_of=date(2011, 1, 31))
         risk_factors.save(conn, rows)
         saved = Counter(conn.execute("SELECT factor, level FROM section_risk_factors").fetchall())
-    assert info["sections"] == 9 and info["stations"] == ["USW00094846"] and len(rows) == 9 * len(risk_factors.FACTORS)
+    assert info["sections"] == 9 and info["stations"] == ["USW00094846"]
+    assert len(rows) == 9 * (len(risk_factors.FACTORS) - len(risk_factors.MEASURED_LIMITS))  # no HPMS here
     # the fixture: every day max 1.5 °C / min -2.0 °C (a freeze-thaw day), 1 mm of rain (never heavy), no snow
     assert saved[("freeze_thaw_14d", "high")] == 9 and saved[("heavy_rain_days_30d", "low")] == 9
     assert saved[("bus_routes", "missing")] == 9  # no bus data for this area: missing, never guessed

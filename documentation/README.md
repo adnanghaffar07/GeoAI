@@ -67,7 +67,8 @@ documentation/
 | `04-design/forecasting-roadmap.md` | V2 research track: predicting which roads will be damaged next, and how it fits into the app | Approved (CR-005, 2026-10-28) |
 | `04-design/forecasting-f4-plan.md`, `forecasting-f4b-design.md`, `forecasting-f4d-design.md`, `forecasting-f4e-design.md` | Forecasting in the app: jobs, Road risk screens, road inspections, alerts | Approved and built 2026-10-30 to 2026-11-02 |
 | `04-design/cr-006-ask-road-risk-proposal.md` | "Ask about road risk" with a free local model | Approved and built 2026-11-02 (model qwen2.5:0.5b) |
-| `04-design/p9-system-testing-plan.md` | P9: what is tested and how | Approved 2026-11-03 |
+| `04-design/p9-system-testing-plan.md` | P9: what is tested and how | Approved 2026-11-03; P9 closed 2026-11-05 |
+| `04-design/forecasting-us-plan.md` | Road risk for the whole US: free data, minimum storage, steps A–E | Draft 2026-11-05, waiting for approval |
 | `04-design/forecasting-f0-ground-rules.md` | Forecasting F0: what is predicted, inputs, test periods, measures, pass marks | Approved and frozen 2026-10-28 (pass marks PLACEHOLDER until PI-20) |
 
 ### 07-ml (P8)
@@ -101,6 +102,7 @@ documentation/
 ## 06-demo
 
 - `06-demo/p9-results.md`: P9 results: every acceptance criterion → test → result, P9 parts, the owner's keyboard walk-through.
+- `06-demo/p9-usability-sheet.md`: P9.6 usability task sheet and notes form.
 - `06-demo/p9-load-report.md`: P9.5 speed test results at the expected volume.
 - `06-demo/testing-guide-f4d-road-risk.md`: step-by-step owner test of road risk, alerts and the assistant (start Docker → tunnel → push).
 - `06-demo/testing-guide-p5-p7.md`: step-by-step owner test of P5–P7 (see its 2026-10-28 note for renamed buttons).

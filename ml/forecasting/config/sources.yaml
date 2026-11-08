@@ -46,6 +46,15 @@ soils:
   drop_if_missing_share_above: 0.8      # F1b rule: drop soil if more than 80% of sections get no drainage class
   licence: USDA NRCS SSURGO via Soil Data Access, US government public domain
 
+hpms:                                   # US plan step B: measured road condition and traffic, every state (mainly main roads)
+  url_template: https://geo.dot.gov/server/rest/services/Hosted/HPMS_FULL_{state}_{year}/FeatureServer
+  years: [2025, 2024, 2023, 2022, 2020]  # newest first; the first year that answers is used
+  layers: {0: HPMS}
+  wanted_fields: [iri, cracking_percent, rutting, aadt, aadt_single_unit, aadt_combination]
+  page_size: 1000
+  state_lookup: https://api.weather.gov/points/{lat},{lon}   # which state the area's middle is in
+  licence: FHWA Highway Performance Monitoring System (US DOT), US government work, public domain
+
 matching: {distance_m: 15, max_angle_deg: 20}   # a count line or bus route belongs to a section if this close and parallel
 
 # ---------- State or regional sources: an area file names the ones it uses (e.g. `traffic_counts: idot`) ----------

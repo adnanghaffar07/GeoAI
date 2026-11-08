@@ -3,6 +3,8 @@
 **Plan:** `04-design/p9-system-testing-plan.md` (approved 2026-11-03). **Tested version:** `development`, pushed 2026-11-03.
 Status: ✅ passed · ⏳ to run / owner · ◐ partly · ❌ failed. Updated as each part finishes.
 
+**P9 closed by the owner on 2026-11-05** ("ok close p9") with the automated parts passed (backend 304, frontend 114, speed test within target). **Carried forward** (to do alongside the next work, before P10 go-live): keyboard walk-through K1–K11, AC-12, AC-18, AC-60, F4 guided check, P5–P7 sign-off, P9.6 usability sessions. AC-46 stays blocked on partner photos.
+
 ## P9.1 Acceptance criteria → tests
 
 | AC | Criterion (short) | Test(s) | Status |
@@ -47,8 +49,8 @@ Status: ✅ passed · ⏳ to run / owner · ◐ partly · ❌ failed. Updated as
 | P9.3 Failure paths | ✅ 299 passed 2026-11-03. Already covered: DB/queue down, queue down for analysis/reports/set-up, broken detector, failed set-up, bad photos, laptop off (catch-up + data-problem alert). Added `test_p9_failures.py`: report that cannot be built, Update now with worker down, one failing job part, weather and outlook downloads failing, AI model missing or Ollama down. |
 | P9.4 Accessibility | ◐ Automatic checks ✅ 113 frontend tests passed 2026-11-03 (`accessibility.test.tsx`, axe-core, WCAG 2.1 A/AA: sign-in, request access, projects, road risk, road-risk settings, My inspections, alerts). ⏳ owner keyboard walk-through below |
 | P9.5 Performance | ✅ 2026-11-03: all 19 screens and downloads within target at 10,000 photos / 5,004 findings / 1,000 inspections / 6,003 roads (`p9-load-report.md`). First run found the priority list slow the first time (2.55 s: scores saved one by one); fixed by saving in batches (0.95 s). Slowest: road risk ~1.1-1.3 s, PDF report ~21 s. |
-| P9.6 Usability | ⏳ owner / team lead |
-| P9.7 Fixes and sign-off | ⏳ |
+| P9.6 Usability | ⏳ carried forward: task sheet and notes form ready (`06-demo/p9-usability-sheet.md`); sessions with the team lead + 1–2 colleagues still to run |
+| P9.7 Fixes and sign-off | ◐ Fixes from owner use 2026-11-04: (1) download problems shown in plain words in alerts and settings ("The weather history service (NOAA) did not answer in time…"), details kept in the log; a download that stalls part-way is retried (3 tries); (2) road risk filled in right after set-up (the first run starts at once, not at the next hourly check or 06:00; "Update now" at any hour) and the page shows "Working out the first results…" with Check now and refreshes by itself. Backend 304, frontend 114 passed. ⏳ final run and sign-off |
 
 ## P9.4 Keyboard walk-through (owner, about 15 minutes)
 

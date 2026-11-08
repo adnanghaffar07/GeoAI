@@ -382,6 +382,16 @@ def load_all(conn: psycopg.Connection, raw_dir: Path, src: dict[str, Any], rules
             ["source", "request_id", "created_at", "is_duplicate", "status", "latitude", "longitude", "location_issue"],
             rows,
         )
+    if "city_potholes" in src:  # US plan step C: another city's 311 history, same table
+        from forecasting.cities import parse_city_csv
+
+        rows = parse_city_csv(require(raw_dir, "potholes_city.csv"), src["city_potholes"], src["bbox"], stats, outside)
+        copy_rows(
+            conn,
+            "pothole_reports",
+            ["source", "request_id", "created_at", "is_duplicate", "status", "latitude", "longitude", "location_issue"],
+            rows,
+        )
     conn.execute("UPDATE pothole_reports SET geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326) WHERE location_issue IS NULL")
     conn.execute(
         "UPDATE pothole_reports p SET community_area = a.area_number FROM community_areas a "

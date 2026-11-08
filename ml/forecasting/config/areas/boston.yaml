@@ -1,0 +1,53 @@
+# Area: City of Boston, Massachusetts. US plan step C, first city after Chicago (owner: "ok go", 2026-11-06).
+# Level 1 on screen (risk factors) until the shared US model passes its test here (step E).
+name: City of Boston
+schema: boston
+level: 1
+# projected_crs is worked out from the area's centre (NAD83 / UTM zone 19N)
+
+boundary:
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"="Boston"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Massachusetts"]'
+
+weather_stations: auto                      # chosen by `forecasting.run area-check` (rule D3)
+# Traffic: HPMS (every state). No bus routes yet (MBTA GTFS later).
+
+city_potholes:
+  # Analyze Boston, "311 Service Requests" (data.boston.gov/dataset/311-service-requests).
+  # Licence: Open Data Commons Public Domain Dedication and License (PDDL), checked 2026-11-05.
+  licence: Analyze Boston 311 Service Requests, Open Data Commons PDDL (public domain)
+  portal_type: ckan_sql
+  api: https://data.boston.gov/api/3/action
+  page_size: 10000
+  unknown_points: [[42.3594, -71.0587]]     # City Hall: the old system's point for "no location"
+  systems:
+    - name: boston_311_old                  # case numbers like 101000393076, 2012 to mid-2026
+      type_column: type
+      pothole_values: ["Request for Pothole Repair"]   # residents' requests (like Chicago); city-crew "Internal" left out
+      duplicate_words: ["duplicate"]                     # in closure_reason
+      columns: {request_id: case_enquiry_id, created_at: open_dt, status: case_status, closure_reason: closure_reason,
+                latitude: latitude, longitude: longitude}
+      resources:
+        - {name: "2012", id: 382e10d9-1864-40ba-bef6-4eea3c75463c}
+        - {name: "2013", id: 407c5cd0-f764-4a41-adf8-054ff535049e}
+        - {name: "2014", id: bdae89c8-d4ce-40e9-a6e1-a5203953a2e0}
+        - {name: "2015", id: c9509ab4-6f6d-4b97-979a-0cf2a10c922b}
+        - {name: "2016", id: b7ea6b1b-3ca4-4c5b-9713-6dc1db52379a}
+        - {name: "2017", id: 30022137-709d-465e-baae-ca155b51927d}
+        - {name: "2018", id: 2be28d90-3a90-4af1-a3f6-f28c1e25880a}
+        - {name: "2019", id: ea2e4696-4a2d-429c-9807-d02eb92e0222}
+        - {name: "2020", id: 6ff6a6fd-3141-4440-a880-6f60a37fe789}
+        - {name: "2021", id: f53ebccd-bc61-49f9-83db-625f209c95f5}
+        - {name: "2022", id: 81a7b022-f8fc-4da5-80e4-b160058ca207}
+        - {name: "2023", id: e6013a93-1321-4f2a-bf91-8d8a02f1e62f}
+        - {name: "2024", id: dff4d804-5031-443a-8409-8344efd0e5c8}
+        - {name: "2025", id: 9d7c2214-4709-478a-a2e8-fb2020a5bb94}
+        - {name: "2026", id: 1a0b420d-99f1-4887-9851-990b2a5a6e17}
+    - name: boston_311_new                  # "BCS-" case numbers, from mid-2026
+      type_column: service_name
+      pothole_values: ["Pothole"]
+      duplicate_words: ["duplicate"]
+      columns: {request_id: case_id, created_at: open_date, status: case_status, closure_reason: closure_reason,
+                latitude: latitude, longitude: longitude}
+      resources:
+        - {name: "new system", id: 254adca6-64ab-4c5c-9fc0-a6da622be185}

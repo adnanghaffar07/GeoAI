@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import json
 from collections import Counter
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -78,7 +79,140 @@ CREATE TABLE IF NOT EXISTS bus_routes (
 CREATE INDEX IF NOT EXISTS bus_routes_geog_idx ON bus_routes USING gist ((geom::geography));
 """
 
-TABLES = ["section_static", "flood_zones", "soil_units", "traffic_counts", "bus_routes"]
+TABLES = ["section_static", "flood_zones", "soil_units", "traffic_counts", "bus_routes"]  # hpms_lines: emptied by load_hpms
+
+# US plan step B: measured road condition and traffic from HPMS (FHWA), every state, mainly main roads.
+HPMS_SCHEMA = """
+ALTER TABLE section_static ADD COLUMN IF NOT EXISTS iri real;               -- roughness, inches per mile
+ALTER TABLE section_static ADD COLUMN IF NOT EXISTS cracking_pct real;      -- % of the lane
+ALTER TABLE section_static ADD COLUMN IF NOT EXISTS rutting_in real;        -- inches
+ALTER TABLE section_static ADD COLUMN IF NOT EXISTS hpms_aadt integer;      -- vehicles per day (HPMS)
+ALTER TABLE section_static ADD COLUMN IF NOT EXISTS hpms_trucks integer;    -- single-unit + combination trucks per day
+ALTER TABLE section_static ADD COLUMN IF NOT EXISTS hpms_year smallint;
+CREATE TABLE IF NOT EXISTS hpms_lines (
+    id serial PRIMARY KEY,
+    iri real, cracking_pct real, rutting_in real, aadt integer, trucks integer,
+    geom geometry(Geometry, 4326) NOT NULL
+);
+CREATE INDEX IF NOT EXISTS hpms_lines_geog_idx ON hpms_lines USING gist ((geom::geography));
+"""
+
+
+def ensure_hpms_columns(conn: psycopg.Connection) -> None:
+    conn.execute(HPMS_SCHEMA)
+
+
+def hpms_rows(data: dict[str, Any]) -> list[tuple]:
+    """(iri, cracking, rutting, aadt, trucks, geometry) per HPMS piece; zero or negative condition values = not measured."""
+
+    def num(props: dict[str, Any], name: str) -> float | None:
+        value = props.get(name)
+        if value is None:
+            value = next((v for k, v in props.items() if k.lower() == name), None)
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            return None
+        return value if value > 0 else None
+
+    rows = []
+    for feature in data.get("features", []):
+        props, geometry = feature.get("properties") or {}, feature.get("geometry")
+        if not geometry:
+            continue
+        trucks = [v for v in (num(props, "aadt_single_unit"), num(props, "aadt_combination")) if v is not None]
+        aadt = num(props, "aadt")
+        rows.append((
+            num(props, "iri"), num(props, "cracking_percent"), num(props, "rutting"),
+            None if aadt is None else int(aadt), int(sum(trucks)) if trucks else None, json.dumps(geometry),
+        ))  # fmt: skip
+    return rows
+
+
+# Fast matching (2026-11-06): the same rule as MATCH_SQL (within 15 m, parallel within 20 degrees, nearest piece),
+# but in metres on the area's own map with plain indexes, and only the nearest piece per section. Chicago: about 1-1.5 h
+# with MATCH_SQL; used for HPMS only until a same-results check allows it for traffic counts and bus routes.
+FAST_HPMS_SQL = """
+CREATE TEMP TABLE hp_lines ON COMMIT DROP AS
+    SELECT iri, cracking_pct, rutting_in, aadt, trucks, ST_Transform(geom, {srid}) AS g FROM hpms_lines;
+CREATE INDEX ON hp_lines USING gist (g);
+ANALYZE hp_lines;
+CREATE TEMP TABLE hp_mid ON COMMIT DROP AS SELECT section_id, ST_Transform(mid, {srid}) AS m, az FROM sec_mid WHERE az IS NOT NULL;
+ANALYZE hp_mid;
+"""
+FAST_NEAREST_SQL = """
+SELECT m.section_id, x.iri, x.cracking_pct, x.rutting_in, x.aadt, x.trucks
+FROM hp_mid m
+CROSS JOIN LATERAL (
+    SELECT c.* FROM (
+        SELECT l.iri, l.cracking_pct, l.rutting_in, l.aadt, l.trucks, ST_Distance(l.g, m.m) AS distance_m,
+               degrees(ST_Azimuth(ST_LineInterpolatePoint(l.g, greatest(p.f - p.half, 0)),
+                                  ST_LineInterpolatePoint(l.g, least(p.f + p.half, 1)))) AS az
+        FROM hp_lines l
+        CROSS JOIN LATERAL (SELECT ST_LineLocatePoint(l.g, m.m) AS f, least(10 / nullif(ST_Length(l.g), 0), 0.5) AS half) p
+        WHERE ST_DWithin(l.g, m.m, %(dist)s)
+    ) c
+    WHERE c.az IS NOT NULL
+      AND least(mod(abs(m.az - c.az)::numeric, 180), 180 - mod(abs(m.az - c.az)::numeric, 180)) <= %(angle)s
+    ORDER BY c.distance_m
+    LIMIT 1
+) x
+"""
+
+
+def say_progress(text: str) -> None:
+    print(f"    {datetime.now():%H:%M} {text}", flush=True)
+
+
+def load_hpms(conn: psycopg.Connection, raw_dir: Path, src: dict[str, Any], stats: Counter) -> dict[str, Any] | None:
+    """Match HPMS pieces to sections (same rule as traffic counts: within 15 m and parallel). Never touches the
+    columns the Chicago model reads (aadt, hcv_aadt): HPMS goes into its own columns."""
+    path = raw_dir / "hpms.geojson"
+    ensure_hpms_columns(conn)
+    if not path.exists() or "hpms" not in src:
+        return None
+    data = json.loads(path.read_text(encoding="utf-8"))
+    conn.execute("TRUNCATE hpms_lines")
+    conn.execute(
+        "UPDATE section_static SET iri = NULL, cracking_pct = NULL, rutting_in = NULL, "
+        "hpms_aadt = NULL, hpms_trucks = NULL, hpms_year = NULL"
+    )
+    rows = hpms_rows(data)
+    # one bulk copy instead of one statement per piece
+    conn.execute(
+        "CREATE TEMP TABLE hp_raw (iri real, cracking_pct real, rutting_in real, aadt integer, trucks integer, gj text) ON COMMIT DROP"
+    )
+    with conn.cursor() as cur, cur.copy("COPY hp_raw FROM STDIN") as copy:
+        for row in rows:
+            copy.write_row(row)
+    conn.execute(
+        "INSERT INTO hpms_lines (iri, cracking_pct, rutting_in, aadt, trucks, geom) "
+        "SELECT iri, cracking_pct, rutting_in, aadt, trucks, g.geom FROM hp_raw, "
+        "LATERAL (SELECT (ST_Dump(ST_Force2D(ST_SetSRID(ST_GeomFromGeoJSON(gj), 4326)))).geom AS geom) g "
+        "WHERE GeometryType(g.geom) = 'LINESTRING'"
+    )
+    conn.execute("DROP TABLE hp_raw")
+    stats["hpms.lines"] = len(rows)
+    conn.execute(
+        "CREATE TEMP TABLE IF NOT EXISTS sec_mid ON COMMIT DROP AS SELECT section_id, ST_LineInterpolatePoint(geom, 0.5) AS mid, "
+        "degrees(ST_Azimuth(ST_StartPoint(geom), ST_EndPoint(geom))) AS az FROM road_sections"
+    )
+    match = src.get("matching", {"distance_m": 15, "max_angle_deg": 20})
+    srid = int(str(src.get("projected_crs", CHICAGO_CRS)).split(":")[-1])
+    year = (data.get("hpms") or {}).get("year")
+    say_progress("matching HPMS to the road sections (fast: metres on the area's map, nearest piece only)")
+    conn.execute(sql.SQL(FAST_HPMS_SQL).format(srid=sql.Literal(srid)))
+    conn.execute(
+        "UPDATE section_static t SET iri = x.iri, cracking_pct = x.cracking_pct, rutting_in = x.rutting_in, "  # noqa: S608 (fixed SQL)
+        "hpms_aadt = x.aadt, hpms_trucks = x.trucks, hpms_year = %(year)s FROM ("
+        + FAST_NEAREST_SQL
+        + ") x WHERE x.section_id = t.section_id",
+        {"dist": match["distance_m"], "angle": match["max_angle_deg"], "year": year},
+    )
+    matched = conn.execute("SELECT count(*) FROM section_static WHERE hpms_year IS NOT NULL").fetchone()[0]
+    stats["hpms.sections_matched"] = matched
+    return {**(data.get("hpms") or {}), "pieces": len(rows), "sections_matched": matched}
+
 
 DRAINAGE_RANK = {
     "excessively drained": 1,
@@ -260,6 +394,11 @@ def load_static(conn: psycopg.Connection, raw_dir: Path, src: dict[str, Any], se
             params,
         )
         used["traffic"] = {"max_count_year_for_training": fields.get("max_count_year"), "busy_bands": fields.get("busy_bands")}
+
+    # HPMS (FHWA): measured road condition and traffic, every state
+    hpms_used = load_hpms(conn, raw_dir, src, stats)
+    if hpms_used:
+        used["hpms"] = hpms_used
 
     # Bus routes (Chicago: CTA): how many different routes run along the section
     path = raw_dir / "bus_routes.geojson"

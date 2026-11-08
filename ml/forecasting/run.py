@@ -42,6 +42,7 @@ def main(argv: list[str] | None = None) -> None:
             cmd.add_argument("--force", action="store_true", help="download again even if the file exists")
     steps.add_parser("load", help="load raw files into the area's schema of the forecast database")
     steps.add_parser("level1", help="Level 1 risk factors for every section (factors, never a percentage)")
+    steps.add_parser("hpms", help="US plan step B: download HPMS road condition for the area and match it to the sections")
     steps.add_parser("report", help="write the F1 data report (areas with pothole history)")
     f2_build_cmd = steps.add_parser("f2-build", help="F2: build the learning table (continues after a stop)")
     f2_build_cmd.add_argument("--restart", action="store_true", help="throw away saved parts and start again")
@@ -91,6 +92,17 @@ def main(argv: list[str] | None = None) -> None:
         details = run_load(settings.database_url(), area.raw_dir, areas.ready_sources(area), rules, schema=area.schema)
         built, held = details["sections"]["sections_built"], details["held_out_community_areas"]
         print(f"Loaded {area.name}. {built:,} sections built; held-out areas: {held}")
+    elif args.step == "hpms":
+        from collections import Counter
+
+        from forecasting.static import load_hpms
+
+        src = areas.ready_sources(area)
+        download_all(area.raw_dir, src, rules, terms_confirmed=getattr(args, "terms_confirmed", False), only="hpms", force=True)
+        stats: Counter = Counter()
+        with settings.connect(settings.database_url(), area.schema) as conn:
+            used = load_hpms(conn, area.raw_dir, src, stats)
+        print(f"HPMS for {area.name}: {used}")
     elif args.step == "level1":
         from forecasting import risk_factors
 

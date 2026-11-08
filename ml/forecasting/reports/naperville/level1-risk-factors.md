@@ -12,6 +12,9 @@ As of 2026-10-28 (weather up to 2026-10-27; stations: USC00110338, USC00115097, 
 | Days below freezing in the last 30 days | 0 | 0 | 11,697 | 0 |
 | Snow in the last 30 days | 0 | 0 | 11,697 | 0 |
 | Bus routes on the road (high = 2 or more, medium = 1) | 0 | 0 | 0 | 11,697 |
+| Road roughness (IRI, inches per mile: high = over 170, medium = 95-170) | 168 | 360 | 89 | 0 |
+| Cracking (% of the lane: high = over 20%, medium = 5-20%) | 210 | 148 | 138 | 0 |
+| Rutting (inches: high = over 0.40, medium = 0.20-0.40) | 2 | 111 | 368 | 0 |
 
 ## Background information (no link to more reports found in Chicago; shown without a warning)
 

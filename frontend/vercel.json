@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://priest-eternal-sunglasses-stephen.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://warrant-booth-identified-investors.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

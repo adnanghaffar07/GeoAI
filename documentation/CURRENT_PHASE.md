@@ -6,11 +6,11 @@
 
 | Item | Value |
 |------|-------|
-| Current phase | **P9 System testing and hardening** (plan approved 2026-11-03): P9.1–P9.5 done; P9.6 usability and P9.7 sign-off to do. P8 (ML) done as a TRIAL (CR-003); forecasting track F0–F4e done (TRIAL FORECAST); CR-006 assistant built; P5–P7 owner sign-off still open |
+| Current phase | **Road risk for the whole US, step A (plan)** — `04-design/forecasting-us-plan.md`, draft 2026-11-05 waiting for approval. **P9 closed by the owner 2026-11-05** (automated parts passed; owner checks and usability sessions carried forward, `06-demo/p9-results.md`). P8 (ML) done as a TRIAL (CR-003); forecasting track F0–F4e done (TRIAL FORECAST); CR-006 assistant built; P5–P7 owner sign-off still open |
 | Phase status | App complete end to end and live as a demo (Vercel screens + backend on the owner's laptop through a Cloudflare tunnel). Since P7: UI pass, AI-check banner, trial AI model (frcnn-rdd2022-0.1, final test NOT PASSED), platform admin + organization sign-up (CR-004), area by place search, roads by name/coordinates/drawing, road-risk forecasting in the app (F4b–F4e: Road risk tab, map, road page, road inspections, who-can-see setting, alerts), "Ask about road risk" (CR-006, free local model), whole-app UI refresh with Back + breadcrumb, personal "asked to inspect" notifications. Tests 2026-11-03: backend 299 passed, frontend 113 passed; speed test all within target (`06-demo/p9-load-report.md`). |
-| Current build step | P9.6 usability sessions (team lead + 1–2 colleagues); owner checks: keyboard walk-through K1–K11, AC-12, AC-18, AC-60, F4 guided check (`06-demo/p9-results.md`). Then P9.7 fixes and sign-off. Detailed forecasting history: log below and `04-design/forecasting-roadmap.md`. |
+| Current build step | US plan step A: owner approval of the plan and decisions US-D1–D4; round 2 of `scripts/national-check.bat`. Carried forward from P9: keyboard walk-through K1–K11, AC-12, AC-18, AC-60, F4 guided check, usability sessions (`06-demo/p9-usability-sheet.md`). Detailed forecasting history: log below and `04-design/forecasting-roadmap.md`. |
 | Next phase | P10: Pilot deployment (always-on hosting: Oracle free server or client cloud; domain; backups with a tested restore; monitoring) |
-| Last updated | 2026-11-04 |
+| Last updated | 2026-11-05 |
 
 ## What the agent may do in this phase
 
