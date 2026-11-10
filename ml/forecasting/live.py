@@ -212,6 +212,42 @@ def setup_project_area(url: str, key: str, areas_dir: Path, rules: dict[str, Any
     return area
 
 
+def passed_transfer_test(area: areas.Area) -> bool:
+    """Naperville plan N3: a city other than Chicago gets tested levels only after its locked transfer test passed."""
+    path = area.reports_dir / "transfer-test.json"
+    return path.exists() and json.loads(path.read_text(encoding="utf-8")).get("outcome") == "PASS"
+
+
+def in_area_boundary(conn: psycopg.Connection, area: areas.Area, boundary_ewkt: str) -> bool:
+    """True when the project's centre lies inside the area's own boundary (its downloaded boundary.geojson)."""
+    path = area.raw_dir / "boundary.geojson"
+    if not path.exists():
+        return False
+    geometry = json.loads(path.read_text(encoding="utf-8"))["features"][0]["geometry"]
+    row = conn.execute(
+        "SELECT ST_Intersects(ST_SetSRID(ST_GeomFromGeoJSON(%s), 4326), ST_PointOnSurface(ST_GeomFromEWKT(%s)))",
+        (json.dumps(geometry), boundary_ewkt),
+    ).fetchone()
+    return bool(row[0])
+
+
+def refresh_city_reports(conn: psycopg.Connection, area: areas.Area, session) -> int:
+    """Weekly, for a tested city with its own open data (e.g. Naperville): download its pothole reports again and
+    replace only its own rows (small: a few hundred a year). Returns how many reports are new."""
+    from forecasting import transfer
+    from forecasting.cities import load_city_potholes
+    from forecasting.download import download_all
+
+    src = areas.ready_sources(area)
+    before = conn.execute("SELECT count(*) FROM pothole_reports").fetchone()[0]
+    download_all(area.raw_dir, src, settings.rules(), terms_confirmed=False, only="potholes_city", force=True, session=session)
+    load_city_potholes(conn, area.raw_dir, src, Counter())
+    same = src["city_potholes"].get("same_pothole")
+    if same:
+        transfer.mark_same_potholes(conn, same)
+    return conn.execute("SELECT count(*) FROM pothole_reports").fetchone()[0] - before
+
+
 def in_chicago(conn: psycopg.Connection, boundary_ewkt: str) -> bool:
     """True when the project's centre lies inside the City of Chicago (the Chicago area's districts)."""
     row = conn.execute(

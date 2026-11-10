@@ -3,6 +3,7 @@
 from app.models.analysis import AnalysisJob, Finding, FindingImage
 from app.models.audit import AuditEvent
 from app.models.base import Base
+from app.models.data_storage import OrganizationStorage
 from app.models.forecast import (
     Alert,
     AlertRead,
@@ -23,7 +24,8 @@ from app.models.project import PROJECT_ROLES, Project, ProjectMember
 from app.models.report import Report
 from app.models.review import ReviewEvent
 from app.models.settings import FindingType, SeverityRubric
-from app.models.user import User, UserSession
+from app.models.share_link import ImageShareLink
+from app.models.user import User, UserAgreement, UserSession
 
 __all__ = [
     "ORG_ROLES",
@@ -41,11 +43,13 @@ __all__ = [
     "ForecastSection",
     "ForecastSettings",
     "Image",
+    "ImageShareLink",
     "Inspection",
     "Invitation",
     "Organization",
     "OrganizationMembership",
     "OrganizationRequest",
+    "OrganizationStorage",
     "PasswordReset",
     "PriorityConfig",
     "PriorityScore",
@@ -58,6 +62,7 @@ __all__ = [
     "RiskRun",
     "SeverityRubric",
     "User",
+    "UserAgreement",
     "UserSession",
     "WeatherOutlook",
 ]

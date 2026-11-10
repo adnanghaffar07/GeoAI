@@ -64,7 +64,7 @@ describe('Alerts', () => {
     expect(await screen.findByText('Main Street')).toBeInTheDocument()
     expect(screen.getByText('Pothole reports here, last 12 months: 4')).toBeInTheDocument()
     expect(screen.getByText(/National Weather Service/)).toBeInTheDocument()
-    expect(screen.getByText('TRIAL FORECAST')).toBeInTheDocument()
+    expect(screen.queryByText('TRIAL FORECAST')).not.toBeInTheDocument() // TL-D2: covered by the terms
     expect(document.body.textContent).not.toMatch(/%/)
     await waitFor(() => expect(sent).toEqual(['/api/v1/notifications/a1/read']))
     expect(await screen.findByRole('button', { name: 'Plan inspection' })).toBeInTheDocument()

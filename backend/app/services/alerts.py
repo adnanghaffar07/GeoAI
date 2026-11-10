@@ -4,7 +4,7 @@ Approved 2026-11-02. Checked every hour by the forecasting tick, after the daily
 Each rule creates at most one open alert per event and project (no repeats while it is open) and
 closes it by itself when the event is over. Levels only (F4-D2): never a percentage.
 
-- turned_high (Chicago, Level 2): roads high this Monday that were not high the Monday before.
+- turned_high (tested levels, Level 2): roads high this Monday that were not high the Monday before.
 - freeze_thaw_coming: 3+ freeze-thaw days in the NWS 7-day outlook (E-D1, configurable).
 - heavy_rain_coming: a day with 25 mm or more in the outlook (E-D1, configurable).
 - data_problem: the latest job of a kind failed, or the levels / daily update are out of date.
@@ -21,7 +21,7 @@ from app.core.config import get_settings
 from app.models import Alert, ForecastSettings, RiskLevel, RiskRun, WeatherOutlook
 from app.schemas.road_risk import NOTICE, TRIAL_LABEL
 from app.services import road_risk
-from app.services.forecasting import CHICAGO, local_now
+from app.services.forecasting import TESTED_AREAS, local_now
 
 WEATHER_RISK_FACTORS = {
     "freeze_thaw_coming": {"freeze_thaw_14d", "low_spot_m", "flood_zone"},
@@ -241,7 +241,9 @@ def weather(db: Session, row: ForecastSettings, kind: str, today: date, now: dat
 def data_problem(db: Session, row: ForecastSettings, today: date, now: datetime) -> int:
     cfg = get_settings()
     problems: dict[str, str] = {}
-    kinds = ["daily_factors", "outlook"] + (["weekly_levels"] if row.area_key == CHICAGO else [])
+    kinds = ["daily_factors", "outlook"] + (
+        ["weekly_levels"] if row.area_key in TESTED_AREAS else []
+    )
     for kind in kinds:
         latest = db.scalar(
             select(RiskRun)
@@ -261,7 +263,7 @@ def data_problem(db: Session, row: ForecastSettings, today: date, now: datetime)
             f"The weather and risk factors were last updated on {row.last_daily_run}."
         )
     if (
-        row.area_key == CHICAGO
+        row.area_key in TESTED_AREAS
         and row.last_weekly_run
         and (today - row.last_weekly_run).days > cfg.forecast_alert_weekly_stale_days
     ):

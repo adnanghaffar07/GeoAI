@@ -1,13 +1,20 @@
+import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router'
+
 import { roleLabel } from '@/api/auth'
+import { dataStorageQueryKeys, getDataStorage } from '@/api/data-storage'
 import { useAuth } from '@/auth/auth-context'
 import { SignOutButton } from '@/components/sign-out-button'
+import { DataStorageSummary } from '@/pages/settings-data-storage-page'
 
 /**
  * S20 My account. If the sign-in method changes later (e.g. single sign-on), only this
  * page and the sign-in pages change (owner's standing note).
  */
 export function AccountPage() {
-  const { me } = useAuth()
+  const { me, currentMembership } = useAuth()
+  const orgId = currentMembership?.organization_id ?? ''
+  const storage = useQuery({ queryKey: dataStorageQueryKeys.one(orgId), queryFn: ({ signal }) => getDataStorage(orgId, signal), enabled: Boolean(orgId) })
   if (!me) return null
 
   return (
@@ -34,6 +41,15 @@ export function AccountPage() {
           {me.memberships.length === 0 && <li className="px-4 py-2 text-asphalt-500">You are not part of any organization yet.</li>}
         </ul>
       </div>
+      {storage.data && (
+        <div>
+          <h2 className="mb-2 font-medium">Where your data is stored</h2>
+          <DataStorageSummary storage={storage.data} />
+          <Link to="/settings/data-storage" className="mt-2 inline-block text-sm underline">
+            {storage.data.can_edit ? 'Change where files are kept' : 'More about data storage'}
+          </Link>
+        </div>
+      )}
       <p className="text-sm text-asphalt-500">To change your password, ask your administrator to make a password reset link for you.</p>
       <SignOutButton />
     </section>

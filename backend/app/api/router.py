@@ -10,6 +10,8 @@ from fastapi import APIRouter
 from app.api import (
     analysis,
     auth,
+    cameras,
+    data_storage,
     findings,
     geo,
     health,
@@ -20,11 +22,13 @@ from app.api import (
     projects,
     reports,
     road_risk,
+    share_links,
 )
 
 v1_router = APIRouter(prefix="/v1")
 v1_router.include_router(auth.router)
 v1_router.include_router(organizations.router)
+v1_router.include_router(data_storage.router)
 v1_router.include_router(platform.public_router)
 v1_router.include_router(platform.router)
 v1_router.include_router(geo.router)
@@ -43,6 +47,8 @@ v1_router.include_router(reports.project_router)
 v1_router.include_router(reports.report_router)
 v1_router.include_router(road_risk.project_router)
 v1_router.include_router(road_risk.notification_router)
+v1_router.include_router(share_links.router)
+v1_router.include_router(cameras.router)
 
 api_router = APIRouter(prefix="/api")
 api_router.include_router(health.router)

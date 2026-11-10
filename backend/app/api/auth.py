@@ -3,16 +3,21 @@
 Paths (under /api/v1): see documentation/04-design/api-spec.md section 3.2.
 """
 
+import uuid
+
 from fastapi import APIRouter, Depends, Request, Response, status
 from sqlalchemy.orm import Session
 
+from app.core.agreement import AGREEMENT_VERSION, has_agreed
 from app.core.auth import CurrentUser, get_current_user
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.models import User
+from app.core.errors import ConflictError
+from app.models import User, UserAgreement
 from app.schemas.auth import (
     AcceptInvitationRequest,
     AcceptInvitationResponse,
+    AgreementRequest,
     InvitationInfo,
     MembershipOut,
     MeResponse,
@@ -45,8 +50,10 @@ def _client(request: Request) -> tuple[str | None, str | None]:
     return request.headers.get("user-agent"), ip
 
 
-def _me(db: Session, user: User) -> MeResponse:
+def _me(db: Session, user: User, session_id: uuid.UUID | None = None) -> MeResponse:
     return MeResponse(
+        agreement_required=not has_agreed(db, user.id, session_id),
+        agreement_version=AGREEMENT_VERSION,
         user=UserOut(
             id=user.id,
             email=user.email,
@@ -87,7 +94,35 @@ def logout(
 def me(
     current: CurrentUser = Depends(get_current_user), db: Session = Depends(get_db)
 ) -> MeResponse:
-    return _me(db, current.user)
+    return _me(db, current.user, current.session.id)
+
+
+@router.post("/agreement", response_model=MeResponse)
+def accept_agreement(
+    body: AgreementRequest,
+    current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> MeResponse:
+    """Accept the terms shown after sign-in. "Remember my choice": until the terms change."""
+    if body.version != AGREEMENT_VERSION:
+        raise ConflictError("The terms have changed. Please read the new version.")
+    db.add(
+        UserAgreement(
+            user_id=current.user.id,
+            version=AGREEMENT_VERSION,
+            remember=body.remember,
+            session_id=None if body.remember else current.session.id,
+        )
+    )
+    record_event(
+        db,
+        action="agreement.accepted",
+        organization_id=None,
+        actor_user_id=current.user.id,
+        details={"version": AGREEMENT_VERSION, "remember": body.remember},
+    )
+    db.commit()
+    return _me(db, current.user, current.session.id)
 
 
 @router.get("/invitations/{token}", response_model=InvitationInfo)

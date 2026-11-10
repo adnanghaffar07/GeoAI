@@ -1,0 +1,205 @@
+{
+  "area": "philadelphia",
+  "name": "City of Philadelphia",
+  "level": 1,
+  "schema": "philadelphia",
+  "map_zone": "EPSG:26918",
+  "box": {
+    "min_lon": -75.2853,
+    "min_lat": 39.862,
+    "max_lon": -74.9508,
+    "max_lat": 40.143
+  },
+  "area_km2": 368.9,
+  "osm_extract": "2026-11-09T20:54:48Z",
+  "sections_before_boundary_cut": 54183,
+  "km_before_boundary_cut": 4136.0,
+  "weather": {
+    "stations": [
+      {
+        "id": "USC00286864",
+        "name": "Pennsauken 1N",
+        "lat": 39.9661,
+        "lon": -75.0219
+      },
+      {
+        "id": "USW00013739",
+        "name": "Phila Intl Ap",
+        "lat": 39.8733,
+        "lon": -75.2269
+      },
+      {
+        "id": "USW00094732",
+        "name": "Ne Phila Ap",
+        "lat": 40.0789,
+        "lon": -75.0133
+      }
+    ],
+    "snow_station": "USW00013739",
+    "choice": {
+      "rule": {
+        "max_distance_km": 30,
+        "min_complete_share": 0.9,
+        "years": 10,
+        "max_stations": 3,
+        "max_candidates": 8
+      },
+      "measured_from": "2016-01-01",
+      "measured_to": "2025-12-31",
+      "candidates_found": 17,
+      "measured": [
+        {
+          "id": "USC00286864",
+          "lat": 39.9661,
+          "lon": -75.0219,
+          "state": "NJ",
+          "name": "PENNSAUKEN 1N",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.986,
+            "rain": 0.989,
+            "snow": 0.955
+          },
+          "file_sha256": "fd4843e6f6043697df74e37ce8402c58d1412ee5f947e9ec0487a8a93fc891bc"
+        },
+        {
+          "id": "USC00366886",
+          "lat": 39.9586,
+          "lon": -75.1728,
+          "state": "PA",
+          "name": "PHILA FRANKLIN INST",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.936,
+            "rain": 0.701,
+            "snow": 0.824
+          },
+          "file_sha256": "6539d9c3063094ed7cccd3145ed792b44e1e1eebb478587ab3497b36c09ef38c"
+        },
+        {
+          "id": "USW00013739",
+          "lat": 39.8733,
+          "lon": -75.2269,
+          "state": "PA",
+          "name": "PHILA INTL AP",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "72f68e4dffb5649e141a6b5aa71848f8b7e4ca4a1a573ba39b3c1c973ed9812f"
+        },
+        {
+          "id": "USW00094732",
+          "lat": 40.0789,
+          "lon": -75.0133,
+          "state": "PA",
+          "name": "NE PHILA AP",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.978,
+            "rain": 0.945,
+            "snow": 0.0
+          },
+          "file_sha256": "9b6b8417361adf24f9e58db48707c360d273bffe4346a538fdb02d33b26ec6cf"
+        },
+        {
+          "id": "USC00366194",
+          "lat": 40.1483,
+          "lon": -74.953,
+          "state": "PA",
+          "name": "NESHAMINY FALLS",
+          "distance_km": 0.6,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.994,
+            "rain": 0.997,
+            "snow": 0.993
+          },
+          "file_sha256": "c8d638c7be3679334f619f42e8eff7baf41adc7c3b2f3b48af371b89afc84e59"
+        },
+        {
+          "id": "USC00366370",
+          "lat": 40.1097,
+          "lon": -75.3369,
+          "state": "PA",
+          "name": "NORRISTOWN",
+          "distance_km": 4.4,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.963,
+            "rain": 0.973,
+            "snow": 0.962
+          },
+          "file_sha256": "dc066a2a38bbd360115b1a92b859ce4d4bd926ab9ce9dc51e3d8fe8a21c7cc4c"
+        },
+        {
+          "id": "USC00285728",
+          "lat": 39.9683,
+          "lon": -74.865,
+          "state": "NJ",
+          "name": "MOORESTOWN 4 E",
+          "distance_km": 7.3,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.358,
+            "rain": 0.421,
+            "snow": 0.422
+          },
+          "file_sha256": "9298936683c29b460458a9a1e529d11f3a85251f9d3a1876962ec5d5f54516c3"
+        },
+        {
+          "id": "USW00093780",
+          "lat": 39.9408,
+          "lon": -74.8408,
+          "state": "NJ",
+          "name": "S JERSEY RGNL AP",
+          "distance_km": 9.4,
+          "has_snow": false,
+          "share": {
+            "temperature": 0.964,
+            "rain": 0.947,
+            "snow": 0.0
+          },
+          "file_sha256": "5d9c9570ba7fdb634638ccdff9171c8a8921352a5690a3a2841974f9e4326b3a"
+        }
+      ],
+      "stations": [
+        {
+          "id": "USC00286864",
+          "name": "Pennsauken 1N",
+          "lat": 39.9661,
+          "lon": -75.0219
+        },
+        {
+          "id": "USW00013739",
+          "name": "Phila Intl Ap",
+          "lat": 39.8733,
+          "lon": -75.2269
+        },
+        {
+          "id": "USW00094732",
+          "name": "Ne Phila Ap",
+          "lat": 40.0789,
+          "lon": -75.0133
+        }
+      ],
+      "snow_station": "USW00013739",
+      "chosen_at": "2026-11-09"
+    }
+  },
+  "layers": {
+    "pothole history (Level 2)": true,
+    "weather (freeze-thaw, rain, snow)": true,
+    "elevation (USGS, national)": true,
+    "flood zones (FEMA, national)": true,
+    "soil (USDA, national)": true,
+    "traffic counts": false,
+    "bus routes": false
+  }
+}

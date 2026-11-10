@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router'
 
+import { AgreementDialog } from '@/auth/agreement-dialog'
 import { useAuth } from '@/auth/auth-context'
 import { ErrorMessage } from '@/components/error-message'
 import { LoadingScreen } from '@/components/ui/loading-screen'
@@ -22,5 +23,7 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     const next = encodeURIComponent(location.pathname + location.search)
     return <Navigate to={`/sign-in?next=${next}`} replace />
   }
+  // Team lead plan, Phase 1: the terms are accepted after sign-in, before any page opens.
+  if (auth.me?.agreement_required) return <AgreementDialog version={auth.me.agreement_version ?? ''} />
   return children
 }

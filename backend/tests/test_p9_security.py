@@ -30,6 +30,7 @@ PUBLIC = {
     ("GET", "/api/v1/auth/password-resets/{token}"),
     ("POST", "/api/v1/auth/password-resets/{token}"),
     ("POST", "/api/v1/organization-requests"),
+    ("GET", "/api/v1/shared/{token}"),  # item 9: a secret photo link, no sign-in
 }
 
 

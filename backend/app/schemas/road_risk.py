@@ -123,8 +123,20 @@ class LinkedInspection(BaseModel):
     planned_date: date | None
 
 
+class RoadDetailsOut(BaseModel):
+    """Team lead item 12, from OpenStreetMap; None = not on the map."""
+
+    speed_limit_mph: int | None = None
+    lanes: int | None = None
+    surface: str | None = None
+    oneway: bool | None = None
+    road_ref: str | None = None
+    source: str = "OpenStreetMap contributors"
+
+
 class SectionDetailOut(BaseModel):
     section: SectionRiskOut
+    road: RoadDetailsOut | None = None
     geometry: dict[str, Any]
     history: list[HistoryPoint]  # weekly levels, newest first
     inspections: list[LinkedInspection]  # inspections planned from this section's levels

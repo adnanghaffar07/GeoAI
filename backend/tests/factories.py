@@ -43,7 +43,18 @@ def add_member(db: Session, org: Organization, email: str, org_role: str) -> Per
 def sign_in(client: TestClient, email: str, password: str = DEFAULT_PASSWORD) -> TestClient:
     response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
     assert response.status_code == 200, response.text
+    accept_terms(client)
     return client
+
+
+def accept_terms(client: TestClient, remember: bool = True) -> None:
+    """Team lead plan, Phase 1: accept the terms shown after sign-in."""
+    from app.core.agreement import AGREEMENT_VERSION
+
+    answer = client.post(
+        "/api/v1/auth/agreement", json={"version": AGREEMENT_VERSION, "remember": remember}
+    )
+    assert answer.status_code == 200, answer.text
 
 
 def org_id_of(client: TestClient) -> str:

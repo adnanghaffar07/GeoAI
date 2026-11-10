@@ -2,13 +2,6 @@
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
-from fastapi.responses import FileResponse
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
-from app import storage
-from app.core import queue
 from app.core.auth import (
     CurrentUser,
     ProjectContext,
@@ -19,9 +12,16 @@ from app.core.auth import (
 from app.core.database import get_db
 from app.core.errors import ConflictError, NotFoundError, PermissionDeniedError
 from app.core.permissions import Perm
-from app.models import Report
 from app.schemas.common import Page
 from app.schemas.reports import ReportOut, ReportRequest, ReportShare
+from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import Response
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from app import storage
+from app.core import queue
+from app.models import Report
 from app.services import reports as service
 
 project_router = APIRouter(prefix="/projects/{project_id}", tags=["reports"])
@@ -90,25 +90,27 @@ def get_report(
     return service.to_out(db, [report], ctx.project.name)[0]
 
 
-@report_router.get("/file", response_class=FileResponse)
+@report_router.get("/file", response_class=Response)
 def download_report(
     report_id: uuid.UUID,
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> FileResponse:
+) -> Response:
     """Download the file. Every download is recorded in the history (FR-48)."""
     ctx, report = _load(db, current, report_id)
     if report.status != "completed" or not report.storage_key:
         raise ConflictError("This report is not ready yet.")
-    if not storage.exists(report.storage_key):
+    answer = storage.file_response(
+        report.storage_key,
+        service.MEDIA_TYPES[report.format],
+        {"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
+        filename=service.file_name(ctx.project.name, report),
+        inline=False,
+    )
+    if answer is None:
         raise NotFoundError("The report file is not available.")
     service.log_download(db, ctx, report)
-    return FileResponse(
-        storage.path_for(report.storage_key),
-        media_type=service.MEDIA_TYPES[report.format],
-        filename=service.file_name(ctx.project.name, report),
-        headers={"Cache-Control": "private, no-store", "X-Content-Type-Options": "nosniff"},
-    )
+    return answer
 
 
 @report_router.post("/share", response_model=ReportOut)

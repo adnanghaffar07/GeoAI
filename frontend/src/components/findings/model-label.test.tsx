@@ -9,9 +9,9 @@ describe('ModelLabel', () => {
     expect(screen.getByText('TEST DETECTOR: not a real detection')).toBeInTheDocument()
   })
 
-  it('marks trial-model results as not accuracy-approved', () => {
-    render(<ModelLabel trialModel />)
-    expect(screen.getByText('TRIAL MODEL: accuracy not approved')).toHaveAttribute('title', expect.stringContaining('a person must check every photo'))
+  it('shows no warning on trial-model results (decision TL-D2)', () => {
+    const { container } = render(<ModelLabel trialModel />)
+    expect(container).toBeEmptyDOMElement()
   })
 
   it('shows nothing for an approved model', () => {

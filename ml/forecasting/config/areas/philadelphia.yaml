@@ -1,0 +1,30 @@
+# Area: City of Philadelphia, Pennsylvania. US plan step C, second city (owner: "ok next", 2026-11-09).
+# Level 1 on screen (risk factors) until the shared US model passes its test here (step E).
+name: City of Philadelphia
+schema: philadelphia
+level: 1
+
+boundary:
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"="Philadelphia"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Pennsylvania"]'
+
+weather_stations: auto                      # chosen by `forecasting.run area-check` (rule D3)
+# Traffic: HPMS (every state). No bus routes yet (SEPTA GTFS later).
+
+city_potholes:
+  # OpenDataPhilly, "311 Service and Information Requests" (Carto table public_cases_fc), checked 2026-11-09.
+  # Licence: City of Philadelphia open data terms of use (free to use; city credited).
+  licence: City of Philadelphia 311 Service and Information Requests (OpenDataPhilly), City of Philadelphia open data terms
+  portal_type: carto_sql
+  api: https://phl.carto.com/api/v2/sql
+  page_size: 10000
+  missing_years: [2015]                     # the table has no 2015 "Street Defect" requests (checked 2026-11-09)
+  systems:
+    - name: philadelphia_311
+      table: public_cases_fc
+      type_column: service_name
+      timezone: America/New_York            # the table gives times in UTC ("...Z")
+      pothole_values: ["Street Defect"]     # code SR-ST01, Streets Department; no sub-type, so other road defects too
+      duplicate_words: []                   # Philadelphia does not mark duplicates; step E uses one rule for every city
+      columns: {request_id: service_request_id, created_at: requested_datetime, status: status, closure_reason: status_notes,
+                latitude: lat, longitude: lon}

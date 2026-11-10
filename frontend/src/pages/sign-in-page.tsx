@@ -74,6 +74,9 @@ export function SignInPage() {
         <Link to="/request-access" className="btn btn-secondary mt-2 w-full">
           Request access
         </Link>
+        <Link to="/about" className="mt-3 block text-center text-asphalt-600 underline">
+          About, terms of use and privacy
+        </Link>
       </div>
     </AuthCard>
   )

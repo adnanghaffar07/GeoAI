@@ -5,9 +5,9 @@ import { RequireAuth } from '@/auth/require-auth'
 import { AppLayout } from '@/components/app-layout'
 import { RouteErrorPage } from '@/components/route-error-page'
 import { LoadingScreen } from '@/components/ui/loading-screen'
+import { AboutPage } from '@/pages/about-page'
 import { AcceptInvitationPage } from '@/pages/accept-invitation-page'
 import { AccountPage } from '@/pages/account-page'
-import { CatalogPage } from '@/pages/catalog-page'
 import { NotFoundPage } from '@/pages/not-found-page'
 import { ProjectLayout } from '@/pages/project/project-layout'
 import { MovedProjectPage, ProjectSettingsLayout } from '@/pages/project/project-settings-layout'
@@ -29,6 +29,7 @@ export const router = createBrowserRouter([
   { path: '/invite/:token', element: <AcceptInvitationPage />, errorElement: <RouteErrorPage /> },
   { path: '/reset-password/:token', element: <ResetPasswordPage />, errorElement: <RouteErrorPage /> },
   { path: '/request-access', element: <RequestAccessPage />, errorElement: <RouteErrorPage /> },
+  { path: '/about', element: <AboutPage />, errorElement: <RouteErrorPage /> },
   // Signed-in app
   {
     element: (
@@ -51,9 +52,12 @@ export const router = createBrowserRouter([
           { index: true, lazy: lazyPage(() => import('@/pages/project/project-overview-page').then((m) => ({ default: m.ProjectOverviewPage }))) },
           { path: 'photos', lazy: lazyPage(() => import('@/pages/project/project-photos-page').then((m) => ({ default: m.ProjectPhotosPage }))) },
           { path: 'upload', element: <ProjectUploadPage /> },
+          { path: 'cameras', lazy: lazyPage(() => import('@/pages/project/project-cameras-page').then((m) => ({ default: m.ProjectCamerasPage }))) },
+          { path: 'photo-map', lazy: lazyPage(() => import('@/pages/project/project-photo-map-page').then((m) => ({ default: m.ProjectPhotoMapPage }))) },
           { path: 'findings', lazy: lazyPage(() => import('@/pages/project/project-findings-page').then((m) => ({ default: m.ProjectFindingsPage }))) },
           { path: 'priority', lazy: lazyPage(() => import('@/pages/project/project-priority-page').then((m) => ({ default: m.ProjectPriorityPage }))) },
           { path: 'road-risk', lazy: lazyPage(() => import('@/pages/project/project-road-risk-page').then((m) => ({ default: m.ProjectRoadRiskPage }))) },
+          { path: 'roads', lazy: lazyPage(() => import('@/pages/project/project-roads-page').then((m) => ({ default: m.ProjectRoadsPage }))) },
           { path: 'road-risk/:sectionId', lazy: lazyPage(() => import('@/pages/project/project-road-section-page').then((m) => ({ default: m.ProjectRoadSectionPage }))) },
           { path: 'reports', lazy: lazyPage(() => import('@/pages/project/project-reports-page').then((m) => ({ default: m.ProjectReportsPage }))) },
           { path: 'review/:findingId', lazy: lazyPage(() => import('@/pages/project/project-review-page').then((m) => ({ default: m.ProjectReviewPage }))) },
@@ -75,9 +79,8 @@ export const router = createBrowserRouter([
         ],
       },
       { path: 'settings/team', element: <TeamPage /> },
-      { path: 'settings/catalog', element: <CatalogPage /> },
       { path: 'settings/history', lazy: lazyPage(() => import('@/pages/settings-history-page').then((m) => ({ default: m.SettingsHistoryPage }))) },
-      { path: 'settings/retention', lazy: lazyPage(() => import('@/pages/settings-retention-page').then((m) => ({ default: m.SettingsRetentionPage }))) },
+      { path: 'settings/data-storage', lazy: lazyPage(() => import('@/pages/settings-data-storage-page').then((m) => ({ default: m.SettingsDataStoragePage }))) },
       { path: 'account', element: <AccountPage /> },
       { path: 'notifications', lazy: lazyPage(() => import('@/pages/notifications-page').then((m) => ({ default: m.NotificationsPage }))) },
       { path: 'notifications/:alertId', lazy: lazyPage(() => import('@/pages/notifications-page').then((m) => ({ default: m.AlertPage }))) },

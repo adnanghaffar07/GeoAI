@@ -35,6 +35,7 @@ from app.schemas.findings import (
     ReviewRequest,
 )
 from app.services import findings as service
+from app.services import photo_map
 
 project_router = APIRouter(prefix="/projects/{project_id}", tags=["findings"])
 finding_router = APIRouter(prefix="/findings/{finding_id}", tags=["findings"])
@@ -88,6 +89,15 @@ def findings_map(
     """The same findings as the list, as map points (findings without a location are left
     out here and flagged in the list)."""
     return service.findings_geojson(db, ctx, filters)
+
+
+@project_router.get("/photos.geojson")
+def photos_map(
+    ctx: ProjectContext = Depends(require_project_permission(Perm.IMAGE_VIEW)),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Analysed photos with a location and the defects the caller may see (item 5)."""
+    return photo_map.photos_geojson(db, ctx)
 
 
 @project_router.post("/findings", response_model=FindingOut, status_code=status.HTTP_201_CREATED)

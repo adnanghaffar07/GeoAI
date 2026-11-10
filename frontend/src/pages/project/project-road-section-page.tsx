@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router'
 
 import { INSPECTION_LABELS } from '@/api/priority'
-import { formatDay, getSectionRisk, reasonText, roadName, roadRiskQueryKeys, roadTypeLabel } from '@/api/road-risk'
+import { formatDay, getSectionRisk, reasonText, roadName, roadRiskQueryKeys, roadTypeLabel, type RoadDetails } from '@/api/road-risk'
 import { ErrorMessage } from '@/components/error-message'
 import { InspectionDialog, PlanInspectionDialog } from '@/components/inspections/inspection-dialogs'
 import { RoadRiskLegend, RoadRiskMap } from '@/components/map/road-risk-map'
@@ -56,6 +56,8 @@ export function ProjectRoadSectionPage() {
           {canPlan && <Button onClick={() => setDialog('plan')}>Plan inspection</Button>}
         </div>
       </div>
+
+      {detail.data.road && <RoadSpecs road={detail.data.road} />}
 
       <TrialNotice label={detail.data.label} notice={detail.data.notice}>
         {detail.data.levels_run && <p className="text-xs">Levels of {formatDay(detail.data.levels_run.as_of)}.</p>}
@@ -118,5 +120,31 @@ export function ProjectRoadSectionPage() {
       {dialog === 'plan' && <PlanInspectionDialog project={project} road={road} onClose={() => setDialog(null)} />}
       {dialog === 'view' && <InspectionDialog project={project} road={road} onClose={() => setDialog(null)} />}
     </div>
+  )
+}
+
+/** Team-lead item 12: speed limit and other road details. "Not on the map" is shown, never a guess. */
+function RoadSpecs({ road }: { road: RoadDetails }) {
+  const unknown = 'Not on the map'
+  const rows: [string, string][] = [
+    ['Speed limit', road.speed_limit_mph ? `${road.speed_limit_mph} mph` : unknown],
+    ['Lanes', road.lanes ? String(road.lanes) : unknown],
+    ['Surface', road.surface ?? unknown],
+    ['One-way', road.oneway === null ? unknown : road.oneway ? 'Yes' : 'No'],
+    ['Route number', road.road_ref ?? unknown],
+  ]
+  return (
+    <section aria-label="Road details" className="rounded-lg border border-asphalt-100 p-3">
+      <h3 className="mb-2 text-sm font-semibold text-asphalt-800">Road details</h3>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-5">
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt className="text-xs text-asphalt-500">{label}</dt>
+            <dd className={value === unknown ? 'text-asphalt-400' : 'text-asphalt-800'}>{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-xs text-asphalt-500">Source: {road.source} (OpenStreetMap). Check signs on site before relying on them.</p>
+    </section>
   )
 }

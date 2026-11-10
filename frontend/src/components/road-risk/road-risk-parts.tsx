@@ -31,17 +31,13 @@ export function LevelBadge({ level, kind = 'risk', className }: { level: FactorL
   )
 }
 
-/** The TRIAL label and the fixed notice, on every road-risk screen. */
-export function TrialNotice({ label, notice, children }: { label: string; notice: string; children?: ReactNode }) {
-  return (
-    <div className="space-y-1 rounded-lg border border-lane-300 bg-lane-50 p-3 text-sm text-asphalt-800">
-      <p className="flex flex-wrap items-center gap-2">
-        <span className="pill bg-lane-500 font-semibold tracking-wide text-asphalt-950">{label}</span>
-        <span className="font-medium">{notice}</span>
-      </p>
-      {children && <div className="text-asphalt-600">{children}</div>}
-    </div>
-  )
+/**
+ * Model and data dates for a road-risk screen. The TRIAL label and notice are no longer shown on screen
+ * (team lead plan, decision TL-D2, 2026-11-10): the terms accepted after sign-in cover it, and downloads keep them.
+ */
+export function TrialNotice({ children }: { label?: string; notice?: string; children?: ReactNode }) {
+  if (!children) return null
+  return <div className="text-xs text-asphalt-500">{children}</div>
 }
 
 /** One-line explanation of what the levels mean for this project. */

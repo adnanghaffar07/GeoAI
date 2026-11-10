@@ -1,4 +1,5 @@
-# Area: City of Naperville, Illinois. Level 1 only (risk factors): no pothole history yet (F3 waits for PI-21).
+# Area: City of Naperville, Illinois. Level 1 (risk factors). Pothole history from the city's open data since 2023
+# (small: about 150-190 a year); used for a factor and to test the Chicago model here (Naperville plan N1-N3).
 # Trial area for the any-area pipeline (owner decision D2, 2026-10-29).
 name: City of Naperville
 schema: naperville
@@ -14,3 +15,31 @@ weather_stations: auto                      # chosen by `forecasting.run area-ch
 
 traffic_counts: idot                        # Illinois traffic counts (regional source in config/sources.yaml)
 # No bus routes configured (Pace suburban buses are not published in a form we load yet): shown as missing.
+
+city_potholes:
+  # City of Naperville Open Data (data.naperville.il.us): "Service Requests" and "Work Orders", both CC0.
+  # Checked 2026-11-10 (scripts/naperville-data-check.bat and -check2.bat): requests since 2023-01-01, updated daily.
+  licence: City of Naperville Open Data, Service Requests and Work Orders, CC0 1.0 (public domain)
+  portal_type: arcgis
+  api: https://services1.arcgis.com/rXJ6QApc2sOtl1Pd/arcgis/rest/services
+  page_size: 1000
+  parallel_systems: true                    # residents' requests and crew work orders run side by side
+  unknown_points: [[0.0, 0.0]]              # a 0,0 point means "no location"
+  # Naperville's work orders do not record the request number, so a crew repair within 30 m and 30 days after a
+  # residents' request is taken as the same pothole (marked as a repeat; used by the transfer test and the factor).
+  same_pothole: {system: naperville_crew_repairs, of: naperville_requests, metres: 30, days: 30}
+  systems:
+    - name: naperville_requests             # residents' pothole requests (2023: 125, 2024: 125, 2025: 119)
+      layer: Service_Request/FeatureServer/0
+      type_column: DESCRIPTION
+      pothole_words: ["POTHOLE"]
+      timezone: America/Chicago
+      columns: {request_id: REQUESTID, created_at: DATE_CREATED, status: STATUS, latitude: LAT_DEGREE, longitude: LONG_DEGREE}
+    - name: naperville_crew_repairs         # city crews' pothole repairs (confirmed potholes)
+      layer: Work_Orders_Data/FeatureServer/0
+      type_column: Description
+      pothole_values: ["Streets-Pavement Potholes", "Pavement Patching"]
+      timezone: America/Chicago
+      linked_to: {column: Service_Request_ID, system: naperville_requests}   # a repair for a counted request = repeat
+      columns: {request_id: Work_Order_ID, created_at: Date_Initiated, latitude: WOYCOORDINATE, longitude: WOXCOORDINATE,
+                link: Service_Request_ID}

@@ -13,14 +13,9 @@ import uuid
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 
-from sqlalchemy import func, select
-from sqlalchemy.orm import Session
-
-from app import storage
 from app.ai.contract import InvalidModelOutputError, ModelOutput, validate_output
 from app.ai.registry import UnknownModelError, get_model
 from app.core.auth import ProjectContext
-from app.core.config import get_settings
 from app.core.errors import (
     ConflictError,
     NotFoundError,
@@ -28,10 +23,15 @@ from app.core.errors import (
     ServiceUnavailableError,
 )
 from app.core.permissions import Perm
-from app.models import AnalysisJob, Finding, FindingImage, Image
 from app.models.base import utc_now
 from app.services.audit import record_event
 from app.services.projects import ensure_not_archived
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+from app import storage
+from app.core.config import get_settings
+from app.models import AnalysisJob, Finding, FindingImage, Image
 
 log = logging.getLogger(__name__)
 
@@ -220,7 +220,8 @@ def run_job(db: Session, job_id: uuid.UUID) -> None:
         return
 
     try:
-        note = model.detect(storage.path_for(image.storage_key), image_id=str(image.id))
+        with storage.local_copy(image.storage_key) as photo:  # decrypted copy, deleted right after
+            note = model.detect(photo, image_id=str(image.id))
     except Exception:  # any detector crash fails this job only, never the worker
         log.exception("Detector crashed on job %s", job.id)
         _fail(db, job, REASON_UNREADABLE)

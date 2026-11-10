@@ -23,28 +23,74 @@ CHECKS: list = []
 BOSTON = "https://data.boston.gov/api/3/action"
 
 
+PHILLY = "https://phl.carto.com/api/v2/sql"
+
+
+def philly_round() -> None:
+    """Sixth round (2026-11-09): Philadelphia 311 (Carto): columns, how potholes are named, years, duplicates."""
+
+    def q(text: str) -> object:
+        answer = requests.get(PHILLY, params={"q": text}, headers=UA, timeout=180).json()
+        return answer.get("rows", answer.get("error"))
+
+    t = "public_cases_fc"
+    print("columns:", list((q(f"SELECT * FROM {t} LIMIT 1") or [{}])[0].keys()))  # noqa: S608
+    print("first Street Defect row:", str(q(f"SELECT * FROM {t} WHERE service_name = 'Street Defect' LIMIT 1"))[:900])  # noqa: S608
+    print(
+        "Street Defect subjects:",
+        q(
+            f"SELECT left(subject, 60) AS v, count(*) AS n FROM {t} WHERE service_name = 'Street Defect' GROUP BY 1 ORDER BY 2 DESC LIMIT 15"
+        ),
+    )  # noqa: S608
+    print(
+        "other names with pothole:",
+        q(
+            f"SELECT service_name, left(subject, 60) AS s, count(*) AS n FROM {t} WHERE subject ILIKE '%pothole%' "  # noqa: S608
+            "OR service_name ILIKE '%pothole%' GROUP BY 1, 2 ORDER BY 3 DESC LIMIT 15"
+        ),
+    )
+    print(
+        "Street Defect per year:",
+        q(
+            f"SELECT extract(year FROM requested_datetime) AS y, count(*) AS n FROM {t} WHERE service_name = 'Street Defect' "  # noqa: S608
+            "GROUP BY 1 ORDER BY 1"
+        ),
+    )
+    print(
+        "Street Defect status notes:",
+        q(
+            f"SELECT left(status_notes, 80) AS v, count(*) AS n FROM {t} WHERE service_name = 'Street Defect' GROUP BY 1 "  # noqa: S608
+            "ORDER BY 2 DESC LIMIT 25"
+        ),
+    )
+    print(
+        "Street Defect without a location:",
+        q(f"SELECT count(*) AS n FROM {t} WHERE service_name = 'Street Defect' AND (lat IS NULL OR lon IS NULL)"),
+    )  # noqa: S608
+
+
 def boston_round() -> None:
-    """Fourth round (2026-11-06): Boston's 311 files, their columns and how potholes are named."""
-    package = requests.get(f"{BOSTON}/package_show", params={"id": "311-service-requests"}, headers=UA, timeout=120).json()
-    resources = package["result"]["resources"]
-    print(f"Boston 311: {len(resources)} files")
-    for r in resources:
-        print(f"  {r.get('name')!s:60.60} id={r['id']} datastore={r.get('datastore_active')} format={r.get('format')}")
-    active = [r for r in resources if r.get("datastore_active")]
-    for r in active[:1] + active[-2:]:
-        one = requests.get(f"{BOSTON}/datastore_search", params={"resource_id": r["id"], "limit": 1}, headers=UA, timeout=120).json()
-        result = one.get("result", {})
-        fields = [f["id"] for f in result.get("fields", [])]
-        print(f"\n  {r.get('name')}: {result.get('total')} rows; columns: {fields}")
-        print(f"  first row: {str((result.get('records') or [{}])[0])[:700]}")
-        for column in ("type", "case_title", "reason", "subject", "service_name", "request_type"):
-            if column in fields:
-                q = (  # noqa: S608 (read-only check; names come from the portal itself)
-                    f'SELECT "{column}" AS v, count(*) AS n FROM "{r["id"]}" '  # noqa: S608
-                    f"WHERE \"{column}\" ILIKE '%pothole%' GROUP BY 1 ORDER BY 2 DESC LIMIT 10"
-                )
-                found = requests.get(f"{BOSTON}/datastore_search_sql", params={"sql": q}, headers=UA, timeout=120).json()
-                print(f"  pothole values in {column}: {found.get('result', {}).get('records', found.get('error'))}")
+    """Fifth round (2026-11-09): Boston's 2014 file, and the words used for duplicates."""
+
+    def sql_(q: str) -> object:
+        answer = requests.get(f"{BOSTON}/datastore_search_sql", params={"sql": q}, headers=UA, timeout=180).json()
+        return answer.get("result", {}).get("records", answer.get("error"))
+
+    y2014 = "bdae89c8-d4ce-40e9-a6e1-a5203953a2e0"
+    y2019 = "ea2e4696-4a2d-429c-9807-d02eb92e0222"
+    new = "254adca6-64ab-4c5c-9fc0-a6da622be185"
+    print("2014 rows:", sql_(f'SELECT count(*) AS n FROM "{y2014}"'))  # noqa: S608
+    print("2014 types like pothole:", sql_(
+        f'SELECT "type" AS v, count(*) AS n FROM "{y2014}" WHERE "type" ILIKE \'%pot%\' OR "case_title" ILIKE \'%pot%\' '  # noqa: S608
+        "GROUP BY 1 ORDER BY 2 DESC LIMIT 15"))  # fmt: skip
+    print("2014 most common types:", sql_(f'SELECT "type" AS v, count(*) AS n FROM "{y2014}" GROUP BY 1 ORDER BY 2 DESC LIMIT 25'))  # noqa: S608
+    print("2014 first row:", str(sql_(f'SELECT * FROM "{y2014}" LIMIT 1'))[:900])  # noqa: S608
+    print("2019 pothole closure reasons:", sql_(
+        f'SELECT left("closure_reason", 90) AS v, count(*) AS n FROM "{y2019}" WHERE "type" = \'Request for Pothole Repair\' '  # noqa: S608
+        "GROUP BY 1 ORDER BY 2 DESC LIMIT 30"))  # fmt: skip
+    print("new system pothole closure reasons:", sql_(
+        f'SELECT left("closure_reason", 90) AS v, count(*) AS n FROM "{new}" WHERE "service_name" = \'Pothole\' '  # noqa: S608
+        "GROUP BY 1 ORDER BY 2 DESC LIMIT 20"))  # fmt: skip
 
 
 def hpms_round() -> None:
@@ -80,9 +126,9 @@ def hpms_round() -> None:
 def main() -> None:
     print("Read-only check. Nothing is saved.\n")
     try:
-        boston_round()
+        philly_round()
     except Exception as error:  # noqa: BLE001
-        print(f"Boston round: {type(error).__name__}: {str(error)[:200]}")
+        print(f"Philadelphia round: {type(error).__name__}: {str(error)[:200]}")
     ok = 0
     for name, url, params in CHECKS:
         start = time.perf_counter()

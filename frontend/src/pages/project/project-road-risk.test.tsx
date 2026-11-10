@@ -134,8 +134,7 @@ describe('Road risk', () => {
     expect(within(list).getByText('Pothole reports here, last 12 months: 4')).toBeInTheDocument()
     expect(within(list).getByText(/Some inputs are not known: Number of lanes/)).toBeInTheDocument()
     expect(list.textContent).not.toMatch(/%/)
-    expect(screen.getAllByText('TRIAL FORECAST').length).toBeGreaterThan(0)
-    expect(screen.getByText('Risk estimate, not a confirmed defect.')).toBeInTheDocument()
+    expect(screen.queryByText('Risk estimate, not a confirmed defect.')).not.toBeInTheDocument() // TL-D2
     expect(screen.getByRole('link', { name: /Download CSV/ })).toHaveAttribute('href', '/api/v1/projects/p1/risk/export?format=csv')
   })
 

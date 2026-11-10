@@ -149,7 +149,7 @@ describe('Photos tab: AI analysis', () => {
 
     const cards = await screen.findAllByRole('listitem')
     const [first, second] = cards.filter((card) => card.querySelector('img'))
-    expect(within(first!).getByText('TRIAL MODEL: accuracy not approved')).toBeInTheDocument()
+    expect(within(first!).queryByText('TRIAL MODEL: accuracy not approved')).not.toBeInTheDocument() // TL-D2
     expect(within(first!).queryByText('TEST DETECTOR: not a real detection')).not.toBeInTheDocument()
     expect(within(second!).getByText('Trial model found nothing. Check the photo yourself.')).toBeInTheDocument()
   })

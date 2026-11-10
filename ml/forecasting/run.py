@@ -43,6 +43,10 @@ def main(argv: list[str] | None = None) -> None:
     steps.add_parser("load", help="load raw files into the area's schema of the forecast database")
     steps.add_parser("level1", help="Level 1 risk factors for every section (factors, never a percentage)")
     steps.add_parser("hpms", help="US plan step B: download HPMS road condition for the area and match it to the sections")
+    steps.add_parser("potholes", help="a city's own pothole reports only (e.g. Naperville); other tables are not touched")
+    transfer = steps.add_parser("transfer-test", help="Naperville plan N3: locked test of the Chicago model on this city's reports")
+    transfer.add_argument("--owner-go-ahead", action="store_true", help="the owner approves running the locked test (once)")
+    transfer.add_argument("--first-monday", default="2025-01-06", help="first test Monday (needs a year of history before it)")
     steps.add_parser("report", help="write the F1 data report (areas with pothole history)")
     f2_build_cmd = steps.add_parser("f2-build", help="F2: build the learning table (continues after a stop)")
     f2_build_cmd.add_argument("--restart", action="store_true", help="throw away saved parts and start again")
@@ -103,6 +107,33 @@ def main(argv: list[str] | None = None) -> None:
         with settings.connect(settings.database_url(), area.schema) as conn:
             used = load_hpms(conn, area.raw_dir, src, stats)
         print(f"HPMS for {area.name}: {used}")
+    elif args.step == "potholes":
+        from collections import Counter
+
+        from forecasting.cities import load_city_potholes
+
+        src = areas.ready_sources(area)
+        if "city_potholes" not in src:
+            raise SystemExit(f"{area.name} has no city_potholes section in its area file.")
+        download_all(area.raw_dir, src, rules, terms_confirmed=getattr(args, "terms_confirmed", False), only="potholes_city", force=True)
+        stats: Counter = Counter()
+        with settings.connect(settings.database_url(), area.schema) as conn:
+            used = load_city_potholes(conn, area.raw_dir, src, stats)
+        print(f"Pothole reports for {area.name}: {used}")
+    elif args.step == "transfer-test":
+        from datetime import date as day
+
+        from forecasting import transfer
+
+        src = areas.ready_sources(area)
+        cfg = settings.load_config("f2.yaml")
+        cfg["snow_station"] = src.get("snow_station", cfg["snow_station"])
+        chicago = areas.load_area("chicago")
+        with settings.connect(settings.database_url(), area.schema) as conn:
+            result = transfer.run(
+                conn, area, src, cfg, rules, chicago.models_dir, day.fromisoformat(args.first_monday), args.owner_go_ahead
+            )
+        print(f"Transfer test for {area.name}: {result['outcome']}. Report: {area.reports_dir / 'transfer-test.md'}")
     elif args.step == "level1":
         from forecasting import risk_factors
 

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Archive, Bell, Building2, FolderKanban, History, LayoutDashboard, Menu, Tags, UserRound, Users, X, type LucideIcon } from 'lucide-react'
+import { Bell, Building2, FolderKanban, HardDrive, History, Info, LayoutDashboard, Menu, UserRound, Users, X, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 
@@ -24,14 +24,14 @@ const MAIN_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: FolderKanban, permission: 'org.view' },
   { to: '/account', label: 'My account', icon: UserRound },
+  { to: '/about', label: 'About', icon: Info },
 ]
 
 /** Organization settings, mostly for administrators; the group is hidden when none are allowed. */
 const SETTINGS_ITEMS: NavItem[] = [
   { to: '/settings/team', label: 'Team', icon: Users, permission: 'org.members.view' },
-  { to: '/settings/catalog', label: 'Finding types', icon: Tags, permission: 'org.settings.edit' },
   { to: '/settings/history', label: 'Activity history', icon: History, permission: 'org.audit.view' },
-  { to: '/settings/retention', label: 'Data retention', icon: Archive, permission: 'org.retention.edit' },
+  { to: '/settings/data-storage', label: 'Data storage', icon: HardDrive, permission: 'org.view' },
 ]
 
 /** Road-risk alerts (F4e): shown to people who manage a project, with the unread count. */

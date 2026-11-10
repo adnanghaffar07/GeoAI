@@ -45,3 +45,21 @@ class UserSession(Base):
     user_agent: Mapped[str | None] = mapped_column(String(500))
     ip_address: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = created_at_column()
+
+
+class UserAgreement(Base):
+    """A person accepted the terms shown after sign-in (team lead plan, Phase 1).
+
+    remember = true: valid until the terms change (new version); otherwise for this session only."""
+
+    __tablename__ = "user_agreements"
+    __table_args__ = (Index("ix_user_agreements_user_version", "user_id", "version"),)
+
+    id: Mapped[uuid.UUID] = uuid_pk()
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    version: Mapped[str] = mapped_column(String(40))
+    remember: Mapped[bool] = mapped_column(Boolean)
+    session_id: Mapped[uuid.UUID | None] = mapped_column(
+        ForeignKey("sessions.id", ondelete="SET NULL")
+    )
+    accepted_at: Mapped[datetime] = created_at_column()

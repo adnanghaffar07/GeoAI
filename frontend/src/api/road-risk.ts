@@ -90,8 +90,19 @@ export interface RiskMap {
   features: RiskMapFeature[]
 }
 
+/** Team-lead item 12: from OpenStreetMap; null = not on the map. */
+export interface RoadDetails {
+  speed_limit_mph: number | null
+  lanes: number | null
+  surface: string | null
+  oneway: boolean | null
+  road_ref: string | null
+  source: string
+}
+
 export interface SectionDetail {
   section: SectionRisk
+  road?: RoadDetails | null
   geometry: { type: 'LineString'; coordinates: [number, number][] }
   history: { as_of: string; level: RiskLevel; rank_in_area: number }[]
   inspections: { id: string; status: string; planned_date: string | null }[]

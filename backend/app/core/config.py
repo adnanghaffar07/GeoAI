@@ -46,6 +46,10 @@ class Settings(BaseSettings):
 
     # Private folder for uploaded photos and generated exports. Never served directly.
     storage_dir: Path = Path("/data/storage")
+    # Phase 2: every stored file is encrypted (AES-256-GCM). Base64 of 32 random bytes.
+    # Empty: made once and kept in STORAGE_DIR/.storage-key (fine on the laptop; on a
+    # server set it in .env and back it up).
+    storage_encryption_key: str = ""
 
     # Seconds to wait when checking whether the database / queue is reachable.
     dependency_check_timeout_seconds: int = Field(default=3, ge=1, le=30)

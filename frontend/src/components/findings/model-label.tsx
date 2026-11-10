@@ -1,4 +1,4 @@
-import { TEST_DETECTOR_LABEL, TRIAL_MODEL_LABEL } from '@/api/analysis'
+import { TEST_DETECTOR_LABEL } from '@/api/analysis'
 import { cn } from '@/lib/utils'
 
 interface ModelLabelProps {
@@ -9,11 +9,12 @@ interface ModelLabelProps {
 }
 
 /**
- * The warning shown on every AI result that does not come from an approved model:
- * the TEST DETECTOR (made-up results) or a TRIAL MODEL (real model, accuracy not approved).
+ * The warning on AI results from the TEST DETECTOR (made-up results, development only).
+ * Trial-model results carry no warning on screen (team lead plan, decision TL-D2, 2026-11-10): the terms accepted
+ * after sign-in say AI results can be wrong; exported reports still say which model was used.
  */
 export function ModelLabel({ testDetector, trialModel, className, as: Tag = 'p' }: ModelLabelProps) {
-  const text = testDetector ? TEST_DETECTOR_LABEL : trialModel ? TRIAL_MODEL_LABEL : null
+  const text = testDetector ? TEST_DETECTOR_LABEL : null
   if (!text) return null
   return (
     <Tag

@@ -235,7 +235,6 @@ function ReportRow({ report, project, options }: { report: Report; project: Proj
           {report.include_unreviewed && <span className="pill border border-amber-500 bg-amber-50 text-amber-900">Includes UNREVIEWED AI suggestions</span>}
           {placeholder && <span className="pill bg-amber-100 text-amber-900">Uses sample settings (placeholder, not your city's yet)</span>}
           {report.settings_used.includes_test_detector && <span className="pill bg-amber-100 text-amber-900">Includes TEST DETECTOR results (not real detections)</span>}
-          {report.settings_used.includes_trial_model && <span className="pill bg-amber-100 text-amber-900">Includes TRIAL MODEL results (accuracy not approved)</span>}
           {report.shared_with_viewers && <span className="pill bg-emerald-100 text-emerald-900">Shared with viewers</span>}
         </div>
         {report.failure_reason && <p className="text-xs text-red-700">{report.failure_reason}</p>}

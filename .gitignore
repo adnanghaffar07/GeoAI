@@ -49,3 +49,4 @@ ml/forecasting/models/*/work/
 
 # P9.5 speed test working copy (the report is copied to documentation\06-demo)
 backend/p9-load-report.md
+_to_delete/

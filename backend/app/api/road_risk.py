@@ -26,6 +26,7 @@ from app.core.auth import (
 from app.core.database import get_db
 from app.core.errors import NotFoundError, PermissionDeniedError
 from app.core.permissions import Perm
+from app.models import ForecastSection
 from app.schemas.common import Page
 from app.schemas.priority import InspectionOut, InspectionPlan
 from app.schemas.road_risk import (
@@ -36,11 +37,13 @@ from app.schemas.road_risk import (
     ForecastStatusOut,
     NotificationsOut,
     RiskListOut,
+    RoadDetailsOut,
     SectionDetailOut,
     WeatherOut,
 )
 from app.services import inspections as inspections_service
 from app.services import road_risk as service
+from app.services import roads_view
 
 project_router = APIRouter(prefix="/projects/{project_id}", tags=["road risk"])
 notification_router = APIRouter(prefix="/notifications", tags=["road risk"])
@@ -141,6 +144,16 @@ def project_risk_map(
     return service.map_features(db, ctx)
 
 
+@project_router.get("/roads.geojson")
+def project_roads(
+    ctx: ProjectContext = Depends(require_risk_view),
+    db: Session = Depends(get_db),
+    box: str | None = Query(default=None, description="west,south,east,north in degrees"),
+) -> dict[str, Any]:
+    """Item 11, roads-only view: every section with name, road details and colour levels."""
+    return roads_view.roads_geojson(db, ctx, box)
+
+
 @project_router.get("/road-sections/{section_id}/risk", response_model=SectionDetailOut)
 def section_risk(
     section_id: uuid.UUID,
@@ -149,8 +162,21 @@ def section_risk(
 ) -> SectionDetailOut:
     """One section: level, reasons, factors, weekly history and inspections planned from it."""
     item, geometry, history, inspections, risk = service.section_detail(db, ctx, section_id)
+    row = db.get(ForecastSection, section_id)
+    road = (
+        RoadDetailsOut(
+            speed_limit_mph=row.speed_limit_mph,
+            lanes=row.lanes,
+            surface=row.surface,
+            oneway=row.oneway,
+            road_ref=row.road_ref,
+        )
+        if row is not None and row.details_filled
+        else None
+    )
     return SectionDetailOut(
         section=item,
+        road=road,
         geometry=geometry,
         history=history,
         inspections=inspections,

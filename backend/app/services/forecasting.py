@@ -47,6 +47,10 @@ logger = logging.getLogger(__name__)
 LOCAL_TZ = ZoneInfo("America/Chicago")
 DAILY_HOUR, WEEKLY_HOUR = 6, 7  # B-D1
 CHICAGO = "chicago"
+NAPERVILLE = "naperville"
+# Areas with tested levels: Chicago (the model was trained there) and cities whose locked
+# transfer test passed (Naperville, 2026-11-10: PASS). A project inside one gets Level 2 there.
+TESTED_AREAS = (CHICAGO, NAPERVILLE)
 LEVEL1 = "level1"
 
 
@@ -236,10 +240,11 @@ def setup(db: Session, settings_id: uuid.UUID, session: Any = None) -> ForecastS
     progress(1, 4, "checking where the project is")
     try:
         with fsettings.connect(url) as fconn:
-            chicago = live.in_chicago(fconn, area.ewkt)
-        if chicago:
-            row.level, row.area_key, schema = 2, CHICAGO, CHICAGO
-            progress(4, 4, "copying the Chicago road sections inside the project")
+            tested = tested_area_of(fconn, area.ewkt)
+        chicago = tested is not None
+        if tested:
+            row.level, row.area_key, schema = 2, tested, tested
+            progress(4, 4, f"copying the {_area(tested).name} road sections inside the project")
         else:
             from forecasting import area_check, load
             from forecasting import areas as fareas
@@ -274,7 +279,13 @@ def setup(db: Session, settings_id: uuid.UUID, session: Any = None) -> ForecastS
         with fsettings.connect(url) as fconn:
             count = copy_sections(db, fconn, row.area_key, schema, area.ewkt)
         row.status = "ready"
-        kind = "tested Chicago levels" if chicago else "risk factors only (no pothole history)"
+        kind = (
+            "tested Chicago levels"
+            if row.area_key == CHICAGO
+            else "tested levels (Chicago model, tested on this city)"
+            if chicago
+            else "risk factors only (no pothole history)"
+        )
         row.message = f"{count:,} road sections; {kind}."
         run.model_version = "level2" if chicago else LEVEL1
         _finish(run)
@@ -317,9 +328,26 @@ def project_section_ids(db: Session, project_id: uuid.UUID, area_key: str) -> di
 def _area(area_key: str) -> Any:
     from forecasting import areas
 
-    if area_key == CHICAGO:
-        return areas.load_area(CHICAGO)
+    if area_key in TESTED_AREAS:
+        return areas.load_area(area_key)
     return areas.load_area(area_key, areas_dir=project_areas_dir())
+
+
+def tested_area_of(fconn: Any, ewkt: str) -> str | None:
+    """The tested area the project is in: Chicago, or a city that passed its transfer test."""
+    from forecasting import live
+
+    if live.in_chicago(fconn, ewkt):
+        return CHICAGO
+    for key in TESTED_AREAS[1:]:
+        try:
+            area = _area(key)
+        except (Exception, SystemExit) as error:  # noqa: BLE001 (an area not set up on this computer)
+            logger.info("Tested area %s is not available here: %s", key, error)
+            continue
+        if live.passed_transfer_test(area) and live.in_area_boundary(fconn, area, ewkt):
+            return key
+    return None
 
 
 def daily(
@@ -457,26 +485,50 @@ def _outlook(db: Session, row: ForecastSettings, today: date, session: Any, nws:
     _finish(run, issued_at=out.get("issued_at"), source=out["source"])
 
 
-# ---------- weekly: Chicago levels ----------
+# ---------- weekly: tested levels (Chicago, and cities whose transfer test passed) ----------
 
 
 def weekly(db: Session, now: datetime, session: Any = None) -> dict[str, Any]:
+    out: dict[str, Any] = {"projects": 0, "new_reports": 0}
+    for key in TESTED_AREAS:
+        part = weekly_area(db, now, key, session)
+        out["projects"] += part["projects"]
+        out["new_reports"] += part.get("new_reports", 0)
+        if "failed" in part:
+            out.setdefault("failed", {})[key] = part["failed"]
+    if out["projects"] == 0 and not out["new_reports"] and "failed" not in out:
+        return {"projects": 0}
+    return out
+
+
+def weekly_area(db: Session, now: datetime, key: str, session: Any = None) -> dict[str, Any]:
     import numpy as np
     from forecasting import live
     from forecasting import settings as fsettings
     from forecasting import weekly as fweekly
 
-    rows = [row for row in _ready(db, area_key=CHICAGO) if weekly_due(now, row.last_weekly_run)]
+    rows = [row for row in _ready(db, area_key=key) if weekly_due(now, row.last_weekly_run)]
     if not rows:
         return {"projects": 0}
     monday = this_monday(now)
     url, cfg = forecast_url(), fsettings.load_config("f2.yaml")
-    area = _area(CHICAGO)
-    cfg["snow_station"] = area.src.get("snow_station", cfg["snow_station"])
+    area = _area(key)
     model, version = live.load_model(get_settings().forecast_models_dir)
     try:
-        with fsettings.connect(url, CHICAGO) as fconn:
-            added = live.download_new_reports(fconn, area, session or _session())
+        if key == CHICAGO:
+            cfg["snow_station"] = area.src.get("snow_station", cfg["snow_station"])
+            crs = area.crs
+        else:
+            from forecasting import areas as fareas
+
+            src = fareas.ready_sources(area)
+            cfg["snow_station"] = src.get("snow_station", cfg["snow_station"])
+            crs = src["projected_crs"]
+        with fsettings.connect(url, key) as fconn:
+            if key == CHICAGO:
+                added = live.download_new_reports(fconn, area, session or _session())
+            else:
+                added = live.refresh_city_reports(fconn, area, session or _session())
             matched = fweekly.match_new_reports(
                 fconn, fsettings.rules()["target"]["match_distance_m"]
             )
@@ -484,13 +536,13 @@ def weekly(db: Session, now: datetime, session: Any = None) -> dict[str, Any]:
             newest = fconn.execute("SELECT max(created_at)::date FROM pothole_reports").fetchone()[
                 0
             ]
-            levels = live.weekly_levels(fconn, monday, cfg, area.crs, model)
+            levels = live.weekly_levels(fconn, monday, cfg, crs, model)
     except Exception as error:  # noqa: BLE001
         for row in rows:
             run = _start_run(db, row.project_id, "weekly_levels", monday, version)
             _finish(run, "failed", f"Weekly levels could not be updated. {plain_reason(error)}")
         db.commit()
-        logger.warning("Weekly Chicago levels failed: %s", error)
+        logger.warning("Weekly %s levels failed: %s", key, error)
         return {"projects": 0, "failed": str(error)}
     # all sections' raw values, for the monthly check (never shown)
     weekly_dir = area.data_dir / "weekly"
@@ -502,20 +554,20 @@ def weekly(db: Session, now: datetime, session: Any = None) -> dict[str, Any]:
     )
     by_key = {r["section_id"]: r for r in levels}
     for row in rows:
-        ids = project_section_ids(db, row.project_id, CHICAGO)
+        ids = project_section_ids(db, row.project_id, key)
         run = _start_run(db, row.project_id, "weekly_levels", monday, version)
         db.add_all(
             RiskLevel(
                 run_id=run.id,
                 section_id=sid,
-                rank=by_key[key]["rank"],
-                level=by_key[key]["level"],
-                reasons=by_key[key]["reasons"],
-                missing_inputs=by_key[key]["missing_inputs"],
-                monitor_value=by_key[key]["monitor_value"],
+                rank=by_key[section_key]["rank"],
+                level=by_key[section_key]["level"],
+                reasons=by_key[section_key]["reasons"],
+                missing_inputs=by_key[section_key]["missing_inputs"],
+                monitor_value=by_key[section_key]["monitor_value"],
             )
-            for key, sid in ids.items()
-            if key in by_key
+            for section_key, sid in ids.items()
+            if section_key in by_key
         )
         _finish(
             run,
@@ -618,6 +670,16 @@ def tick(db: Session, now: datetime | None = None) -> dict[str, Any]:
             db.rollback()
             out[name] = {"failed": str(error)[:300]}
             logger.warning("Forecast %s step failed: %s", name, error)
+    try:  # team lead item 12: road details for areas not filled yet (quick when nothing is left)
+        from app.services import road_details
+
+        filled = road_details.fill_missing(db, lambda key: _area(key).raw_dir)
+        if filled:
+            out["road_details"] = filled
+    except Exception as error:  # noqa: BLE001
+        db.rollback()
+        out["road_details"] = {"failed": str(error)[:300]}
+        logger.warning("Road details failed: %s", error)
     try:  # F4e: alert rules after the jobs (each project separately; never stops the tick)
         from app.services import alerts
 

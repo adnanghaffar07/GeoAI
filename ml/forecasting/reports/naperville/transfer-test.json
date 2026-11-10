@@ -1,0 +1,150 @@
+{
+  "area": "City of Naperville",
+  "model": "forecast-chicago-0.2",
+  "test_mondays": [
+    "2025-01-06",
+    "2026-10-05",
+    92
+  ],
+  "reports_from": "2023-01-02",
+  "reports_to": "2026-11-09",
+  "sections": 11697,
+  "same_pothole_repeats_marked": 170,
+  "report_section_matches": 1583,
+  "section_mondays_with_a_new_report": 2255,
+  "results": {
+    "B1": {
+      "all": {
+        "mondays": 92,
+        "rows": 1076124,
+        "base_rate": 0.0021,
+        "precision_at_top_1pct": {
+          "value": 0.0407,
+          "low": 0.0324,
+          "high": 0.0497
+        },
+        "recall_at_top_10pct": {
+          "value": 0.5342,
+          "low": 0.4877,
+          "high": 0.577
+        },
+        "pr_auc": {
+          "value": 0.0206,
+          "low": 0.0178,
+          "high": 0.0236
+        },
+        "brier": {
+          "value": 0.0023,
+          "low": 0.0021,
+          "high": 0.0025
+        }
+      },
+      "winter": {
+        "mondays": 43,
+        "rows": 502971,
+        "base_rate": 0.0023,
+        "precision_at_top_1pct": {
+          "value": 0.0563,
+          "low": 0.0425,
+          "high": 0.0694
+        },
+        "recall_at_top_10pct": {
+          "value": 0.5078,
+          "low": 0.4383,
+          "high": 0.58
+        },
+        "pr_auc": {
+          "value": 0.0283,
+          "low": 0.0239,
+          "high": 0.033
+        },
+        "brier": {
+          "value": 0.0026,
+          "low": 0.0023,
+          "high": 0.003
+        }
+      }
+    },
+    "B0": {
+      "all": {
+        "mondays": 92,
+        "rows": 1076124,
+        "base_rate": 0.0021,
+        "precision_at_top_1pct": {
+          "value": 0.0262,
+          "low": 0.0193,
+          "high": 0.0336
+        },
+        "recall_at_top_10pct": {
+          "value": 0.1847,
+          "low": 0.16,
+          "high": 0.2087
+        },
+        "pr_auc": {
+          "value": 0.0116,
+          "low": 0.0106,
+          "high": 0.0152
+        },
+        "brier": {
+          "value": 0.0072,
+          "low": 0.007,
+          "high": 0.0074
+        }
+      },
+      "winter": {
+        "mondays": 43,
+        "rows": 502971,
+        "base_rate": 0.0023,
+        "precision_at_top_1pct": {
+          "value": 0.029,
+          "low": 0.0187,
+          "high": 0.0413
+        },
+        "recall_at_top_10pct": {
+          "value": 0.1921,
+          "low": 0.1553,
+          "high": 0.2288
+        },
+        "pr_auc": {
+          "value": 0.0155,
+          "low": 0.0145,
+          "high": 0.0217
+        },
+        "brier": {
+          "value": 0.0073,
+          "low": 0.007,
+          "high": 0.0076
+        }
+      }
+    }
+  },
+  "checks": {
+    "1_precision_top_1pct_ratio": {
+      "value": 1.5534,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "2_precision_ci_low_above_baseline": {
+      "value": 0.0324,
+      "needed": "> 0.0262",
+      "passed": true
+    },
+    "3_pr_auc_ratio": {
+      "value": 1.7759,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "4_winter_precision_ratio": {
+      "value": 1.9414,
+      "needed": ">= 1.0",
+      "passed": true
+    },
+    "5_brier_better_than_baseline": {
+      "value": 0.0023,
+      "needed": "< 0.0072",
+      "passed": true
+    }
+  },
+  "outcome": "PASS",
+  "pass_marks_note": "PLACEHOLDER pass marks until PI-20 (same as Chicago's)."
+}

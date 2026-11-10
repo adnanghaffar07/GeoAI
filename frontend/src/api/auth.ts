@@ -15,6 +15,9 @@ export interface Me {
   /** `is_platform_admin`: may review requests from new organizations (CR-004). */
   user: { id: string; email: string; full_name: string; is_platform_admin?: boolean }
   memberships: Membership[]
+  /** Team lead plan, Phase 1: the terms must be accepted (again) before using the app. */
+  agreement_required?: boolean
+  agreement_version?: string
 }
 
 export interface InvitationInfo {
@@ -34,6 +37,10 @@ export function getMe(signal?: AbortSignal): Promise<Me> {
 
 export function signIn(email: string, password: string): Promise<Me> {
   return apiRequest<Me>('/v1/auth/login', { method: 'POST', body: { email, password } })
+}
+
+export function acceptAgreement(version: string, remember: boolean): Promise<Me> {
+  return apiRequest('/v1/auth/agreement', { method: 'POST', body: { version, remember } })
 }
 
 export function signOut(): Promise<null> {

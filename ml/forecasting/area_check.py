@@ -67,7 +67,7 @@ def run(area: areas.Area, rules: dict[str, Any], terms_confirmed: bool, session=
         "km_before_boundary_cut": round(sum(s.length_m for s in sections) / 1000, 1),
         "weather": {"stations": src["weather"]["stations"], "snow_station": src.get("snow_station"), "choice": choice},
         "layers": {
-            "pothole history (Level 2)": area.has_potholes,
+            "pothole history (Level 2)": area.has_potholes or "city_potholes" in area.src,  # city connector (step C)
             "weather (freeze-thaw, rain, snow)": weather_ok,
             "elevation (USGS, national)": "elevation" in src,
             "flood zones (FEMA, national)": "flood_zones" in src,

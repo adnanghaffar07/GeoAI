@@ -109,6 +109,15 @@ class ForecastSection(Base):
     length_m: Mapped[float] = mapped_column(Float)
     line: Mapped[WKBElement] = mapped_column(Geometry("LINESTRING", srid=4326, spatial_index=False))
     created_at: Mapped[datetime] = created_at_column()
+    # Team lead item 12: road details from OpenStreetMap (empty when the map has no value).
+    speed_limit_mph: Mapped[int | None] = mapped_column(Integer)
+    lanes: Mapped[int | None] = mapped_column(Integer)
+    surface: Mapped[str | None] = mapped_column(String(40))
+    oneway: Mapped[bool | None] = mapped_column(Boolean)
+    road_ref: Mapped[str | None] = mapped_column(String(60))  # route number, e.g. "IL 59"
+    details_filled: Mapped[bool] = mapped_column(
+        Boolean, default=False, server_default=text("false")
+    )
 
 
 class RiskRun(Base):

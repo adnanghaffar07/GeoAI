@@ -6,12 +6,6 @@ and does not decide repairs or compliance (FR-42).
 
 import uuid
 
-from fastapi import APIRouter, Depends, File, Query, UploadFile, status
-from fastapi.responses import FileResponse
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from app import storage
 from app.core.auth import (
     CurrentUser,
     ProjectContext,
@@ -22,7 +16,6 @@ from app.core.auth import (
 from app.core.database import get_db
 from app.core.errors import NotFoundError, PermissionDeniedError
 from app.core.permissions import Perm
-from app.models import Finding, Inspection
 from app.models.priority import ACTIVE_INSPECTION_STATES
 from app.schemas.common import Page
 from app.schemas.priority import (
@@ -36,6 +29,13 @@ from app.schemas.priority import (
     PriorityItem,
     PriorityList,
 )
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
+from fastapi.responses import Response
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app import storage
+from app.models import Finding, Inspection
 from app.services import findings as findings_service
 from app.services import inspections as service
 from app.services import priority as priority_service
@@ -236,23 +236,23 @@ def add_evidence(
     return service.to_out(db, [service.add_evidence(db, ctx, inspection_id, file.file)])[0]
 
 
-@inspection_router.get("/evidence", response_class=FileResponse)
+@inspection_router.get("/evidence", response_class=Response)
 def get_evidence(
     inspection_id: uuid.UUID,
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> FileResponse:
+) -> Response:
     """The result photo. Permission-checked on every request; never served directly."""
     _, _, inspection = _inspection(db, current, inspection_id)
     key = inspection.evidence_storage_key
-    if not key or not storage.exists(key):
-        raise NotFoundError("No photo is attached to this inspection.")
-    return FileResponse(
-        storage.path_for(key),
-        media_type=inspection.evidence_content_type or "application/octet-stream",
-        content_disposition_type="inline",
-        headers={"Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff"},
+    answer = key and storage.file_response(
+        key,
+        inspection.evidence_content_type or "application/octet-stream",
+        {"Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff"},
     )
+    if not answer:
+        raise NotFoundError("No photo is attached to this inspection.")
+    return answer
 
 
 @inspection_router.post(

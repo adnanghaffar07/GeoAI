@@ -26,6 +26,8 @@ dependencies = [
     "opencv-python-headless>=4.10,<5.0",
     # PDF reports (needs the Pango system libraries; see Dockerfile)
     "weasyprint>=66,<67",
+    # Phase 2: files encrypted at rest (AES-256-GCM)
+    "cryptography>=44,<47",
 ]
 
 [project.optional-dependencies]

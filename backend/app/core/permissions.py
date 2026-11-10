@@ -41,6 +41,7 @@ class Perm:
     IMAGE_RETRY = "image.retry"
     IMAGE_VIEW = "image.view"
     IMAGE_WITHDRAW = "image.withdraw"
+    IMAGE_SHARE = "image.share"  # team lead item 9: managers only
     ANALYSIS_RUN = "analysis.run"
     ANALYSIS_STATUS_VIEW = "analysis.status.view"
     FINDING_VIEW_VERIFIED = "finding.view_verified"
@@ -103,6 +104,7 @@ _PROJECT_MANAGER = frozenset(
         P.IMAGE_RETRY,
         P.IMAGE_VIEW,
         P.IMAGE_WITHDRAW,
+        P.IMAGE_SHARE,
         P.ANALYSIS_RUN,
         P.ANALYSIS_STATUS_VIEW,
         P.FINDING_VIEW_VERIFIED,

@@ -188,3 +188,11 @@ def register_error_handlers(app: FastAPI) -> None:
     app.add_exception_handler(RequestValidationError, _handle_validation_error)
     app.add_exception_handler(StarletteHTTPException, _handle_http_exception)
     app.add_exception_handler(Exception, _handle_unexpected_error)
+
+
+class AgreementRequiredError(AppError):
+    """Signed in, but the current terms have not been accepted yet (team lead plan, Phase 1)."""
+
+    status_code = status.HTTP_403_FORBIDDEN
+    code = "agreement_required"
+    default_message = "Please read and accept the terms of use to continue."

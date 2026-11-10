@@ -31,7 +31,7 @@ Set-Location (Join-Path $root "ml")
 Step "4/4 Running the forecasting tests (about 2-5 minutes; each test name is shown as it runs)"
 $log = Join-Path $root "ml\forecast-tests.log"
 $env:PYTHONUNBUFFERED = "1"
-& $venvPython -u -m pytest tests\test_forecast_areas.py tests\test_forecast_download.py tests\test_forecast_load.py tests\test_forecast_f2.py tests\test_forecast_sections.py tests\test_forecast_live.py -v -rs --durations=10 --timeout=240 -p no:cacheprovider 2>&1 | Tee-Object -FilePath $log
+& $venvPython -u -m pytest tests\test_forecast_areas.py tests\test_forecast_download.py tests\test_forecast_load.py tests\test_forecast_f2.py tests\test_forecast_sections.py tests\test_forecast_live.py tests\test_forecast_hpms.py tests\test_forecast_cities.py tests\test_forecast_transfer.py -v -rs --durations=10 --timeout=240 -p no:cacheprovider 2>&1 | Tee-Object -FilePath $log
 $result = $LASTEXITCODE
 if ($result -eq 0) { Write-Host ""; Write-Host "ALL TESTS PASSED. Tell Claude 'tests finished'." -ForegroundColor Green }
 else { Write-Host "SOME TESTS FAILED (list above). Tell Claude 'tests finished': Claude reads ml\forecast-tests.log." -ForegroundColor Yellow }

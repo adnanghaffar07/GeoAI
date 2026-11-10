@@ -38,6 +38,14 @@ class MembershipOut(BaseModel):
 class MeResponse(BaseModel):
     user: UserOut
     memberships: list[MembershipOut]
+    # Team lead plan, Phase 1: the terms must be accepted (again) before using the app.
+    agreement_required: bool = False
+    agreement_version: str = ""
+
+
+class AgreementRequest(BaseModel):
+    version: str
+    remember: bool = False
 
 
 class InvitationInfo(BaseModel):

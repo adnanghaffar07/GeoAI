@@ -20,11 +20,12 @@ city_potholes:
   api: https://data.boston.gov/api/3/action
   page_size: 10000
   unknown_points: [[42.3594, -71.0587]]     # City Hall: the old system's point for "no location"
+  missing_years: [2014]                     # the portal's 2014 file is empty (0 rows, checked 2026-11-09): no data, not "no potholes"
   systems:
     - name: boston_311_old                  # case numbers like 101000393076, 2012 to mid-2026
       type_column: type
       pothole_values: ["Request for Pothole Repair"]   # residents' requests (like Chicago); city-crew "Internal" left out
-      duplicate_words: ["duplicate"]                     # in closure_reason
+      duplicate_words: ["duplicate", "multiple cases"]   # in closure_reason; Boston seldom marks duplicates (checked 2026-11-09)
       columns: {request_id: case_enquiry_id, created_at: open_dt, status: case_status, closure_reason: closure_reason,
                 latitude: latitude, longitude: longitude}
       resources:

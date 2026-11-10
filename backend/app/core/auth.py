@@ -23,9 +23,15 @@ from fastapi import Depends, Path, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.agreement import OPEN_PATHS, has_agreed
 from app.core.config import get_settings
 from app.core.database import get_db
-from app.core.errors import NotAuthenticatedError, NotFoundError, PermissionDeniedError
+from app.core.errors import (
+    AgreementRequiredError,
+    NotAuthenticatedError,
+    NotFoundError,
+    PermissionDeniedError,
+)
 from app.core.permissions import (
     CONDITIONS,
     ORG_ADMIN_PROJECT_PERMISSIONS,
@@ -72,6 +78,8 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> Current
         raise NotAuthenticatedError("Your session has ended. Please sign in again.")
     session, user = found
     extend_if_due(db, session)
+    if request.url.path not in OPEN_PATHS and not has_agreed(db, user.id, session.id):
+        raise AgreementRequiredError()
     return CurrentUser(user=user, session=session)
 
 

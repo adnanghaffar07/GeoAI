@@ -20,13 +20,13 @@ Step "2/5 Starting the database and the queue in Docker"
 docker compose up -d --wait db queue
 if ($LASTEXITCODE -ne 0) { Fail "Docker did not start. Open Docker Desktop, wait until it says 'running', then run this again." }
 
-Step "3/5 Backing up the app database (once per new migration; now before 0012 personal notifications)"
-$backup = Join-Path $root "_backups\app-db-before-0012-personal-alerts.dump"
+Step "3/5 Backing up the app database (once per new migration; now before 0013 and 0014 (agreements, own storage))"
+$backup = Join-Path $root "_backups\app-db-before-0013-user-agreements.dump"
 if (Test-Path $backup) { Write-Host "Backup already there: $backup" }
 else {
-    docker compose exec -T db pg_dump -U $user -Fc -f /tmp/app-before-0012.dump $appDb
+    docker compose exec -T db pg_dump -U $user -Fc -f /tmp/app-before-0013.dump $appDb
     if ($LASTEXITCODE -ne 0) { Fail "The app database backup did not work (message above). Nothing was changed." }
-    docker compose cp db:/tmp/app-before-0012.dump $backup
+    docker compose cp db:/tmp/app-before-0013.dump $backup
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path $backup)) { Fail "Could not copy the backup out of Docker. Nothing was changed." }
     Write-Host ("Backup saved: $backup ({0:N1} MB)" -f ((Get-Item $backup).Length / 1MB))
 }

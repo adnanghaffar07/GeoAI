@@ -62,6 +62,15 @@ from app.services.projects import ensure_not_archived
 log = logging.getLogger(__name__)
 
 LEVEL_LABELS = {1: "Risk factors only (no pothole history here)", 2: "Tested Chicago risk levels"}
+
+
+def level_label(row: Any) -> str | None:
+    """Level 2 outside Chicago: the Chicago model, tested on the city's own reports."""
+    if row.level == 2 and row.area_key != forecasting.CHICAGO:
+        return "Tested risk levels (Chicago model, tested on this city's reports)"
+    return LEVEL_LABELS.get(row.level)
+
+
 LEVEL_ORDER = {"high": 0, "medium": 1, "low": 2, "missing": 3}
 WEATHER_FACTORS = (
     "freeze_thaw_14d",
@@ -185,7 +194,7 @@ def status_out(db: Session, ctx: ProjectContext) -> ForecastStatusOut:
         enabled=row.enabled,
         status=row.status,
         level=row.level if ready else None,
-        level_label=LEVEL_LABELS.get(row.level) if ready else None,
+        level_label=level_label(row) if ready else None,
         message=row.message,
         area_km2=row.area_km2,
         max_area_km2=limit,
@@ -296,7 +305,7 @@ def request_update(db: Session, ctx: ProjectContext, send: Callable[[], None]) -
     if row is None or not row.enabled or row.status != "ready":
         raise ConflictError("Forecasting is not switched on and ready for this project.")
     row.last_daily_run = None
-    if row.area_key == forecasting.CHICAGO:
+    if row.area_key in forecasting.TESTED_AREAS:
         row.last_weekly_run = None
     _audit(db, ctx, "forecast.update_requested", row.id)
     db.commit()

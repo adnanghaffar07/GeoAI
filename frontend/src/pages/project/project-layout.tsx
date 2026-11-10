@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { ClipboardCheck, FileText, Gauge, Images, LayoutDashboard, ListOrdered, ScanSearch, Settings, type LucideIcon } from 'lucide-react'
+import { ClipboardCheck, FileText, Gauge, Images, LayoutDashboard, ListOrdered, MapPinned, Route, Video, ScanSearch, Settings, type LucideIcon } from 'lucide-react'
 import { Link, Outlet, useLocation, useOutletContext, useParams } from 'react-router'
 
 import { getProject, projectQueryKeys, projectRoleLabel, type ProjectDetail } from '@/api/projects'
@@ -23,10 +23,13 @@ interface Tab {
 const TABS: Tab[] = [
   { to: '', label: 'Overview', icon: LayoutDashboard },
   { to: 'photos', label: 'Photos', icon: Images, permission: ['image.status.view'], alsoActiveOn: ['upload'] },
+  { to: 'photo-map', label: 'Photo map', icon: MapPinned, permission: ['image.view'] },
+  { to: 'cameras', label: 'Cameras', icon: Video, permission: ['project.view'] },
   { to: 'findings', label: 'Findings', icon: ScanSearch, permission: ['finding.view_verified'], alsoActiveOn: ['review'] },
   { to: 'priority', label: 'Priority', icon: ListOrdered, permission: ['priority.view'] },
   { to: 'priority', label: 'My inspections', icon: ClipboardCheck, permission: ['inspection.record'] },
   { to: 'road-risk', label: 'Road risk', icon: Gauge, permission: ['risk.view'], when: (project) => Boolean(project.road_risk_enabled) },
+  { to: 'roads', label: 'Roads', icon: Route, permission: ['risk.view'], when: (project) => Boolean(project.road_risk_enabled) },
   { to: 'reports', label: 'Reports', icon: FileText, permission: ['report.view_all', 'report.view_shared'] },
   { to: 'settings', label: 'Settings', icon: Settings },
 ]

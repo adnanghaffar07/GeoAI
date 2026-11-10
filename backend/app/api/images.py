@@ -6,12 +6,6 @@ ever sent through these routes, never served directly from storage (FR-18, AC-08
 
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
-from fastapi.responses import FileResponse
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
-from app import storage
 from app.core.auth import (
     CurrentUser,
     ProjectContext,
@@ -22,9 +16,14 @@ from app.core.auth import (
 from app.core.database import get_db
 from app.core.errors import NotFoundError, PermissionDeniedError, ValidationFailedError
 from app.core.permissions import Perm
-from app.models import Image
 from app.schemas.common import Page
 from app.schemas.images import ImageOut, LatLon, SetLocationRequest, UploadResult
+from fastapi import APIRouter, Depends, File, Form, Query, Response, UploadFile, status
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from app import storage
+from app.models import Image
 from app.services import images as service
 
 project_router = APIRouter(prefix="/projects/{project_id}/images", tags=["images"])
@@ -108,24 +107,24 @@ def get_image(
     ]
 
 
-def _send(image: Image, key: str | None, media_type: str, filename: str) -> FileResponse:
-    if not key or not storage.exists(key):
-        raise NotFoundError("The photo file is not available.")
-    return FileResponse(
-        storage.path_for(key),
-        media_type=media_type,
+def _send(image: Image, key: str | None, media_type: str, filename: str) -> Response:
+    answer = key and storage.file_response(
+        key,
+        media_type,
+        {"Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff"},
         filename=filename,
-        content_disposition_type="inline",
-        headers={"Cache-Control": "private, max-age=300", "X-Content-Type-Options": "nosniff"},
     )
+    if not answer:
+        raise NotFoundError("The photo file is not available.")
+    return answer
 
 
-@router.get("/file", response_class=FileResponse)
+@router.get("/file", response_class=Response)
 def download_original(
     image_id: uuid.UUID,
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> FileResponse:
+) -> Response:
     """The original photo, unchanged. Permission-checked on every request."""
     ctx, image = _load(db, current, image_id)
     if not service.can_view_file(ctx, image, db):
@@ -133,12 +132,12 @@ def download_original(
     return _send(image, image.storage_key, image.content_type, image.original_filename)
 
 
-@router.get("/preview", response_class=FileResponse)
+@router.get("/preview", response_class=Response)
 def download_preview(
     image_id: uuid.UUID,
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> FileResponse:
+) -> Response:
     """A smaller copy for screens. Same permission rules as the original."""
     ctx, image = _load(db, current, image_id)
     if not service.can_view_file(ctx, image, db):
