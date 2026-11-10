@@ -24,12 +24,11 @@ describe('Terms after sign-in (team lead plan, Phase 1)', () => {
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeInTheDocument()
     await expectNoAccessibilityProblems(container)
 
-    await userEvent.click(screen.getByRole('checkbox', { name: 'Remember my choice' }))
     await userEvent.click(screen.getByRole('button', { name: 'I agree' }))
 
     expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument()
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit]
     expect(url).toBe('/api/v1/auth/agreement')
-    expect(JSON.parse(String(init.body))).toEqual({ version: '2026-11-10', remember: true })
+    expect(JSON.parse(String(init.body))).toEqual({ version: '2026-11-10', remember: false })
   })
 })

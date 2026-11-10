@@ -1,5 +1,24 @@
-import { ChevronDown, Search } from 'lucide-react'
-import { useId, useState } from 'react'
+import {
+  Accessibility,
+  ChevronDown,
+  CircleCheck,
+  CircleHelp,
+  Clock,
+  Database,
+  FileText,
+  HardDrive,
+  Keyboard,
+  ListChecks,
+  Palette,
+  ScanSearch,
+  Search,
+  ShieldCheck,
+  Table2,
+  UserCheck,
+  Users,
+  type LucideIcon,
+} from 'lucide-react'
+import { useId, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import { useAuth } from '@/auth/auth-context'
@@ -11,7 +30,7 @@ import { cn } from '@/lib/utils'
 
 /** Step by step: how to use the app, in the order the work is done. */
 const STEPS: [string, string][] = [
-  ['Sign in and agree', 'Sign in with the account your organization gave you. The first time (and when the terms change) you are asked to read the disclaimer and click "I agree". Tick "Remember my choice" so you are not asked again on this account.'],
+  ['Sign in and agree', 'Sign in with the account your organization gave you. Each time you sign in, you are asked to read the disclaimer and click "I agree" before the app opens.'],
   ['Open or create a project', 'A project is one area of roads, for example a neighbourhood. Open it from Projects. Managers can create a new project and draw its area on the map.'],
   ['Add your team', 'Managers open the project\'s Settings, then Team, and add people with a role: field collector (takes photos), technical reviewer (checks the AI), viewer (looks only) or manager.'],
   ['Upload road photos', 'In the project, open Photos, then Upload. Choose clear daylight photos with the phone\'s location (GPS) switched on. A photo without a location can still be reviewed; you can place it on the map by hand.'],
@@ -52,68 +71,164 @@ const FAQ: [string, string][] = [
 const TABS = ['FAQ', 'Terms of use', 'Accessibility', 'Privacy'] as const
 type Tab = (typeof TABS)[number]
 
+const TAB_INFO: Record<Tab, { icon: LucideIcon; text: string }> = {
+  FAQ: { icon: CircleHelp, text: 'How to use the app, where your data is kept, and common questions' },
+  'Terms of use': { icon: FileText, text: 'The rules for using GeoInfraLens AI' },
+  Accessibility: { icon: Accessibility, text: 'How the app works for everyone' },
+  Privacy: { icon: ShieldCheck, text: 'What we store, where, and who can see it' },
+}
+
 export function AboutPage() {
   const auth = useAuth()
   const [tab, setTab] = useState<Tab>('FAQ')
+  const info = TAB_INFO[tab]
   return (
-    <main className="mx-auto max-w-3xl space-y-6 px-4 py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <BrandName />
-        <Link to={auth.me ? '/' : '/sign-in'} className="btn btn-secondary">
-          {auth.me ? 'Back to the app' : 'Sign in'}
-        </Link>
+    <div className="min-h-dvh bg-canvas">
+      <header className="border-b border-asphalt-100 bg-white">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <BrandName />
+          <Link to={auth.me ? '/' : '/sign-in'} className="btn btn-secondary">
+            {auth.me ? 'Back to the app' : 'Sign in'}
+          </Link>
+        </div>
+      </header>
+      <div className="bg-asphalt-900 text-white">
+        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">About GeoInfraLens AI</h1>
+          <p className="mt-2 max-w-2xl text-asphalt-200">Road damage from photos, checked by people, shown on a map: here is how it works, the rules, and how we look after your data.</p>
+        </div>
       </div>
-      <h1 className="text-[1.75rem] font-semibold tracking-tight">About GeoInfraLens AI</h1>
-      <div role="tablist" aria-label="About" className="flex flex-wrap gap-2">
-        {TABS.map((name) => (
-          <button
-            key={name}
-            type="button"
-            role="tab"
-            id={`tab-${name}`}
-            aria-selected={tab === name}
-            aria-controls="about-panel"
-            onClick={() => setTab(name)}
-            className={cn('rounded-full px-4 py-1.5 text-sm font-medium', tab === name ? 'bg-asphalt-900 text-white' : 'bg-asphalt-100 text-asphalt-800 hover:bg-asphalt-200')}
-          >
-            {name}
-          </button>
-        ))}
+      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[15rem_1fr]">
+        <div role="tablist" aria-label="About" aria-orientation="vertical" className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
+          {TABS.map((name) => {
+            const Icon = TAB_INFO[name].icon
+            return (
+              <button
+                key={name}
+                type="button"
+                role="tab"
+                id={`tab-${name}`}
+                aria-selected={tab === name}
+                aria-controls="about-panel"
+                onClick={() => setTab(name)}
+                className={cn(
+                  'flex shrink-0 items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium transition',
+                  tab === name ? 'bg-white text-asphalt-900 shadow-sm ring-1 ring-asphalt-200' : 'text-asphalt-600 hover:bg-white/70',
+                )}
+              >
+                <Icon className={cn('size-5', tab === name ? 'text-asphalt-900' : 'text-asphalt-400')} aria-hidden />
+                {name}
+              </button>
+            )
+          })}
+        </div>
+        <section id="about-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="min-w-0 space-y-6">
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-full bg-lane-400 text-asphalt-900" aria-hidden>
+              <info.icon className="size-5" />
+            </span>
+            <div>
+              <h2 className="text-xl font-semibold text-asphalt-900">{tab}</h2>
+              <p className="text-sm text-asphalt-500">{info.text}</p>
+            </div>
+          </div>
+          {tab === 'FAQ' && <FaqPanel />}
+          {tab === 'Terms of use' && <TermsPanel />}
+          {tab === 'Accessibility' && <AccessibilityPanel />}
+          {tab === 'Privacy' && <PrivacyPanel />}
+        </section>
+      </main>
+    </div>
+  )
+}
+
+function Card({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
+  return (
+    <div className="rounded-2xl border border-asphalt-100 bg-white p-5 shadow-sm">
+      <div className="flex items-center gap-3">
+        <span className="flex size-9 items-center justify-center rounded-lg bg-asphalt-50 text-asphalt-700" aria-hidden>
+          <Icon className="size-5" />
+        </span>
+        <h3 className="font-semibold text-asphalt-900">{title}</h3>
       </div>
-      <section id="about-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="panel space-y-4 p-5 text-asphalt-800">
-        {tab === 'FAQ' && <FaqPanel />}
-        {tab === 'Terms of use' && (
-          <>
-            {AGREEMENT_PARAGRAPHS.map((text) => (
-              <p key={text}>{text}</p>
-            ))}
-            <h2 className="font-semibold">Acceptable use</h2>
-            <p>Use the application only for your organization's road work. Upload only photos you are allowed to share, avoid photographing people where possible, and keep your password private.</p>
-            <p className="text-sm text-asphalt-600">AI results are estimates. Exported reports state which AI model and settings were used.</p>
-          </>
-        )}
-        {tab === 'Accessibility' && (
-          <>
-            <p>We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 level AA.</p>
-            <ul className="list-disc space-y-1 pl-5">
-              <li>Every main screen is checked automatically for labels, roles, names and headings.</li>
-              <li>Everything can be done with the keyboard: Tab to move, Enter or Space to choose, Esc to close a window.</li>
-              <li>Levels and states are always written in words, never shown by colour alone.</li>
-              <li>Every chart can also be read as a table, and every page has Back and a breadcrumb.</li>
-            </ul>
-            <p>Known limits: map areas are easiest to use with a mouse or touch; the same information is always also in a list.</p>
-            <p>If something is hard to use, tell your organization's administrator so it can be fixed.</p>
-          </>
-        )}
-        {tab === 'Privacy' && (
-          <>
-            <p>We store what the application needs: your name, email and role; the photos you upload with their date and location; AI results, review decisions, inspections and reports; and a history of changes.</p>
-            <p>Photos are kept in the storage chosen by your organization and are shown only to people with access to the project, after a permission check. Passwords are stored only as secure hashes.</p>
-            <p>Your organization decides how long photos and results are kept. Road-risk information comes from public data and contains no personal information.</p>
-          </>
-        )}
-      </section>
-    </main>
+      <div className="mt-3 space-y-2 text-sm leading-relaxed text-asphalt-600">{children}</div>
+    </div>
+  )
+}
+
+function TermsPanel() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border-l-4 border-lane-500 bg-white p-5 shadow-sm">
+        <h3 className="font-semibold text-asphalt-900">Disclaimer</h3>
+        <ul className="mt-3 space-y-3 text-sm leading-relaxed text-asphalt-700">
+          {AGREEMENT_PARAGRAPHS.map((text) => (
+            <li key={text} className="flex gap-3">
+              <CircleCheck className="mt-0.5 size-4 shrink-0 text-lane-600" aria-hidden />
+              <span>{text}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card title="Acceptable use" icon={UserCheck}>
+          <p>Use the application only for your organization's road work.</p>
+          <p>Upload only photos you are allowed to share, avoid photographing people where possible, and keep your password private.</p>
+        </Card>
+        <Card title="AI results are estimates" icon={ScanSearch}>
+          <p>Every AI suggestion is checked by a person before it counts. Always confirm on site before acting.</p>
+          <p>Exported reports state which AI model and settings were used.</p>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+function AccessibilityPanel() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-asphalt-100">
+        <p className="text-asphalt-800">We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 level AA.</p>
+      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card title="Checked automatically" icon={ListChecks}>
+          <p>Every main screen is checked automatically for labels, roles, names and headings.</p>
+        </Card>
+        <Card title="Works with the keyboard" icon={Keyboard}>
+          <p>Everything can be done with the keyboard: Tab to move, Enter or Space to choose, Esc to close a window.</p>
+        </Card>
+        <Card title="Never colour alone" icon={Palette}>
+          <p>Levels and states are always written in words, never shown by colour alone.</p>
+        </Card>
+        <Card title="Tables and easy navigation" icon={Table2}>
+          <p>Every chart can also be read as a table, and every page has Back and a breadcrumb.</p>
+        </Card>
+      </div>
+      <div className="rounded-2xl bg-asphalt-50 p-5 text-sm leading-relaxed text-asphalt-700">
+        <p>Known limits: map areas are easiest to use with a mouse or touch; the same information is always also in a list.</p>
+        <p className="mt-2">If something is hard to use, tell your organization's administrator so it can be fixed.</p>
+      </div>
+    </div>
+  )
+}
+
+function PrivacyPanel() {
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card title="What we store" icon={Database}>
+        <p>What the application needs: your name, email and role; the photos you upload with their date and location; AI results, review decisions, inspections and reports; and a history of changes.</p>
+      </Card>
+      <Card title="Where it is kept" icon={HardDrive}>
+        <p>Photos are kept in the storage chosen by your organization (ours, or your own space), encrypted (AES-256-GCM). Passwords are stored only as secure hashes.</p>
+      </Card>
+      <Card title="Who can see it" icon={Users}>
+        <p>Only people with access to the project, after a permission check, and people a manager sends a share link to (photo only, no location, until the link ends).</p>
+      </Card>
+      <Card title="How long it is kept" icon={Clock}>
+        <p>Your organization decides how long photos and results are kept. Nothing is deleted automatically until it confirms its rules.</p>
+        <p>Road-risk information comes from public data and contains no personal information.</p>
+      </Card>
+    </div>
   )
 }
 
@@ -131,7 +246,7 @@ function FaqPanel() {
           <h2 id="faq-steps" className="text-lg font-semibold">
             How to use the app, step by step
           </h2>
-          <ol className="grid gap-3 sm:grid-cols-2">
+          <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {STEPS.map(([step, text], index) => (
               <li key={step} className="flex gap-3 rounded-xl border border-asphalt-100 bg-white p-4 shadow-sm">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-lane-400 text-sm font-bold text-asphalt-900" aria-hidden>

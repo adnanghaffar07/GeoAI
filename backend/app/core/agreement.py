@@ -5,7 +5,7 @@ Change AGREEMENT_VERSION whenever the text in the screens changes: everyone is a
 
 import uuid
 
-from sqlalchemy import exists, or_, select
+from sqlalchemy import exists, select
 from sqlalchemy.orm import Session
 
 from app.models import UserAgreement
@@ -17,14 +17,17 @@ OPEN_PATHS = {"/api/v1/auth/me", "/api/v1/auth/agreement", "/api/v1/auth/logout"
 
 
 def has_agreed(db: Session, user_id: uuid.UUID, session_id: uuid.UUID | None) -> bool:
-    """session_id None (just signed in): only a remembered acceptance counts."""
+    """True only when the current version was accepted in THIS sign-in (team lead, 2026-11-10:
+    show the terms at every sign-in). A new sign-in has a new session, so it asks again."""
+    if session_id is None:
+        return False
     return bool(
         db.scalar(
             select(
                 exists().where(
                     UserAgreement.user_id == user_id,
                     UserAgreement.version == AGREEMENT_VERSION,
-                    or_(UserAgreement.remember.is_(True), UserAgreement.session_id == session_id),
+                    UserAgreement.session_id == session_id,
                 )
             )
         )

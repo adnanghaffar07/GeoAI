@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { CircleCheck, ShieldCheck } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { Link } from 'react-router'
 
 import { acceptAgreement } from '@/api/auth'
@@ -12,10 +12,9 @@ import { Button } from '@/components/ui/button'
 
 export function AgreementDialog({ version }: { version: string }) {
   const auth = useAuth()
-  const [remember, setRemember] = useState(false)
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
-  const mutation = useMutation({ mutationFn: () => acceptAgreement(version, remember), onSuccess: (me) => auth.setSignedIn(me) })
+  const mutation = useMutation({ mutationFn: () => acceptAgreement(version, false), onSuccess: (me) => auth.setSignedIn(me) })
   // Focus starts on "I agree", inside the dialog (keyboard and screen readers).
   useEffect(() => dialogRef.current?.querySelector<HTMLButtonElement>('[data-agree]')?.focus(), [])
 
@@ -54,24 +53,7 @@ export function AgreementDialog({ version }: { version: string }) {
           </div>
         )}
         <div className="space-y-4 border-t border-asphalt-100 bg-asphalt-50/60 px-6 py-4">
-          <div className="flex items-start gap-3 text-sm text-asphalt-700">
-            <input
-              id={`${titleId}-remember`}
-              type="checkbox"
-              className="mt-0.5 size-4 cursor-pointer"
-              aria-describedby={`${titleId}-remember-hint`}
-              checked={remember}
-              onChange={(event) => setRemember(event.target.checked)}
-            />
-            <div>
-              <label htmlFor={`${titleId}-remember`} className="cursor-pointer font-medium text-asphalt-800">
-                Remember my choice
-              </label>
-              <p id={`${titleId}-remember-hint`} className="text-xs text-asphalt-500">
-                You will not be asked again on this account until the terms change.
-              </p>
-            </div>
-          </div>
+          <p className="text-xs text-asphalt-500">For your safety, we ask you to agree each time you sign in.</p>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <SignOutButton />
             <Button data-agree busy={mutation.isPending} onClick={() => mutation.mutate()} className="sm:min-w-32">

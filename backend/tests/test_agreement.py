@@ -38,19 +38,19 @@ def test_nothing_opens_before_the_terms_are_accepted(
     event = db.scalar(select(AuditEvent).where(AuditEvent.action == "agreement.accepted"))
     assert event is not None and event.details == {"version": AGREEMENT_VERSION, "remember": False}
 
-    # Not remembered: asked again at the next sign-in
+    # Asked again at every sign-in (team lead, 2026-11-10)
     again = make_client()
     assert _login(again)["agreement_required"] is True
     assert again.post("/api/v1/auth/logout").status_code == 204  # signing out is always possible
 
 
-def test_remember_my_choice_until_the_terms_change(
+def test_asked_at_every_sign_in_but_once_per_sign_in(
     db: Session, make_client: Callable[[], TestClient]
 ) -> None:
     make_org(db)
     first = make_client()
     _login(first)
     first.post(AGREE, json={"version": AGREEMENT_VERSION, "remember": True})
+    assert first.get(ME).json()["agreement_required"] is False  # not again in the same sign-in
     second = make_client()
-    assert _login(second)["agreement_required"] is False
-    assert second.get(ME).json()["agreement_required"] is False
+    assert _login(second)["agreement_required"] is True  # a new sign-in: shown again

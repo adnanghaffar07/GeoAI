@@ -103,15 +103,15 @@ def accept_agreement(
     current: CurrentUser = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> MeResponse:
-    """Accept the terms shown after sign-in. "Remember my choice": until the terms change."""
+    """Accept the terms shown after sign-in, for this sign-in only (asked again at the next one)."""
     if body.version != AGREEMENT_VERSION:
         raise ConflictError("The terms have changed. Please read the new version.")
     db.add(
         UserAgreement(
             user_id=current.user.id,
             version=AGREEMENT_VERSION,
-            remember=body.remember,
-            session_id=None if body.remember else current.session.id,
+            remember=False,  # every sign-in asks again (team lead, 2026-11-10)
+            session_id=current.session.id,
         )
     )
     record_event(
