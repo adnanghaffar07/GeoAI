@@ -72,7 +72,7 @@ function PhotoPanel({ photo, projectId, canShare }: { photo: PhotoPinProps; proj
         <ul aria-label="Problems on this photo" className="space-y-1 text-sm">
           {photo.defects.map((d) => (
             <li key={d.id}>
-              <Link className="text-lane-700 underline" to={`/projects/${projectId}/findings?selected=${d.id}`}>
+              <Link className="text-asphalt-800 underline" to={`/projects/${projectId}/findings?selected=${d.id}`}>
                 {typeLabel(d.type_key)}
               </Link>
               <span className="text-asphalt-500"> · {d.review_status === 'verified' ? 'verified' : 'waiting for review'}</span>

@@ -28,3 +28,21 @@ def test_analysed_photos_with_location_are_on_the_map(
     # viewers may see photos (permission matrix), but only verified problems, never AI suggestions
     seen = s.viewer.get(url).json()["features"]
     assert all(f["properties"]["defects"] == [] for f in seen)
+
+
+def test_a_photo_located_by_hand_puts_its_findings_on_the_map(
+    s: Setup, worker: list[str], use_detector: Any
+) -> None:
+    use_detector(two_candidates)
+    photo = s.upload(s.admin, seed=4, gps=False)
+    s.start(s.admin, [photo])
+    findings = f"/api/v1/projects/{s.project_id}/findings.geojson"
+    assert s.admin.get(findings).json()["features"] == []  # no location yet: not on the map
+
+    point = {"latitude": 37.775, "longitude": -122.42}
+    assert s.admin.patch(f"/api/v1/images/{photo}/location", json=point).status_code == 200
+    shown = s.admin.get(findings).json()["features"]
+    assert len(shown) == 2
+    assert all(f["geometry"]["coordinates"] == [-122.42, 37.775] for f in shown)
+    history = s.admin.get(f"/api/v1/findings/{shown[0]['id']}/history").json()
+    assert any(e["action"] == "edit" and "corrected_location" in e["changes"] for e in history)

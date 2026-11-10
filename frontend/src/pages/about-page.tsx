@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { ChevronDown, Search } from 'lucide-react'
+import { useId, useState } from 'react'
 import { Link } from 'react-router'
 
 import { useAuth } from '@/auth/auth-context'
@@ -80,33 +81,7 @@ export function AboutPage() {
         ))}
       </div>
       <section id="about-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="panel space-y-4 p-5 text-asphalt-800">
-        {tab === 'FAQ' && (
-          <>
-            <h2 className="text-lg font-semibold">How to use the app, step by step</h2>
-            <ol className="list-decimal space-y-3 pl-5">
-              {STEPS.map(([step, text]) => (
-                <li key={step}>
-                  <h3 className="font-semibold">{step}</h3>
-                  <p className="text-asphalt-700">{text}</p>
-                </li>
-              ))}
-            </ol>
-            <h2 className="pt-2 text-lg font-semibold">Where your data is stored</h2>
-            {STORAGE.map(([question, answer]) => (
-              <div key={question}>
-                <h3 className="font-semibold">{question}</h3>
-                <p className="text-asphalt-700">{answer}</p>
-              </div>
-            ))}
-            <h2 className="pt-2 text-lg font-semibold">Questions</h2>
-            {FAQ.map(([question, answer]) => (
-              <div key={question}>
-                <h3 className="font-semibold">{question}</h3>
-                <p className="text-asphalt-700">{answer}</p>
-              </div>
-            ))}
-          </>
-        )}
+        {tab === 'FAQ' && <FaqPanel />}
         {tab === 'Terms of use' && (
           <>
             {AGREEMENT_PARAGRAPHS.map((text) => (
@@ -139,5 +114,83 @@ export function AboutPage() {
         )}
       </section>
     </main>
+  )
+}
+
+/** FAQ tab: the steps as numbered cards, then searchable questions that open one by one. */
+function FaqPanel() {
+  const [query, setQuery] = useState('')
+  const words = query.trim().toLowerCase()
+  const match = ([q, a]: [string, string]) => !words || `${q} ${a}`.toLowerCase().includes(words)
+  const storage = STORAGE.filter(match)
+  const questions = FAQ.filter(match)
+  return (
+    <div className="space-y-8">
+      {!words && (
+        <section aria-labelledby="faq-steps" className="space-y-3">
+          <h2 id="faq-steps" className="text-lg font-semibold">
+            How to use the app, step by step
+          </h2>
+          <ol className="grid gap-3 sm:grid-cols-2">
+            {STEPS.map(([step, text], index) => (
+              <li key={step} className="flex gap-3 rounded-xl border border-asphalt-100 bg-white p-4 shadow-sm">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-lane-400 text-sm font-bold text-asphalt-900" aria-hidden>
+                  {index + 1}
+                </span>
+                <div>
+                  <h3 className="font-semibold text-asphalt-900">{step}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-asphalt-600">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+      <label className="relative block">
+        <span className="sr-only">Search the questions</span>
+        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-asphalt-400" aria-hidden />
+        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the questions, e.g. storage, cameras, speed limit" className="control h-11 w-full pl-9" />
+      </label>
+      {storage.length > 0 && <QuestionGroup title="Where your data is stored" items={storage} open={Boolean(words)} />}
+      {questions.length > 0 && <QuestionGroup title="Questions" items={questions} open={Boolean(words)} />}
+      {words && storage.length === 0 && questions.length === 0 && <p className="text-asphalt-600">No question matches "{query}".</p>}
+    </div>
+  )
+}
+
+function QuestionGroup({ title, items, open }: { title: string; items: [string, string][]; open: boolean }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <div className="divide-y divide-asphalt-100 overflow-hidden rounded-xl border border-asphalt-100 bg-white">
+        {items.map(([question, answer]) => (
+          <Question key={`${question}-${open}`} question={question} answer={answer} startOpen={open} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function Question({ question, answer, startOpen }: { question: string; answer: string; startOpen: boolean }) {
+  const [open, setOpen] = useState(startOpen)
+  const id = useId()
+  return (
+    <div>
+      <h3>
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={id}
+          onClick={() => setOpen((value) => !value)}
+          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left font-medium text-asphalt-900 hover:bg-asphalt-50"
+        >
+          {question}
+          <ChevronDown className={cn('size-4 shrink-0 text-asphalt-500 transition-transform', open && 'rotate-180')} aria-hidden />
+        </button>
+      </h3>
+      <div id={id} hidden={!open} className="px-4 pb-4 text-sm leading-relaxed text-asphalt-600">
+        {answer}
+      </div>
+    </div>
   )
 }

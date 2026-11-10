@@ -286,7 +286,41 @@ def set_location(db: Session, ctx: ProjectContext, image: Image, location: LatLo
         target_id=image.id,
         details={"latitude": location.latitude, "longitude": location.longitude},
     )
+    _locate_findings(db, ctx, image, location)
     return image
+
+
+def _locate_findings(db: Session, ctx: ProjectContext, image: Image, location: LatLon) -> None:
+    """Findings already made from this photo had no location: they get the photo's new point as
+    their corrected location, so they appear on the findings map. Their original location stays
+    empty (it is never changed) and the change is kept in each finding's history."""
+    from app.models import Finding, FindingImage, ReviewEvent
+
+    findings = db.scalars(
+        select(Finding)
+        .join(FindingImage, FindingImage.finding_id == Finding.id)
+        .where(
+            FindingImage.image_id == image.id,
+            Finding.original_location.is_(None),
+            Finding.corrected_location.is_(None),
+        )
+    ).all()
+    point = [round(location.latitude, 6), round(location.longitude, 6)]
+    for finding in findings:
+        finding.corrected_location = _point(location.latitude, location.longitude)  # type: ignore[assignment]
+        finding.location_quality = "approximate"
+        finding.version += 1
+        db.add(
+            ReviewEvent(
+                finding_id=finding.id,
+                actor_user_id=ctx.user.id,
+                actor_roles=ctx.actor_roles,
+                action="edit",
+                changes={"corrected_location": {"old": None, "new": point}},
+                note="Location taken from the photo's location, set by hand.",
+                finding_version=finding.version,
+            )
+        )
 
 
 def withdraw(db: Session, ctx: ProjectContext, image: Image) -> Image:

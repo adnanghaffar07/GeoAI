@@ -22,6 +22,8 @@ describe('Data storage (team lead plan, Phase 2)', () => {
     )
     const { container } = renderWithProviders(<SettingsDataStoragePage />, { me: ADMIN_WITH_PROJECTS })
     expect(await screen.findByText('GeoInfraLens AI private storage')).toBeInTheDocument()
+    expect(screen.getByText(/Want your photos in your own storage space\?/)).toBeInTheDocument()
+    expect(screen.getByText(/Connect it here/)).toBeInTheDocument()
     expect(screen.getByText(/Encrypted \(AES-256-GCM/)).toBeInTheDocument()
     await expectNoAccessibilityProblems(container)
 

@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://hide-seminars-debate-boutique.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://furnished-employee-city-battle.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
