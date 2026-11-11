@@ -1,15 +1,26 @@
 import {
   Accessibility,
+  ArrowUpRight,
+  Briefcase,
+  Building2,
+  Camera,
   ChevronDown,
   CircleCheck,
   CircleHelp,
   Clock,
   Database,
   FileText,
+  Globe,
   HardDrive,
+  Headset,
   Keyboard,
   ListChecks,
+  Mail,
+  MapPin,
+  MessageCircle,
   Palette,
+  Phone,
+  Play,
   ScanSearch,
   Search,
   ShieldCheck,
@@ -68,7 +79,7 @@ const FAQ: [string, string][] = [
   ['How do I report a mistake?', 'Open the finding and correct it, or tell your organization\'s administrator. Every change is kept in the history.'],
 ]
 
-const TABS = ['FAQ', 'Terms of use', 'Accessibility', 'Privacy'] as const
+const TABS = ['FAQ', 'Terms of use', 'Accessibility', 'Privacy', 'Contact us'] as const
 type Tab = (typeof TABS)[number]
 
 const TAB_INFO: Record<Tab, { icon: LucideIcon; text: string }> = {
@@ -76,6 +87,7 @@ const TAB_INFO: Record<Tab, { icon: LucideIcon; text: string }> = {
   'Terms of use': { icon: FileText, text: 'The rules for using GeoInfraLens AI' },
   Accessibility: { icon: Accessibility, text: 'How the app works for everyone' },
   Privacy: { icon: ShieldCheck, text: 'What we store, where, and who can see it' },
+  'Contact us': { icon: Headset, text: 'Call, write, visit or follow CodeAutomation.ai, the team behind GeoInfraLens AI' },
 }
 
 export function AboutPage() {
@@ -107,7 +119,7 @@ export function AboutPage() {
                 key={name}
                 type="button"
                 role="tab"
-                id={`tab-${name}`}
+                id={`tab-${name.replace(/\s+/g, '-')}`}
                 aria-selected={tab === name}
                 aria-controls="about-panel"
                 onClick={() => setTab(name)}
@@ -122,7 +134,7 @@ export function AboutPage() {
             )
           })}
         </div>
-        <section id="about-panel" role="tabpanel" aria-labelledby={`tab-${tab}`} className="min-w-0 space-y-6">
+        <section id="about-panel" role="tabpanel" aria-labelledby={`tab-${tab.replace(/\s+/g, '-')}`} className="min-w-0 space-y-6">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-full bg-lane-400 text-asphalt-900" aria-hidden>
               <info.icon className="size-5" />
@@ -136,32 +148,68 @@ export function AboutPage() {
           {tab === 'Terms of use' && <TermsPanel />}
           {tab === 'Accessibility' && <AccessibilityPanel />}
           {tab === 'Privacy' && <PrivacyPanel />}
+          {tab === 'Contact us' && <ContactPanel />}
         </section>
       </main>
     </div>
   )
 }
 
-function Card({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: ReactNode }) {
+/** One click-to-open item: a card with an icon (or step number), the title as a button, and the answer below. */
+function Dropdown({ title, icon: Icon, number, startOpen = false, children }: { title: string; icon?: LucideIcon; number?: number; startOpen?: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(startOpen)
+  const id = useId()
   return (
-    <div className="rounded-2xl border border-asphalt-100 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-3">
-        <span className="flex size-9 items-center justify-center rounded-lg bg-asphalt-50 text-asphalt-700" aria-hidden>
-          <Icon className="size-5" />
-        </span>
-        <h3 className="font-semibold text-asphalt-900">{title}</h3>
+    <div
+      className={cn(
+        'overflow-hidden rounded-2xl border bg-white transition-all duration-200',
+        open ? 'border-asphalt-200 shadow-md ring-1 ring-lane-400/60' : 'border-asphalt-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md',
+      )}
+    >
+      <h3>
+        <button type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen((value) => !value)} className="flex w-full items-center gap-4 px-5 py-4 text-left">
+          {number !== undefined ? (
+            <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition', open ? 'bg-asphalt-900 text-white' : 'bg-lane-400 text-asphalt-900')} aria-hidden>
+              {number}
+            </span>
+          ) : (
+            Icon && (
+              <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-xl transition', open ? 'bg-asphalt-900 text-white' : 'bg-asphalt-50 text-asphalt-700')} aria-hidden>
+                <Icon className="size-[18px]" />
+              </span>
+            )
+          )}
+          <span className="flex-1 font-semibold text-asphalt-900">{title}</span>
+          <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full transition', open ? 'bg-lane-400 text-asphalt-900' : 'bg-asphalt-50 text-asphalt-500')} aria-hidden>
+            <ChevronDown className={cn('size-4 transition-transform duration-200', open && 'rotate-180')} />
+          </span>
+        </button>
+      </h3>
+      <div id={id} hidden={!open} className="border-t border-asphalt-100 bg-asphalt-50/40 px-5 py-4 text-sm leading-relaxed text-asphalt-700">
+        {children}
       </div>
-      <div className="mt-3 space-y-2 text-sm leading-relaxed text-asphalt-600">{children}</div>
     </div>
+  )
+}
+
+function DropdownList({ children }: { children: ReactNode }) {
+  return <div className="space-y-3">{children}</div>
+}
+
+function SectionTitle({ id, children }: { id?: string; children: ReactNode }) {
+  return (
+    <h2 id={id} className="flex items-center gap-2 text-lg font-semibold text-asphalt-900">
+      <span className="h-5 w-1.5 rounded-full bg-lane-400" aria-hidden />
+      {children}
+    </h2>
   )
 }
 
 function TermsPanel() {
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl border-l-4 border-lane-500 bg-white p-5 shadow-sm">
-        <h3 className="font-semibold text-asphalt-900">Disclaimer</h3>
-        <ul className="mt-3 space-y-3 text-sm leading-relaxed text-asphalt-700">
+    <DropdownList>
+      <Dropdown title="Disclaimer" icon={ShieldCheck} startOpen>
+        <ul className="space-y-3">
           {AGREEMENT_PARAGRAPHS.map((text) => (
             <li key={text} className="flex gap-3">
               <CircleCheck className="mt-0.5 size-4 shrink-0 text-lane-600" aria-hidden />
@@ -169,142 +217,204 @@ function TermsPanel() {
             </li>
           ))}
         </ul>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Acceptable use" icon={UserCheck}>
-          <p>Use the application only for your organization's road work.</p>
-          <p>Upload only photos you are allowed to share, avoid photographing people where possible, and keep your password private.</p>
-        </Card>
-        <Card title="AI results are estimates" icon={ScanSearch}>
-          <p>Every AI suggestion is checked by a person before it counts. Always confirm on site before acting.</p>
-          <p>Exported reports state which AI model and settings were used.</p>
-        </Card>
-      </div>
-    </div>
+      </Dropdown>
+      <Dropdown title="Acceptable use" icon={UserCheck}>
+        <p>Use the application only for your organization's road work.</p>
+        <p className="mt-2">Upload only photos you are allowed to share, avoid photographing people where possible, and keep your password private.</p>
+      </Dropdown>
+      <Dropdown title="AI results are estimates" icon={ScanSearch}>
+        <p>Every AI suggestion is checked by a person before it counts. Always confirm on site before acting.</p>
+        <p className="mt-2">Exported reports state which AI model and settings were used.</p>
+      </Dropdown>
+    </DropdownList>
   )
 }
 
 function AccessibilityPanel() {
   return (
-    <div className="space-y-4">
-      <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-asphalt-100">
-        <p className="text-asphalt-800">We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 level AA.</p>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card title="Checked automatically" icon={ListChecks}>
-          <p>Every main screen is checked automatically for labels, roles, names and headings.</p>
-        </Card>
-        <Card title="Works with the keyboard" icon={Keyboard}>
-          <p>Everything can be done with the keyboard: Tab to move, Enter or Space to choose, Esc to close a window.</p>
-        </Card>
-        <Card title="Never colour alone" icon={Palette}>
-          <p>Levels and states are always written in words, never shown by colour alone.</p>
-        </Card>
-        <Card title="Tables and easy navigation" icon={Table2}>
-          <p>Every chart can also be read as a table, and every page has Back and a breadcrumb.</p>
-        </Card>
-      </div>
-      <div className="rounded-2xl bg-asphalt-50 p-5 text-sm leading-relaxed text-asphalt-700">
-        <p>Known limits: map areas are easiest to use with a mouse or touch; the same information is always also in a list.</p>
+    <DropdownList>
+      <Dropdown title="Our standard" icon={Accessibility} startOpen>
+        <p>We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 level AA.</p>
+      </Dropdown>
+      <Dropdown title="Checked automatically" icon={ListChecks}>
+        <p>Every main screen is checked automatically for labels, roles, names and headings.</p>
+      </Dropdown>
+      <Dropdown title="Works with the keyboard" icon={Keyboard}>
+        <p>Everything can be done with the keyboard: Tab to move, Enter or Space to choose, Esc to close a window.</p>
+      </Dropdown>
+      <Dropdown title="Never colour alone" icon={Palette}>
+        <p>Levels and states are always written in words, never shown by colour alone.</p>
+      </Dropdown>
+      <Dropdown title="Tables and easy navigation" icon={Table2}>
+        <p>Every chart can also be read as a table, and every page has Back and a breadcrumb.</p>
+      </Dropdown>
+      <Dropdown title="Known limits and feedback" icon={CircleHelp}>
+        <p>Map areas are easiest to use with a mouse or touch; the same information is always also in a list.</p>
         <p className="mt-2">If something is hard to use, tell your organization's administrator so it can be fixed.</p>
-      </div>
-    </div>
+      </Dropdown>
+    </DropdownList>
   )
 }
 
 function PrivacyPanel() {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      <Card title="What we store" icon={Database}>
+    <DropdownList>
+      <Dropdown title="What we store" icon={Database} startOpen>
         <p>What the application needs: your name, email and role; the photos you upload with their date and location; AI results, review decisions, inspections and reports; and a history of changes.</p>
-      </Card>
-      <Card title="Where it is kept" icon={HardDrive}>
+      </Dropdown>
+      <Dropdown title="Where it is kept" icon={HardDrive}>
         <p>Photos are kept in the storage chosen by your organization (ours, or your own space), encrypted (AES-256-GCM). Passwords are stored only as secure hashes.</p>
-      </Card>
-      <Card title="Who can see it" icon={Users}>
+      </Dropdown>
+      <Dropdown title="Who can see it" icon={Users}>
         <p>Only people with access to the project, after a permission check, and people a manager sends a share link to (photo only, no location, until the link ends).</p>
-      </Card>
-      <Card title="How long it is kept" icon={Clock}>
+      </Dropdown>
+      <Dropdown title="How long it is kept" icon={Clock}>
         <p>Your organization decides how long photos and results are kept. Nothing is deleted automatically until it confirms its rules.</p>
-        <p>Road-risk information comes from public data and contains no personal information.</p>
-      </Card>
-    </div>
+        <p className="mt-2">Road-risk information comes from public data and contains no personal information.</p>
+      </Dropdown>
+    </DropdownList>
   )
 }
 
-/** FAQ tab: the steps as numbered cards, then searchable questions that open one by one. */
+/** FAQ tab: search, then the steps and the questions, each opening on click. */
 function FaqPanel() {
   const [query, setQuery] = useState('')
   const words = query.trim().toLowerCase()
   const match = ([q, a]: [string, string]) => !words || `${q} ${a}`.toLowerCase().includes(words)
   const storage = STORAGE.filter(match)
   const questions = FAQ.filter(match)
+  const open = Boolean(words)
   return (
     <div className="space-y-8">
-      {!words && (
-        <section aria-labelledby="faq-steps" className="space-y-3">
-          <h2 id="faq-steps" className="text-lg font-semibold">
-            How to use the app, step by step
-          </h2>
-          <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {STEPS.map(([step, text], index) => (
-              <li key={step} className="flex gap-3 rounded-xl border border-asphalt-100 bg-white p-4 shadow-sm">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-lane-400 text-sm font-bold text-asphalt-900" aria-hidden>
-                  {index + 1}
-                </span>
-                <div>
-                  <h3 className="font-semibold text-asphalt-900">{step}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-asphalt-600">{text}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
       <label className="relative block">
         <span className="sr-only">Search the questions</span>
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-asphalt-400" aria-hidden />
-        <input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search the questions, e.g. storage, cameras, speed limit" className="control h-11 w-full pl-9" />
+        <Search className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-asphalt-400" aria-hidden />
+        <input
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search the questions, e.g. storage, cameras, speed limit"
+          className="h-12 w-full rounded-2xl border border-asphalt-100 bg-white pr-4 pl-12 text-sm shadow-sm outline-none focus:border-asphalt-300 focus:ring-2 focus:ring-lane-400"
+        />
       </label>
-      {storage.length > 0 && <QuestionGroup title="Where your data is stored" items={storage} open={Boolean(words)} />}
-      {questions.length > 0 && <QuestionGroup title="Questions" items={questions} open={Boolean(words)} />}
-      {words && storage.length === 0 && questions.length === 0 && <p className="text-asphalt-600">No question matches "{query}".</p>}
+      {!words && (
+        <section aria-labelledby="faq-steps" className="space-y-3">
+          <SectionTitle id="faq-steps">How to use the app, step by step</SectionTitle>
+          <DropdownList>
+            {STEPS.map(([step, text], index) => (
+              <Dropdown key={step} title={step} number={index + 1}>
+                <p>{text}</p>
+              </Dropdown>
+            ))}
+          </DropdownList>
+        </section>
+      )}
+      {storage.length > 0 && (
+        <section className="space-y-3">
+          <SectionTitle>Where your data is stored</SectionTitle>
+          <DropdownList>
+            {storage.map(([question, answer]) => (
+              <Dropdown key={`${question}-${open}`} title={question} icon={HardDrive} startOpen={open}>
+                <p>{answer}</p>
+              </Dropdown>
+            ))}
+          </DropdownList>
+        </section>
+      )}
+      {questions.length > 0 && (
+        <section className="space-y-3">
+          <SectionTitle>Questions</SectionTitle>
+          <DropdownList>
+            {questions.map(([question, answer]) => (
+              <Dropdown key={`${question}-${open}`} title={question} icon={CircleHelp} startOpen={open}>
+                <p>{answer}</p>
+              </Dropdown>
+            ))}
+          </DropdownList>
+        </section>
+      )}
+      {words && storage.length === 0 && questions.length === 0 && (
+        <p className="rounded-2xl bg-white p-6 text-center text-asphalt-600 shadow-sm">No question matches "{query}".</p>
+      )}
     </div>
   )
 }
 
-function QuestionGroup({ title, items, open }: { title: string; items: [string, string][]; open: boolean }) {
+/** Contact details of CodeAutomation.ai (owner, 2026-11-11). Legal team: added when the team lead sends it. */
+const CONTACTS = [
+  { icon: Phone, title: 'Call us', value: '+1 850 558 4691', href: 'tel:+18505584691' },
+  { icon: Mail, title: 'Email us', value: 'info@codeautomation.ai', href: 'mailto:info@codeautomation.ai' },
+  { icon: MapPin, title: 'Visit us', value: '50 S Main Street, Suite 200, Office 233, Naperville, IL 60540, USA', href: 'https://share.google/l9C5ReYnl5Jgl5PMG' },
+] as const
+
+const SOCIAL = [
+  { name: 'LinkedIn', handle: 'codeautomationai', href: 'https://www.linkedin.com/company/codeautomationai/', icon: Briefcase, color: '#0A66C2' },
+  { name: 'Facebook', handle: 'Codeautomationai', href: 'https://www.facebook.com/Codeautomationai/', icon: Users, color: '#1877F2' },
+  { name: 'Instagram', handle: '@codeautomation.ai', href: 'https://www.instagram.com/codeautomation.ai/', icon: Camera, color: '#C13584' },
+  { name: 'X (Twitter)', handle: '@codeautomation', href: 'https://twitter.com/codeautomation', icon: MessageCircle, color: '#111827' },
+  { name: 'YouTube', handle: '@codeautomation-ai', href: 'https://www.youtube.com/@codeautomation-ai', icon: Play, color: '#D10000' },
+  { name: 'Website', handle: 'codeautomation.ai', href: 'https://codeautomation.ai/', icon: Globe, color: '#1b2633' },
+] as const
+
+function ContactPanel() {
   return (
-    <section className="space-y-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <div className="divide-y divide-asphalt-100 overflow-hidden rounded-xl border border-asphalt-100 bg-white">
-        {items.map(([question, answer]) => (
-          <Question key={`${question}-${open}`} question={question} answer={answer} startOpen={open} />
+    <div className="space-y-8">
+      <div className="grid gap-4 md:grid-cols-3">
+        {CONTACTS.map(({ icon: Icon, title, value, href }) => (
+          <a
+            key={title}
+            href={href}
+            {...(href.startsWith('http') ? { target: '_blank', rel: 'noreferrer' } : {})}
+            className="group flex flex-col gap-3 rounded-2xl border border-asphalt-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <span className="flex size-11 items-center justify-center rounded-xl bg-lane-400 text-asphalt-900" aria-hidden>
+              <Icon className="size-5" />
+            </span>
+            <span className="text-xs font-semibold tracking-wide text-asphalt-500 uppercase">{title}</span>
+            <span className="font-medium text-asphalt-900 group-hover:underline">{value}</span>
+          </a>
         ))}
       </div>
-    </section>
-  )
-}
 
-function Question({ question, answer, startOpen }: { question: string; answer: string; startOpen: boolean }) {
-  const [open, setOpen] = useState(startOpen)
-  const id = useId()
-  return (
-    <div>
-      <h3>
-        <button
-          type="button"
-          aria-expanded={open}
-          aria-controls={id}
-          onClick={() => setOpen((value) => !value)}
-          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left font-medium text-asphalt-900 hover:bg-asphalt-50"
-        >
-          {question}
-          <ChevronDown className={cn('size-4 shrink-0 text-asphalt-500 transition-transform', open && 'rotate-180')} aria-hidden />
-        </button>
-      </h3>
-      <div id={id} hidden={!open} className="px-4 pb-4 text-sm leading-relaxed text-asphalt-600">
-        {answer}
+      <section aria-labelledby="follow-us" className="space-y-3">
+        <h3 id="follow-us" className="text-lg font-semibold text-asphalt-900">
+          Follow us
+        </h3>
+        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {SOCIAL.map(({ name, handle, href, icon: Icon, color }) => (
+            <li key={name}>
+              <a
+                href={href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${name}: ${handle} (opens in a new tab)`}
+                className="group flex items-center gap-4 rounded-2xl border border-asphalt-100 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              >
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-xl text-white" style={{ background: color }} aria-hidden>
+                  <Icon className="size-6" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-semibold text-asphalt-900">{name}</span>
+                  <span className="block truncate text-sm text-asphalt-500">{handle}</span>
+                </span>
+                <ArrowUpRight className="size-5 shrink-0 text-asphalt-400 transition group-hover:text-asphalt-900" aria-hidden />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-asphalt-900 p-6 text-white">
+        <span className="flex size-12 items-center justify-center rounded-xl bg-white/10" aria-hidden>
+          <Building2 className="size-6" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold">GeoInfraLens AI is built by CodeAutomation.ai</p>
+          <p className="text-sm text-asphalt-200">Custom software and AI development, Naperville, Illinois.</p>
+        </div>
+        <a href="https://codeautomation.ai/" target="_blank" rel="noreferrer" className="btn bg-lane-400 text-asphalt-900 hover:bg-lane-300">
+          Visit our website
+        </a>
       </div>
     </div>
   )

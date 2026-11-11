@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://installing-ventures-vaccine-determination.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://stomach-reduces-broadcast-screens.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
