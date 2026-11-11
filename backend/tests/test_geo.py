@@ -97,3 +97,28 @@ def test_needs_sign_in_and_checks_input(db: Session, client: TestClient) -> None
     bad = {"type": "LineString", "coordinates": [[-200, 41.77], [-88.15, 41.779]]}
     assert admin.post(URL, json={"shape": bad}).status_code == 422
     assert admin.post(URL, json={"shape": ROAD, "road_width_m": 5}).status_code == 422
+
+
+def test_a_road_with_two_carriageways_becomes_one_solid_strip(
+    db: Session, client: TestClient
+) -> None:
+    """Route 59 case (2026-11-11): the gap between the two directions left a hole the map
+    could not edit; the strip is now solid, so it always shows on the map."""
+    admin = _admin(db, client)
+    loop = {
+        "type": "MultiLineString",
+        "coordinates": [
+            [[-88.15, 41.77], [-88.15, 41.779]],  # northbound
+            [[-88.1492, 41.779], [-88.1492, 41.77]],  # southbound, about 65 m east
+            [[-88.15, 41.77], [-88.1492, 41.77]],  # joined at both ends
+            [[-88.15, 41.779], [-88.1492, 41.779]],
+        ],
+    }
+    body = admin.post(URL, json={"shape": loop, "road_width_m": 20}).json()
+    polygons = (
+        [body["area"]["coordinates"]]
+        if body["area"]["type"] == "Polygon"
+        else body["area"]["coordinates"]
+    )
+    assert all(len(rings) == 1 for rings in polygons)  # no holes
+    validate_area(db, GeoJsonArea.model_validate(body["area"]))

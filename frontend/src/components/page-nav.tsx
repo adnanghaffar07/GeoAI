@@ -21,6 +21,7 @@ interface Crumb {
 
 const LABELS: Record<string, string> = {
   projects: 'Projects',
+  help: 'About',
   new: 'New project',
   photos: 'Photos',
   upload: 'Upload photos',

@@ -428,3 +428,48 @@ def test_alerts_are_for_project_managers_only(
     stranger = sign_in(make_client(), "admin@b.test")
     assert stranger.post(f"/api/v1/notifications/{alert.id}/read").status_code == 404
     assert stranger.get("/api/v1/notifications").json()["unread_count"] == 0
+
+
+def _square(lon: float, lat: float, size: float = 0.01) -> list[list[list[float]]]:
+    return [
+        [[lon, lat], [lon + size, lat], [lon + size, lat + size], [lon, lat + size], [lon, lat]]
+    ]
+
+
+def test_road_risk_follows_a_changed_area(s: Setup, sent: dict[str, list[Any]]) -> None:
+    """Owner, 2026-11-11: the forecast always covers the marked area; a new area is set up again."""
+    assert (
+        s.admin.put(_url(s, "forecast-settings"), json={"enabled": True}).json()["status"]
+        == "setting_up"
+    )
+    assert len(sent["setup"]) == 1
+    moved = {"type": "Polygon", "coordinates": _square(-122.425, 37.772)}
+    assert (
+        s.admin.patch(f"/api/v1/projects/{s.project_id}", json={"boundary": moved}).status_code
+        == 200
+    )
+    assert s.admin.get(_url(s, "forecast-settings")).json()["status"] == "setting_up"
+    assert len(sent["setup"]) == 2  # set up again for the new area
+
+    # a thin area that stretches very far (like a whole state road): refused with a plain reason
+    far = {
+        "type": "MultiPolygon",
+        "coordinates": [_square(-122.43, 37.77, 0.001), _square(-120.43, 39.77, 0.001)],
+    }
+    assert (
+        s.admin.patch(f"/api/v1/projects/{s.project_id}", json={"boundary": far}).status_code == 200
+    )
+    body = s.admin.get(_url(s, "forecast-settings")).json()
+    assert body["status"] == "too_large" and "Choose a shorter part" in body["message"]
+    assert len(sent["setup"]) == 2
+
+
+def test_changing_the_area_without_road_risk_sets_nothing_up(
+    s: Setup, sent: dict[str, list[Any]]
+) -> None:
+    moved = {"type": "Polygon", "coordinates": _square(-122.425, 37.772)}
+    assert (
+        s.admin.patch(f"/api/v1/projects/{s.project_id}", json={"boundary": moved}).status_code
+        == 200
+    )
+    assert sent["setup"] == []

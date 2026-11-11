@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, Query, Response, status
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core import queue
 from app.core.auth import (
     OrgContext,
     ProjectContext,
@@ -127,6 +128,9 @@ def update_project(
     service.update_project(db, ctx, body)
     db.commit()
     db.refresh(ctx.project)
+    if "boundary" in body.model_fields_set and body.boundary is not None:
+        # road risk follows the marked area: set it up again for the new area
+        road_risk.area_changed(db, ctx, lambda settings_id: queue.send_forecast_setup(settings_id))
     return _detail(db, ctx)
 
 

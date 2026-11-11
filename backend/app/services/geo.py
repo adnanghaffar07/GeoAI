@@ -33,6 +33,15 @@ _MAKE_SHAPE = text(
     """
 )
 
+# A road with two carriageways (or a ring road) leaves holes inside its strip. The map's drawing
+# tool cannot edit shapes with holes, so road and address shapes are made solid (holes filled).
+_FILL_HOLES = text(
+    """
+    SELECT ST_Union(ST_MakePolygon(ST_ExteriorRing(d.geom)))
+    FROM ST_Dump(ST_CollectionExtract(ST_MakeValid(CAST(:made AS geometry)), 3)) AS d
+    """
+)
+
 _FINISH = text(
     """
     WITH joined AS (
@@ -65,6 +74,8 @@ def area_from_place(db: Session, body: AreaFromPlaceRequest) -> tuple[dict[str, 
             "half_width": body.road_width_m / 2,
         },
     )
+    if body.shape.type != "Polygon" and body.shape.type != "MultiPolygon":
+        made = db.scalar(_FILL_HOLES, {"made": made})
     add_to = body.add_to.model_dump_json() if body.add_to else None
     geojson, square_meters, points, empty = db.execute(
         _FINISH, {"made": made, "add_to": add_to, "max_points": MAX_BOUNDARY_POINTS - 500}

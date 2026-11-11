@@ -249,6 +249,25 @@ def set_enabled(
         db.commit()
 
 
+def area_changed(db: Session, ctx: ProjectContext, send: Callable[[uuid.UUID], None]) -> None:
+    """The project's area was changed: if road risk is on, set it up again for the new area,
+    so the forecast always covers exactly the marked area (owner, 2026-11-11)."""
+    row = _settings(db, ctx.project.id)
+    if row is None or not row.enabled:
+        return
+    _audit(db, ctx, "forecast.enabled", row.id)
+    row.last_daily_run = row.last_weekly_run = None  # first results right after the new set-up
+    row = forecasting.enable(db, ctx.project.id, ctx.user.id)
+    if row.status != "setting_up":
+        return  # e.g. too_large: the message says why
+    try:
+        send(row.id)
+    except Exception:  # any queue problem means the same thing to the user
+        log.warning("Could not queue forecast set-up %s", row.id, exc_info=True)
+        row.status, row.message = "failed", QUEUE_DOWN
+        db.commit()
+
+
 def set_visibility(db: Session, ctx: ProjectContext, roles: list[str]) -> None:
     """Who else can see road risk (project managers always can). Recorded in the history."""
     ensure_not_archived(ctx)

@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://floors-phrases-favorites-beer.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://normal-repeat-dam-controversy.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

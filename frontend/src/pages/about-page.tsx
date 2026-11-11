@@ -29,7 +29,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, Navigate } from 'react-router'
 
 import { useAuth } from '@/auth/auth-context'
 import { AGREEMENT_PARAGRAPHS } from '@/auth/agreement-text'
@@ -90,12 +90,17 @@ const TAB_INFO: Record<Tab, { icon: LucideIcon; text: string }> = {
   'Contact us': { icon: Headset, text: 'Call, write, visit or follow CodeAutomation.ai, the team behind GeoInfraLens AI' },
 }
 
-export function AboutPage() {
+/** `embedded`: shown inside the signed-in app (menu "About", /help), so the sidebar stays; the public
+ * page (/about) is for people who are not signed in. */
+export function AboutPage({ embedded = false }: { embedded?: boolean }) {
   const auth = useAuth()
   const [tab, setTab] = useState<Tab>('FAQ')
   const info = TAB_INFO[tab]
+  if (!embedded && auth.me && !auth.me.agreement_required) return <Navigate to="/help" replace />
+  const Main = embedded ? 'div' : 'main' // inside the app, the app's own <main> already holds the page
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className={embedded ? 'w-full space-y-6' : 'min-h-dvh bg-canvas'}>
+      {!embedded && (
       <header className="border-b border-asphalt-100 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <BrandName />
@@ -104,13 +109,14 @@ export function AboutPage() {
           </Link>
         </div>
       </header>
-      <div className="bg-asphalt-900 text-white">
-        <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      )}
+      <div className={cn('bg-asphalt-900 text-white', embedded && 'rounded-2xl shadow-sm')}>
+        <div className={cn('mx-auto px-4 sm:px-6', embedded ? 'py-8' : 'max-w-6xl py-10')}>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">About GeoInfraLens AI</h1>
           <p className="mt-2 max-w-2xl text-asphalt-200">Road damage from photos, checked by people, shown on a map: here is how it works, the rules, and how we look after your data.</p>
         </div>
       </div>
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-[15rem_1fr]">
+      <Main className={cn('grid gap-6 lg:grid-cols-[15rem_1fr]', !embedded && 'mx-auto max-w-6xl px-4 py-8 sm:px-6')}>
         <div role="tablist" aria-label="About" aria-orientation="vertical" className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
           {TABS.map((name) => {
             const Icon = TAB_INFO[name].icon
@@ -150,7 +156,7 @@ export function AboutPage() {
           {tab === 'Privacy' && <PrivacyPanel />}
           {tab === 'Contact us' && <ContactPanel />}
         </section>
-      </main>
+      </Main>
     </div>
   )
 }

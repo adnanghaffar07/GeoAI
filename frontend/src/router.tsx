@@ -43,6 +43,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, lazy: lazyPage(() => import('@/pages/home-page').then((m) => ({ default: m.HomePage }))) },
       // S04–S07 projects and photos (P4)
+      { path: 'help', element: <AboutPage embedded /> },
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'projects/new', lazy: lazyPage(() => import('@/pages/project-form-page').then((m) => ({ default: m.NewProjectPage }))) },
       {

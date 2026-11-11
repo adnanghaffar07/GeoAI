@@ -18,7 +18,9 @@ function toFeatures(area: AreaGeometry): GeoJSONStoreFeatures[] {
   return polygonsOf(area).map((polygon) => ({
     type: 'Feature',
     properties: { mode: 'polygon' },
-    geometry: { type: 'Polygon', coordinates: polygon.map((ring) => ring.map(([lon = 0, lat = 0]) => [round(lon), round(lat)])) },
+    // Outer edge only: the drawing tool cannot edit shapes with holes (a road with two carriageways,
+    // a city with pockets), so holes are filled; the area then always shows and can be edited.
+    geometry: { type: 'Polygon', coordinates: polygon.slice(0, 1).map((ring) => ring.map(([lon = 0, lat = 0]) => [round(lon), round(lat)])) },
   }))
 }
 

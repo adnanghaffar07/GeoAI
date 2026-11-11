@@ -126,6 +126,7 @@ class ProjectArea:
     lat: float
     lon: float
     name: str
+    span_km2: float = 0.0  # the rectangle around the area (a long road strip is thin but spans far)
 
 
 def project_area(db: Session, project_id: uuid.UUID) -> ProjectArea:
@@ -133,12 +134,19 @@ def project_area(db: Session, project_id: uuid.UUID) -> ProjectArea:
         text(
             "SELECT ST_Area(boundary::geography) / 1e6, ST_AsEWKT(boundary), "
             "ST_AsGeoJSON(boundary), ST_Y(ST_PointOnSurface(boundary)), "
-            "ST_X(ST_PointOnSurface(boundary)), name FROM projects WHERE id = :id"
+            "ST_X(ST_PointOnSurface(boundary)), name, "
+            "ST_Area(ST_Envelope(boundary)::geography) / 1e6 FROM projects WHERE id = :id"
         ),
         {"id": project_id},
     ).one()
     return ProjectArea(
-        float(row[0]), row[1], json.loads(row[2]), float(row[3]), float(row[4]), row[5]
+        float(row[0]),
+        row[1],
+        json.loads(row[2]),
+        float(row[3]),
+        float(row[4]),
+        row[5],
+        float(row[6] or 0),
     )
 
 
@@ -158,6 +166,13 @@ def enable(db: Session, project_id: uuid.UUID, user_id: uuid.UUID) -> ForecastSe
         row.message = (
             f"The project area is {area.km2:,.0f} km²; forecasting is set up for areas "
             f"up to {limit:,.0f} km²."
+        )
+    elif area.span_km2 > limit:
+        # e.g. a whole state road searched by name: a thin strip, but it stretches very far
+        row.status = "too_large"
+        row.message = (
+            f"The project area stretches over {area.span_km2:,.0f} km² from end to end (a long "
+            f"road?); forecasting works within {limit:,.0f} km². Choose a shorter part of the road."
         )
     else:
         row.status, row.message = "setting_up", None

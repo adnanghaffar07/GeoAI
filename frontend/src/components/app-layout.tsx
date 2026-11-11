@@ -24,7 +24,7 @@ const MAIN_ITEMS: NavItem[] = [
   { to: '/', label: 'Home', icon: LayoutDashboard },
   { to: '/projects', label: 'Projects', icon: FolderKanban, permission: 'org.view' },
   { to: '/account', label: 'My account', icon: UserRound },
-  { to: '/about', label: 'About', icon: Info },
+  { to: '/help', label: 'About', icon: Info },
 ]
 
 /** Organization settings, mostly for administrators; the group is hidden when none are allowed. */
