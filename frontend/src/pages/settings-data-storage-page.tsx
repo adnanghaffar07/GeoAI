@@ -1,11 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, Cloud, HardDrive, LockKeyhole, Server } from 'lucide-react'
+import { CircleAlert, Cloud, Clock, Computer, Database, HardDrive, Info, LockKeyhole, MapPin, Server, ShieldCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import { dataStorageQueryKeys, getDataStorage, saveDataStorage, type DataStorage, type DataStorageInput } from '@/api/data-storage'
 import { useAuth } from '@/auth/auth-context'
 import { ErrorMessage } from '@/components/error-message'
 import { Button } from '@/components/ui/button'
+import { DropdownCard } from '@/components/ui/dropdown-card'
 import { PasswordField, TextField } from '@/components/ui/field'
 import { SkeletonRows } from '@/components/ui/loading-screen'
 import { cn } from '@/lib/utils'
@@ -14,53 +15,62 @@ const when = (time: string | null) => (time ? new Date(time).toLocaleString(unde
 
 /** Read-only summary: where and how the files are kept (also on My account). */
 export function DataStorageSummary({ storage }: { storage: DataStorage }) {
-  const Icon = storage.kind === 's3' ? Cloud : HardDrive
+  const own = storage.kind === 's3'
+  const items = [
+    { icon: own ? Cloud : HardDrive, label: 'Where', value: storage.place + (storage.location_note ? ` (${storage.location_note})` : '') },
+    ...(own
+      ? [
+          { icon: MapPin, label: 'Storage', value: `${storage.endpoint} · ${storage.bucket}${storage.prefix ? ` / ${storage.prefix}` : ''}` },
+          { icon: Clock, label: 'Last checked', value: when(storage.verified_at) },
+        ]
+      : []),
+    { icon: LockKeyhole, label: 'How', value: `Encrypted (${storage.encryption}); shown only to people with access, after a permission check` },
+  ]
   return (
-    <dl className="panel grid grid-cols-[10rem_1fr] gap-y-2 p-4 text-sm">
-      <dt className="text-asphalt-500">Where</dt>
-      <dd className="flex items-center gap-2">
-        <Icon className="size-4 text-asphalt-500" aria-hidden />
-        {storage.place}
-        {storage.location_note && <span className="text-asphalt-500">({storage.location_note})</span>}
-      </dd>
-      {storage.kind === 's3' && (
-        <>
-          <dt className="text-asphalt-500">Storage</dt>
-          <dd>
-            {storage.endpoint} · {storage.bucket}
-            {storage.prefix && ` / ${storage.prefix}`}
-          </dd>
-          <dt className="text-asphalt-500">Last checked</dt>
-          <dd>{when(storage.verified_at)}</dd>
-        </>
-      )}
-      <dt className="text-asphalt-500">How</dt>
-      <dd className="flex items-center gap-2">
-        <LockKeyhole className="size-4 text-emerald-700" aria-hidden />
-        Encrypted ({storage.encryption}); shown only to people with access, after a permission check
-      </dd>
+    <dl className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      {items.map(({ icon: Icon, label, value }) => (
+        <div key={label} className="rounded-2xl border border-asphalt-100 bg-white p-4 shadow-sm">
+          <dt className="flex items-center gap-3 text-xs font-semibold tracking-wide text-asphalt-500 uppercase">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-lane-400 text-asphalt-900" aria-hidden>
+              <Icon className="size-5" />
+            </span>
+            {label}
+          </dt>
+          <dd className="mt-2 text-sm font-medium break-words text-asphalt-900">{value}</dd>
+        </div>
+      ))}
     </dl>
   )
 }
 
-/** Settings → Data storage (team lead plan, Phase 2). Organization admins choose where files are kept. */
 export function SettingsDataStoragePage() {
   const { currentMembership } = useAuth()
   const orgId = currentMembership?.organization_id ?? ''
   const query = useQuery({ queryKey: dataStorageQueryKeys.one(orgId), queryFn: ({ signal }) => getDataStorage(orgId, signal), enabled: Boolean(orgId) })
   return (
-    <section className="max-w-3xl space-y-6">
-      <header>
-        <h1 className="text-[1.75rem] font-semibold tracking-tight">Data storage</h1>
-        <p className="mt-1 text-asphalt-500">Where your organization's photos, reports and inspection pictures are kept, and how.</p>
+    <section className="w-full space-y-6">
+      <header className="flex flex-wrap items-center gap-4 rounded-2xl bg-asphalt-900 p-6 text-white shadow-sm">
+        <span className="flex size-12 items-center justify-center rounded-xl bg-lane-400 text-asphalt-900" aria-hidden>
+          <Database className="size-6" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Data storage</h1>
+          <p className="mt-1 text-asphalt-200">Where your organization's photos, reports and inspection pictures are kept, and how they are protected.</p>
+        </div>
       </header>
       {query.isPending && <SkeletonRows rows={3} />}
       {query.isError && <ErrorMessage title="Could not load the storage settings" error={query.error} onRetry={() => void query.refetch()} />}
       {query.isSuccess && (
         <>
           <DataStorageSummary storage={query.data} />
-          {query.data.can_edit && <StorageForm orgId={orgId} current={query.data} />}
-          {query.data.can_edit && <StorageGuide />}
+          {query.data.can_edit && (
+            <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+              <div className="space-y-4 xl:sticky xl:top-4">
+                <StorageForm orgId={orgId} current={query.data} />
+              </div>
+              <StorageGuide />
+            </div>
+          )}
         </>
       )}
     </section>
@@ -98,23 +108,31 @@ function StorageForm({ orgId, current }: { orgId: string; current: DataStorage }
   ] as const
 
   return (
-    <form onSubmit={submit} className="panel space-y-4 p-4">
-      <fieldset className="space-y-2">
-        <legend className="font-medium">Where should new files be kept?</legend>
+    <form onSubmit={submit} className="space-y-5 rounded-2xl border border-asphalt-100 bg-white p-5 shadow-sm">
+      <fieldset className="space-y-3">
+        <legend className="text-lg font-semibold text-asphalt-900">Where should new files be kept?</legend>
         {choices.map((choice) => (
-          <label key={choice.value} className="flex cursor-pointer items-start gap-3 rounded-xl border border-asphalt-200 p-3 has-[:checked]:border-asphalt-900">
-            <input type="radio" name="kind" value={choice.value} checked={kind === choice.value} onChange={() => setKind(choice.value)} className="mt-1" />
-            <choice.icon className="mt-0.5 size-5 shrink-0 text-asphalt-600" aria-hidden />
+          <label
+            key={choice.value}
+            className={cn(
+              'flex cursor-pointer items-start gap-3 rounded-2xl border p-4 transition',
+              kind === choice.value ? 'border-asphalt-900 bg-lane-50 ring-1 ring-asphalt-900' : 'border-asphalt-100 hover:bg-asphalt-50',
+            )}
+          >
+            <input type="radio" name="kind" value={choice.value} checked={kind === choice.value} onChange={() => setKind(choice.value)} className="mt-3" />
+            <span className={cn('flex size-10 shrink-0 items-center justify-center rounded-xl', kind === choice.value ? 'bg-asphalt-900 text-white' : 'bg-asphalt-50 text-asphalt-700')} aria-hidden>
+              <choice.icon className="size-5" />
+            </span>
             <span>
-              <span className="block font-medium">{choice.title}</span>
+              <span className="block font-semibold text-asphalt-900">{choice.title}</span>
               <span className="block text-sm text-asphalt-600">{choice.text}</span>
             </span>
           </label>
         ))}
       </fieldset>
       {kind === 's3' && (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <TextField label="Storage address" placeholder="https://s3.us-east-1.amazonaws.com" value={form.endpoint} onChange={set('endpoint')} hint="For your own computer: its secure https address." />
+        <div className="grid gap-3 rounded-2xl bg-asphalt-50/60 p-4 sm:grid-cols-2">
+          <TextField label="Storage address" placeholder="https://s3.us-west-004.backblazeb2.com" value={form.endpoint} onChange={set('endpoint')} hint="Starts with https://" />
           <TextField label="Bucket name" value={form.bucket} onChange={set('bucket')} />
           <TextField label="Region (optional)" placeholder="us-east-1" value={form.region} onChange={set('region')} />
           <TextField label="Folder in the bucket (optional)" value={form.prefix} onChange={set('prefix')} />
@@ -129,11 +147,11 @@ function StorageForm({ orgId, current }: { orgId: string; current: DataStorage }
       )}
       <TextField label="Note (optional)" placeholder="For example: City IT office server" value={form.location_note} onChange={set('location_note')} />
       {save.isError && <ErrorMessage title="Could not save" error={save.error} />}
-      <p className="text-sm text-asphalt-600">
-        We test the storage first (write, read and delete a small file); nothing changes if the test fails. Files already saved stay readable.
-        With your own computer, it must be on and online for photos to open and be checked.
+      <p className="flex gap-2 rounded-xl bg-lane-50 p-3 text-sm text-asphalt-700">
+        <ShieldCheck className="mt-0.5 size-4 shrink-0 text-asphalt-700" aria-hidden />
+        <span>We test the storage first (write, read and delete a small file); nothing changes if the test fails. Files already saved stay readable.</span>
       </p>
-      <Button type="submit" busy={save.isPending}>
+      <Button type="submit" busy={save.isPending} className="w-full sm:w-auto">
         {kind === 's3' ? 'Test and save' : 'Save'}
       </Button>
     </form>
@@ -206,91 +224,86 @@ const HELP: [string, string][] = [
   ['It says the bucket was not found', 'Check the bucket name: small letters, exactly as you made it.'],
 ]
 
+const WAY_ICONS: Record<string, typeof Cloud> = { cloud: Cloud, pc: Computer, server: Server, existing: Database }
+const WAY_BADGES: Record<string, string[]> = {
+  cloud: ['About 15 minutes', 'Free up to 10 GB', 'Easiest'],
+  pc: ['About 30 minutes', 'Free', 'Computer must stay on'],
+  server: ['IT: about 1 hour', 'Uses your own server'],
+  existing: ['About 15 minutes', 'Your current cloud plan'],
+}
+
 function StorageGuide() {
-  const [wayKey, setWayKey] = useState('cloud')
-  const way = WAYS.find((w) => w.key === wayKey) ?? (WAYS[0] as Way)
-  const parts: Part[] = [
-    ...way.parts,
-    { title: 'Connect it here', time: 'about 3 minutes', steps: ['Above this guide, choose "Your own storage".', ...way.connect, 'Note (optional): anything that helps you remember where the photos are.', ...CONNECT_END] },
-  ]
   return (
-    <details className="panel group overflow-hidden">
-      <summary className="flex cursor-pointer items-center justify-between gap-3 bg-lane-50 px-4 py-3 font-semibold text-asphalt-900">
-        <span>Want your photos in your own storage space? Here is how, step by step</span>
-        <ChevronDown className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
-      </summary>
-      <div className="space-y-5 p-4 text-sm leading-relaxed text-asphalt-700">
-        <div className="space-y-2 rounded-xl bg-asphalt-50 p-4">
-          <h2 className="font-semibold text-asphalt-900">What this means, in plain words</h2>
-          <p>
-            GeoInfraLens AI runs on our server. Your photos can be kept in a storage space that belongs to your organization instead, like your own locked cupboard. We keep only the text: the list of problems,
-            the reviews and the accounts.
+    <div className="space-y-6">
+      <section aria-labelledby="ways-title" className="space-y-3">
+        <div>
+          <h2 id="ways-title" className="flex items-center gap-2 text-lg font-semibold text-asphalt-900">
+            <span className="h-5 w-1.5 rounded-full bg-lane-400" aria-hidden />
+            Four ways to keep your photos in your own space
+          </h2>
+          <p className="mt-1 text-sm text-asphalt-600">
+            Our app keeps running on our server; only the files go to your space, locked (encrypted) before they leave. Pick the way that suits you and click it for the steps.
           </p>
-          <ul className="list-disc space-y-1 pl-5">
-            <li>Every photo is locked (encrypted) before it leaves our app, so nobody else can look at it, not even the storage company.</li>
-            <li>Your team sees and downloads photos here exactly as before. Nothing changes for them.</li>
-            <li>You can switch back to our storage at any time.</li>
-          </ul>
         </div>
-        <fieldset className="space-y-2">
-          <legend className="font-semibold text-asphalt-900">1. Choose how you want to keep your photos</legend>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {WAYS.map((w) => (
-              <label key={w.key} className={cn('flex cursor-pointer gap-3 rounded-xl border p-3', w.key === wayKey ? 'border-asphalt-900 bg-white ring-1 ring-asphalt-900' : 'border-asphalt-100 hover:bg-asphalt-50')}>
-                <input type="radio" name="storage-way" className="mt-1" checked={w.key === wayKey} onChange={() => setWayKey(w.key)} />
+        {WAYS.map((way, wayIndex) => {
+          const parts: Part[] = [
+            ...way.parts,
+            { title: 'Connect it here', time: 'about 3 minutes', steps: ['On the left, choose "Your own storage".', ...way.connect, 'Note (optional): anything that helps you remember where the photos are.', ...CONNECT_END] },
+          ]
+          return (
+            <DropdownCard key={way.key} title={`${wayIndex + 1}. ${way.title}`} subtitle={way.best} icon={WAY_ICONS[way.key]} badges={WAY_BADGES[way.key]}>
+              <p className="mb-4 flex gap-2 rounded-xl bg-lane-50 p-3">
+                <Info className="mt-0.5 size-4 shrink-0" aria-hidden />
                 <span>
-                  <span className="block font-medium text-asphalt-900">{w.title}</span>
-                  <span className="block text-xs text-asphalt-500">{w.best}</span>
+                  <span className="font-semibold text-asphalt-900">What you need: </span>
+                  {way.needs}
                 </span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <div className="space-y-4">
-          <h2 className="font-semibold text-asphalt-900">2. Follow these steps: {way.title}</h2>
-          <p className="rounded-lg bg-lane-50 p-3">
-            <span className="font-medium text-asphalt-900">What you need: </span>
-            {way.needs}
-          </p>
-          <ol className="space-y-4">
-            {parts.map((part, index) => (
-              <li key={`${way.key}-${part.title}`} className="rounded-xl border border-asphalt-100 p-4">
-                <div className="flex items-center gap-3">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-lane-400 text-sm font-bold text-asphalt-900" aria-hidden>
-                    {index + 1}
-                  </span>
-                  <h3 className="font-semibold text-asphalt-900">
-                    Part {index + 1}: {part.title} <span className="font-normal text-asphalt-500">({part.time})</span>
-                  </h3>
-                </div>
-                <ul className="mt-3 space-y-1.5 pl-11">
-                  {part.steps.map((step) =>
-                    step.startsWith('$env') || step.startsWith('.\\') ? (
-                      <li key={step}>
-                        <code className="block rounded bg-asphalt-900 px-2 py-1 font-mono text-xs break-all text-white">{step}</code>
-                      </li>
-                    ) : (
-                      <li key={step} className="list-disc">
-                        {step}
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </li>
-            ))}
-          </ol>
-        </div>
-        <div className="space-y-2">
-          <h2 className="font-semibold text-asphalt-900">Good to know</h2>
+              </p>
+              <ol className="space-y-4">
+                {parts.map((part, index) => (
+                  <li key={part.title} className="rounded-xl border border-asphalt-100 bg-white p-4">
+                    <h4 className="flex items-center gap-3 font-semibold text-asphalt-900">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-lane-400 text-xs font-bold" aria-hidden>
+                        {index + 1}
+                      </span>
+                      <span>
+                        Part {index + 1}: {part.title} <span className="font-normal text-asphalt-500">({part.time})</span>
+                      </span>
+                    </h4>
+                    <ul className="mt-3 space-y-1.5 pl-10">
+                      {part.steps.map((step) =>
+                        step.startsWith('$env') || step.startsWith('.\\') ? (
+                          <li key={step}>
+                            <code className="block rounded-lg bg-asphalt-900 px-3 py-2 font-mono text-xs break-all text-white">{step}</code>
+                          </li>
+                        ) : (
+                          <li key={step} className="list-disc">
+                            {step}
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  </li>
+                ))}
+              </ol>
+            </DropdownCard>
+          )
+        })}
+      </section>
+      <section aria-labelledby="more-title" className="space-y-3">
+        <h2 id="more-title" className="flex items-center gap-2 text-lg font-semibold text-asphalt-900">
+          <span className="h-5 w-1.5 rounded-full bg-lane-400" aria-hidden />
+          Good to know
+        </h2>
+        <DropdownCard title="Before and after you switch" icon={Info}>
           <ul className="list-disc space-y-1 pl-5">
             <li>Photos saved before you switch stay with us and still open normally. Only new photos go to your storage.</li>
             <li>Do not delete files in your storage by hand, and do not delete the key: the photos would then be missing here.</li>
-            <li>To switch back: above, choose "GeoInfraLens AI storage" and click "Save".</li>
+            <li>To switch back: on the left, choose "GeoInfraLens AI storage" and click "Save".</li>
           </ul>
-        </div>
-        <div className="space-y-2">
-          <h2 className="font-semibold text-asphalt-900">If something goes wrong</h2>
-          <dl className="divide-y divide-asphalt-100 rounded-xl border border-asphalt-100">
+        </DropdownCard>
+        <DropdownCard title="If something goes wrong" icon={CircleAlert}>
+          <dl className="divide-y divide-asphalt-100 rounded-xl border border-asphalt-100 bg-white">
             {HELP.map(([problem, fix]) => (
               <div key={problem} className="grid gap-1 p-3 sm:grid-cols-2">
                 <dt className="font-medium text-asphalt-900">{problem}</dt>
@@ -298,8 +311,8 @@ function StorageGuide() {
               </div>
             ))}
           </dl>
-        </div>
-      </div>
-    </details>
+        </DropdownCard>
+      </section>
+    </div>
   )
 }

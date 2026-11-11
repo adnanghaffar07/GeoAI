@@ -4,7 +4,6 @@ import {
   Briefcase,
   Building2,
   Camera,
-  ChevronDown,
   CircleCheck,
   CircleHelp,
   Clock,
@@ -29,12 +28,13 @@ import {
   Users,
   type LucideIcon,
 } from 'lucide-react'
-import { useId, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import { useAuth } from '@/auth/auth-context'
 import { AGREEMENT_PARAGRAPHS } from '@/auth/agreement-text'
 import { BrandName } from '@/components/brand-mark'
+import { DropdownCard as Dropdown } from '@/components/ui/dropdown-card'
 import { cn } from '@/lib/utils'
 
 /** About page (team lead plan, Phase 1, tl-phase1-design.md §3): readable without signing in. */
@@ -151,43 +151,6 @@ export function AboutPage() {
           {tab === 'Contact us' && <ContactPanel />}
         </section>
       </main>
-    </div>
-  )
-}
-
-/** One click-to-open item: a card with an icon (or step number), the title as a button, and the answer below. */
-function Dropdown({ title, icon: Icon, number, startOpen = false, children }: { title: string; icon?: LucideIcon; number?: number; startOpen?: boolean; children: ReactNode }) {
-  const [open, setOpen] = useState(startOpen)
-  const id = useId()
-  return (
-    <div
-      className={cn(
-        'overflow-hidden rounded-2xl border bg-white transition-all duration-200',
-        open ? 'border-asphalt-200 shadow-md ring-1 ring-lane-400/60' : 'border-asphalt-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md',
-      )}
-    >
-      <h3>
-        <button type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen((value) => !value)} className="flex w-full items-center gap-4 px-5 py-4 text-left">
-          {number !== undefined ? (
-            <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold transition', open ? 'bg-asphalt-900 text-white' : 'bg-lane-400 text-asphalt-900')} aria-hidden>
-              {number}
-            </span>
-          ) : (
-            Icon && (
-              <span className={cn('flex size-9 shrink-0 items-center justify-center rounded-xl transition', open ? 'bg-asphalt-900 text-white' : 'bg-asphalt-50 text-asphalt-700')} aria-hidden>
-                <Icon className="size-[18px]" />
-              </span>
-            )
-          )}
-          <span className="flex-1 font-semibold text-asphalt-900">{title}</span>
-          <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-full transition', open ? 'bg-lane-400 text-asphalt-900' : 'bg-asphalt-50 text-asphalt-500')} aria-hidden>
-            <ChevronDown className={cn('size-4 transition-transform duration-200', open && 'rotate-180')} />
-          </span>
-        </button>
-      </h3>
-      <div id={id} hidden={!open} className="border-t border-asphalt-100 bg-asphalt-50/40 px-5 py-4 text-sm leading-relaxed text-asphalt-700">
-        {children}
-      </div>
     </div>
   )
 }
