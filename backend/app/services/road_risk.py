@@ -652,6 +652,7 @@ def managed_project_ids(db: Session, user: User) -> list[uuid.UUID]:
                 ProjectMember.user_id == user.id,
                 ProjectMember.role == "project_manager",
                 Project.archived_at.is_(None),
+                Project.deleted_at.is_(None),
             )
         )
     )

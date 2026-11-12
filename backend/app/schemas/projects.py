@@ -152,3 +152,9 @@ class FindingTypeOut(BaseModel):
     source: Literal["ai", "manual"] | str
     is_placeholder: bool
     is_active: bool
+
+
+class ProjectDeleteRequest(BaseModel):
+    """The project's name, typed by the admin to confirm the deletion."""
+
+    confirm_name: str = Field(min_length=1, max_length=200)

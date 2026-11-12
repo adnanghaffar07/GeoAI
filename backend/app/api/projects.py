@@ -27,6 +27,7 @@ from app.schemas.projects import (
     EligibleMember,
     ProjectCounts,
     ProjectCreate,
+    ProjectDeleteRequest,
     ProjectDetail,
     ProjectMemberCreate,
     ProjectMemberOut,
@@ -132,6 +133,18 @@ def update_project(
         # road risk follows the marked area: set it up again for the new area
         road_risk.area_changed(db, ctx, lambda settings_id: queue.send_forecast_setup(settings_id))
     return _detail(db, ctx)
+
+
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+def delete_project(
+    body: ProjectDeleteRequest,
+    ctx: ProjectContext = Depends(require_project_permission(Perm.PROJECT_VIEW)),
+    db: Session = Depends(get_db),
+) -> Response:
+    """Organization admins only; the project's name must be typed to confirm."""
+    service.delete_project(db, ctx, body.confirm_name)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/archive", response_model=ProjectDetail)

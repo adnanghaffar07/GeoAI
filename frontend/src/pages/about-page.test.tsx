@@ -37,5 +37,5 @@ describe('About page (team lead plan, Phase 1)', () => {
     expect(screen.getByRole('link', { name: /LinkedIn/ })).toHaveAttribute('href', 'https://www.linkedin.com/company/codeautomationai/')
     expect(screen.getByRole('link', { name: /YouTube/ })).toHaveAttribute('target', '_blank')
     await expectNoAccessibilityProblems(container)
-  })
+  }, 30000) // longer page, checked for accessibility on every tab
 })

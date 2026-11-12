@@ -9,6 +9,7 @@ import { listMembers, orgQueryKeys } from '@/api/organizations'
 import {
   archiveProject,
   createProject,
+  deleteProject,
   listFindingTypes,
   projectQueryKeys,
   updateProject,
@@ -85,7 +86,62 @@ export function EditProjectPage() {
     <>
       <ProjectForm orgId={project.organization_id} project={project} />
       {!project.archived && hasProjectPermission(project, 'project.archive') && <ArchiveSection project={project} />}
+      <DeleteSection project={project} />
     </>
+  )
+}
+
+/** Owner, 2026-11-12: only an organization administrator can delete a project. */
+function DeleteSection({ project }: { project: ProjectDetail }) {
+  const { currentMembership } = useAuth()
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [typed, setTyped] = useState('')
+  const remove = useMutation({
+    meta: { success: 'Project deleted' },
+    mutationFn: () => deleteProject(project.id, typed),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: projectQueryKeys.all })
+      void navigate('/projects', { replace: true })
+    },
+  })
+  if (currentMembership?.org_role !== 'org_admin' || currentMembership.organization_id !== project.organization_id) return null
+  const matches = typed.trim() === project.name.trim()
+  return (
+    <section className="mt-6 max-w-4xl rounded-2xl border border-red-300 bg-red-50/40 p-5" aria-labelledby="delete-heading">
+      <h2 id="delete-heading" className="font-semibold text-red-800">
+        Delete project
+      </h2>
+      <p className="mt-1 text-sm text-asphalt-700">
+        Only organization administrators can do this. The project disappears for everyone, its road risk stops and its share links stop
+        working. Nothing is erased: photos, findings and history stay stored, and the deletion is recorded.
+      </p>
+      {open ? (
+        <div className="mt-3 space-y-3">
+          <TextField label={`Type the project's name to confirm: ${project.name}`} value={typed} onChange={(event) => setTyped(event.target.value)} />
+          {remove.isError && <ErrorMessage title="Could not delete the project" error={remove.error} />}
+          <div className="flex gap-2">
+            <Button variant="danger" disabled={!matches} busy={remove.isPending} onClick={() => remove.mutate()}>
+              Delete this project
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setOpen(false)
+                setTyped('')
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button variant="danger" className="mt-3" onClick={() => setOpen(true)}>
+          Delete project…
+        </Button>
+      )}
+    </section>
   )
 }
 

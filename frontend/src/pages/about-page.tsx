@@ -39,44 +39,171 @@ import { cn } from '@/lib/utils'
 
 /** About page (team lead plan, Phase 1, tl-phase1-design.md §3): readable without signing in. */
 
-/** Step by step: how to use the app, in the order the work is done. */
-const STEPS: [string, string][] = [
-  ['Sign in and agree', 'Sign in with the account your organization gave you. Each time you sign in, you are asked to read the disclaimer and click "I agree" before the app opens.'],
-  ['Open or create a project', 'A project is one area of roads, for example a neighbourhood. Open it from Projects. Managers can create a new project and draw its area on the map.'],
-  ['Add your team', 'Managers open the project\'s Settings, then Team, and add people with a role: field collector (takes photos), technical reviewer (checks the AI), viewer (looks only) or manager.'],
-  ['Upload road photos', 'In the project, open Photos, then Upload. Choose clear daylight photos with the phone\'s location (GPS) switched on. A photo without a location can still be reviewed; you can place it on the map by hand.'],
-  ['Send photos to the AI check', 'On the Photos tab, send the new photos to the AI check and wait until it has finished. The AI marks possible potholes and cracks with a box. These are suggestions only.'],
-  ['Review every suggestion', 'Reviewers open Findings and check each suggestion: verify it, reject it, change the type or severity, or ask for a field check. Only verified problems count in the priority list and reports.'],
-  ['See the photos and problems on the map', 'The Findings tab shows every problem on a map and in a list. The Photo map tab shows every analysed photo as a pin; click a pin to see the photo with all its problem boxes. Managers can make a share link to a photo for someone without an account (it ends after 1 to 30 days and can be cancelled).'],
-  ['Decide what to fix first', 'The Priority tab ranks verified problems by severity, type of road and nearby places such as schools. Plan an inspection for a colleague with a due date; they record the result under My inspections.'],
-  ['Make a report', 'Open Reports, then "Make a new report", and choose CSV (for spreadsheets), GeoJSON (for map software) or PDF. Reports say which AI model and settings were used.'],
-  ['Use road risk (optional)', 'A manager switches it on in the project\'s Settings, then Road risk. The Road risk tab then lists the roads most likely to need attention soon, with plain reasons, weather alerts and road details such as the speed limit. You can plan an inspection from any road and ask the assistant questions.'],
+/** Step by step: how to use the app, in the order the work is done. Lines starting "- " are shown as a list. */
+const STEPS: [string, string[]][] = [
+  ['Sign in and agree', [
+    'Open GeoInfraLens AI and sign in with the email and password your organization gave you. If you forgot your password, ask your administrator for a password reset link.',
+    'Each time you sign in, a short disclaimer appears. Read it and click "I agree" to open the app, or "Sign out" if you do not agree. Nothing in the app can be opened before you agree.',
+  ]],
+  ['Open or create a project', [
+    'A project is one survey area, for example a neighbourhood, a set of streets or a whole town. Open it from Projects in the menu.',
+    'Managers create a new project with "New project":',
+    '- Give it a name and choose which kinds of road problems it records.',
+    '- Mark the area: search a road, address or area by name (or paste coordinates), draw it on the map, or upload a map file. A searched road becomes a strip of the width you choose; an address becomes a circle of about 150 m.',
+    '- Save. The area can be changed later in the project\'s Settings.',
+  ]],
+  ['Add your team', [
+    'Managers open the project\'s Settings, then Team, and add people from the organization with one role each:',
+    '- Project manager: runs the project, plans inspections, shares photos, switches road risk on.',
+    '- Field collector: takes and uploads photos and records inspection results.',
+    '- Technical reviewer: checks every AI suggestion and decides whether it is a real problem.',
+    '- Viewer: looks at verified results, maps and reports, and changes nothing.',
+  ]],
+  ['Upload road photos', [
+    'In the project, open Photos, then Upload, and choose one or many photos. Tick the box confirming you may share them, then upload.',
+    '- Use clear daylight photos, with the phone\'s location (GPS) switched on, so each photo lands on the map by itself.',
+    '- A photo without a location can still be checked; place it on the map by hand from the photo\'s page. Problems already found on it then appear on the map too.',
+    '- Sending the same file twice is safe: it is kept once.',
+  ]],
+  ['Send photos to the AI check', [
+    'On the Photos tab, the app shows how many new photos are waiting. Send them to the AI check with one button and wait until it says finished (usually seconds per photo).',
+    'The AI marks possible potholes, cracks and worn pavement with a box on the photo. These are suggestions only: nothing counts until a person has checked it.',
+  ]],
+  ['Review every suggestion', [
+    'Reviewers open Findings (or Review) and go through the suggestions one by one. For each one:',
+    '- Verify it (choose the type and how serious it is), reject it, or ask for a field check.',
+    '- Correct the type, severity or location if the AI got it wrong; the original AI answer is always kept.',
+    'Only verified problems count in the priority list, the reports and the home page. Every decision is saved in the finding\'s history.',
+  ]],
+  ['See the photos and problems on the map', [
+    '- Findings: every problem on a map and in a list; click one to see its photo and details.',
+    '- Photo map: every analysed photo as a pin, coloured by its most serious problem; click a pin to see the photo with all its boxes.',
+    '- Roads: only the roads, coloured by risk, speed limit, road type, weather or traffic; choose an area to list just those roads.',
+    '- Cameras: Illinois DOT traffic cameras in the project area; "Take snapshot" saves a picture as a project photo.',
+    'Managers can make a share link to one photo for someone without an account. It shows only the photo (no location), ends after 1 to 30 days and can be cancelled at any time.',
+  ]],
+  ['Decide what to fix first', [
+    'The Priority tab ranks verified problems by how serious they are, the type of road and nearby places such as schools. Each score shows how it was worked out.',
+    'Plan an inspection for a colleague with a due date. They see it under My inspections, visit the place and record what they found (with a note or a photo).',
+  ]],
+  ['Make a report', [
+    'Open Reports, then "Make a new report", choose the filters and a format:',
+    '- CSV for spreadsheets (Excel, Google Sheets).',
+    '- GeoJSON for map software (QGIS, ArcGIS).',
+    '- PDF to print or send.',
+    'Reports contain verified problems by default and state which AI model and settings were used.',
+  ]],
+  ['Use road risk (optional)', [
+    'A manager switches it on in the project\'s Settings, then Road risk. Set-up takes a few minutes to an hour, depending on the area.',
+    'The Road risk tab then lists the roads most likely to need attention in the next 30 days (high, medium, low), with plain reasons such as recent pothole reports, freeze-thaw weather or road condition, plus the weather outlook and alerts.',
+    '- Inside Chicago and Naperville the levels are tested against each city\'s own pothole reports.',
+    '- Elsewhere the app shows risk factors (weather, road type, condition) for every road.',
+    'Plan an inspection from any road, and (if switched on) ask the assistant questions such as "Which roads should we inspect first?".',
+  ]],
 ]
 
 /** Where each kind of data is kept. */
-const STORAGE: [string, string][] = [
-  ['Photos (the original file and a smaller copy for screens)', 'In your organization\'s file storage. By default this is the private storage of the server that runs the app. An organization administrator can switch to the organization\'s own storage instead (an S3-type service such as Amazon S3, Cloudflare R2, Wasabi, or MinIO running on the organization\'s own computer or server) in Settings, then Data storage. New files go there from then on; files saved earlier stay where they were and can still be opened.'],
-  ['How files are protected', 'Every file is encrypted (AES-256-GCM) before it is saved, wherever it is saved, so the storage company cannot read it. The key to your own storage is also kept encrypted. Each file is shown only after a sign-in and permission check.'],
-  ['Findings, reviews, inspections, accounts and history', 'In the app\'s database (PostgreSQL) on the server that runs the app. Every change is kept in the history, which managers can see in the project\'s Settings, then History.'],
-  ['Photo locations', 'The location saved with each photo (from its GPS, or placed by hand). It is the camera position, so it is approximate. Share links never include it.'],
-  ['Road-risk data', 'Public data only (city pothole reports where published, weather, roads, elevation, flood zones, road condition), kept in a separate database on the same server. None of your photos or findings are added to it.'],
-  ['Where can I check this for my organization?', 'Open Settings, then Data storage (organization administrators can change it there), or My account, which shows "Where your data is stored".'],
-  ['Withdrawing a photo', 'Managers can withdraw a photo, and field collectors can withdraw their own photos before the AI check. A withdrawn photo is hidden from the photo list and the photo map, and any share link to it stops working.'],
+const STORAGE: [string, string[]][] = [
+  ['Photos (the original file and a smaller copy for screens)', [
+    'Every photo you upload is kept twice: the original file, exactly as taken, and a smaller copy for fast screens and share links.',
+    'They are kept in your organization\'s file storage. By default this is the private storage of the server that runs GeoInfraLens AI.',
+    'An organization administrator can switch to your organization\'s own storage instead in Settings, then Data storage: a cloud account in your name (for example Backblaze B2, Amazon S3, Cloudflare R2, Wasabi or Google Cloud), your own server, or a computer in your office running MinIO. New files go there from then on; files saved earlier stay where they were and still open.',
+  ]],
+  ['How files are protected', [
+    '- Every file is encrypted (AES-256-GCM) before it is saved, wherever it is saved, so the storage company cannot read it.',
+    '- The key to your own storage is also kept encrypted and is never shown again after saving.',
+    '- A photo is only shown after a sign-in and a check that the person may see that project.',
+    '- Passwords are never stored, only a secure fingerprint of them.',
+  ]],
+  ['Findings, reviews, inspections, accounts and history', [
+    'Text and numbers (the problems found, review decisions, inspections, reports, accounts and settings) are kept in the app\'s database (PostgreSQL) on the server that runs the app.',
+    'Every change is kept in a history that cannot be edited. Managers see it in the project\'s Settings, then History: who did what, and when.',
+  ]],
+  ['Photo locations', [
+    'Each photo keeps the location saved by the phone (GPS), or the point placed by hand. It is where the camera was, so it is approximate (usually within 5 to 20 metres).',
+    'A reviewer can correct a problem\'s location; the original is always kept. Share links never include any location.',
+  ]],
+  ['Road-risk data', [
+    'Road risk uses public data only: city pothole reports where they are published, daily weather (NOAA) and forecasts (National Weather Service), roads and speed limits (OpenStreetMap), road condition and traffic (Federal Highway Administration), elevation (USGS) and flood zones (FEMA).',
+    'It is kept in a separate database on the same server. None of your photos or findings are added to it.',
+  ]],
+  ['Where can I check this for my organization?', [
+    'Open Settings, then Data storage: it shows where files are kept, when the storage was last checked and how files are protected. Administrators can change it there and follow a step-by-step guide.',
+    'Everyone can also see "Where your data is stored" on My account.',
+  ]],
+  ['Withdrawing a photo', [
+    'Managers can withdraw any photo; field collectors can withdraw their own photos before the AI check.',
+    'A withdrawn photo is hidden from the photo list and the photo map, and any share link to it stops working. It is not erased: it stays in the history.',
+  ]],
 ]
 
-const FAQ: [string, string][] = [
-  ['What does GeoInfraLens AI do?', 'It helps a city find road damage. Field staff upload road photos, an AI marks possible potholes and cracks, a reviewer confirms each one, and the results show on a map, in a priority list and in reports. A separate road-risk view shows which roads are more likely to get potholes soon.'],
-  ['Is the AI always right?', 'No. AI results can be wrong or incomplete. Every AI suggestion is checked by a person before it counts, and you should always confirm on site before acting.'],
-  ['What do the colours and levels mean?', 'High, medium and low are shown in words as well as colours. On road risk, "high" means the road is among the roads most likely to need attention soon, compared with the others in the area. It is not a confirmed defect.'],
-  ['Who can see my photos?', 'Only people in your organization who have access to the project, according to their role, and people a manager sends a share link to (until the link ends or is cancelled).'],
-  ['Why is a photo not on the map?', 'The photo had no location. You can still review it; add the location by hand or retake the photo with location switched on.'],
-  ['How is the priority worked out?', 'From the severity confirmed by the reviewer, the type of road and nearby places such as schools. The weights are set by your organization and shown next to every score.'],
-  ['Where does road-risk information come from?', 'From free public data: city pothole reports where published, weather (NOAA and the National Weather Service), measured road condition and traffic (Federal Highway Administration), roads, speed limits and lanes (OpenStreetMap), elevation (USGS) and flood zones (FEMA).'],
-  ['Where do the traffic camera pictures come from?', 'From the Illinois Department of Transportation\'s Gateway traffic cameras (shared under the Creative Commons Attribution-ShareAlike 2.0 licence). Viewing them stores nothing. "Take snapshot" saves that one picture (about 70 KB) as a project photo in your organization\'s storage, credited to IDOT, so it can go to the AI check like any upload.'],
-  ['Why does a road say "Not on the map" for its speed limit?', 'Road details come from OpenStreetMap, and not every road has them there. The app never guesses a missing value. Always check the signs on site.'],
-  ['What road problems can the AI find, and how serious are they?', 'Potholes, surface cracking and pavement deterioration. Field staff can also add observations by hand, for example on a sidewalk. When a reviewer verifies a problem, they give it a severity level (for example low, medium or high) from your organization\'s severity scale.'],
-  ['How long is my data kept?', 'Nothing is deleted automatically. Photos (including withdrawn ones), findings (including rejected ones), reports and the history are all kept until your organization confirms how long it must keep them; those rules will then be set with you, and every change is recorded in the history.'],
-  ['How do I report a mistake?', 'Open the finding and correct it, or tell your organization\'s administrator. Every change is kept in the history.'],
+const FAQ: [string, string[]][] = [
+  ['What does GeoInfraLens AI do?', [
+    'It helps a city find and fix road damage faster:',
+    '- Field staff upload road photos (or take snapshots from traffic cameras).',
+    '- An AI marks possible potholes, cracks and worn pavement on each photo.',
+    '- A reviewer confirms each one, so only checked problems count.',
+    '- Results show on a map, in a priority list and in reports you can download.',
+    'A separate road-risk view shows which roads are likely to need attention in the next 30 days, using weather, road condition and past pothole reports.',
+  ]],
+  ['Is the AI always right?', [
+    'No. AI results can be wrong (a shadow marked as a pothole) or incomplete (a crack it did not see), especially in poor light or on roads unlike the ones it learned from.',
+    'Every AI suggestion is checked by a person before it counts. Always confirm on site before sending a crew or making a decision.',
+    'Photos taken in your own area help the AI improve; ask your administrator if you can share some.',
+  ]],
+  ['What do the colours and levels mean?', [
+    'Levels are always written in words as well as colours, so nobody depends on colour alone.',
+    '- Findings: green means verified by a reviewer; amber means an AI suggestion waiting for review.',
+    '- Road risk: "high" means the road is among the top 1% most likely to get new pothole reports in the next 30 days compared with the others in the area; "medium" the next 9%; "low" the rest.',
+    'A high level is a reason to inspect first. It is not a confirmed defect.',
+  ]],
+  ['Who can see my photos?', [
+    '- People in your organization who have access to the project, according to their role. Viewers see verified problems only, never unchecked AI suggestions.',
+    '- People a manager sends a share link to: only that one photo, without its location, until the link ends or is cancelled.',
+    'Nobody outside your organization can browse your projects, and every photo is shown only after a permission check.',
+  ]],
+  ['Why is a photo not on the map?', [
+    'The photo had no location, usually because location (GPS) was switched off for the camera, or the photo was sent through a messaging app that removes it.',
+    'You can still review it. To put it on the map, open the photo and place its location by hand; its problems then appear on the map too. Next time, switch location on before taking photos.',
+  ]],
+  ['How is the priority worked out?', [
+    'Each verified problem gets a score from:',
+    '- How serious it is, as chosen by the reviewer.',
+    '- The type of road (a main road counts more than a quiet street).',
+    '- Nearby places such as schools and hospitals.',
+    'Your organization sets how much each part counts, and the breakdown is shown next to every score, so the ranking can always be explained.',
+  ]],
+  ['Where does road-risk information come from?', [
+    'Only from free, public data:',
+    '- City pothole reports where published (for example Chicago and Naperville).',
+    '- Daily weather from NOAA and the outlook from the National Weather Service: freeze-thaw days, frost, rain and snow.',
+    '- Roads, speed limits and lanes from OpenStreetMap.',
+    '- Measured road condition and traffic from the Federal Highway Administration.',
+    '- Elevation (USGS) and flood zones (FEMA).',
+    'Each road page names its sources and how recent they are.',
+  ]],
+  ['Where do the traffic camera pictures come from?', [
+    'From the Illinois Department of Transportation\'s Gateway traffic cameras, shared under the Creative Commons Attribution-ShareAlike 2.0 licence. The Cameras tab shows the cameras inside your project area with their latest picture, refreshed by IDOT every few minutes.',
+    'Viewing them stores nothing. "Take snapshot" saves that one picture (about 70 KB) as a project photo in your organization\'s storage, credited to IDOT, so it can go to the AI check like any upload.',
+  ]],
+  ['Why does a road say "Not on the map" for its speed limit?', [
+    'Road details (speed limit, lanes, surface, one-way) come from OpenStreetMap, which volunteers keep up to date. Not every road has every detail there yet.',
+    'The app never guesses a missing value. Always check the signs on site.',
+  ]],
+  ['What road problems can the AI find, and how serious are they?', [
+    '- Potholes',
+    '- Surface cracking (single cracks and networks of cracks)',
+    '- Pavement deterioration (worn, crumbling or patched surface)',
+    'Field staff can also add observations by hand, for example on a sidewalk. When a reviewer verifies a problem, they give it a severity level (for example low, medium or high) from your organization\'s severity scale.',
+  ]],
+  ['How long is my data kept?', [
+    'Nothing is deleted automatically. Photos (including withdrawn ones), findings (including rejected ones), reports and the history are all kept until your organization confirms how long it must keep them.',
+    'Those rules will then be set together with you, and every change is recorded in the history. A project deleted by an administrator disappears from the app but is not erased.',
+  ]],
+  ['How do I report a mistake?', [
+    'If a finding is wrong, open it and correct the type, severity or location, or reject it. If you are not allowed to, tell a reviewer or your organization\'s administrator.',
+    'For anything else, use the Contact us tab. Every change is kept in the history, so nothing is lost.',
+  ]],
 ]
 
 const TABS = ['FAQ', 'Terms of use', 'Accessibility', 'Privacy', 'Contact us'] as const
@@ -187,13 +314,51 @@ function TermsPanel() {
           ))}
         </ul>
       </Dropdown>
-      <Dropdown title="Acceptable use" icon={UserCheck}>
-        <p>Use the application only for your organization's road work.</p>
-        <p className="mt-2">Upload only photos you are allowed to share, avoid photographing people where possible, and keep your password private.</p>
+      <Dropdown title="Who may use the application" icon={Users}>
+        <Answer
+          lines={[
+            'GeoInfraLens AI is for the staff and partners of organizations that have an account, invited by their organization\'s administrator. Each person signs in with their own account; accounts must not be shared.',
+            'Your organization decides who may use it and with which role, and can remove access at any time.',
+          ]}
+        />
       </Dropdown>
-      <Dropdown title="AI results are estimates" icon={ScanSearch}>
-        <p>Every AI suggestion is checked by a person before it counts. Always confirm on site before acting.</p>
-        <p className="mt-2">Exported reports state which AI model and settings were used.</p>
+      <Dropdown title="Acceptable use" icon={UserCheck}>
+        <Answer
+          lines={[
+            'Use the application only for your organization\'s road and infrastructure work. In particular:',
+            '- Upload only photos you are allowed to share, taken where it is safe and legal to do so.',
+            '- Avoid photographing people, faces and number plates where possible; retake the photo if they are clearly visible.',
+            '- Keep your password private and sign out on shared computers.',
+            '- Do not try to reach projects, photos or data you have not been given access to, or to disturb the service.',
+            'Share links are for passing one photo to people outside the app; send them only to people who should see it.',
+          ]}
+        />
+      </Dropdown>
+      <Dropdown title="AI results and road-risk levels are estimates" icon={ScanSearch}>
+        <Answer
+          lines={[
+            'The AI suggests possible road problems and the road-risk view estimates which roads may need attention soon. Both can be wrong or incomplete.',
+            '- Every AI suggestion is checked by a reviewer before it counts.',
+            '- Road-risk levels compare roads with each other; they are not a confirmed defect or a promise that damage will or will not appear.',
+            '- Always confirm on site before acting. Decisions remain the responsibility of your organization.',
+            'Exported reports state which AI model and settings were used, so results can be traced.',
+          ]}
+        />
+      </Dropdown>
+      <Dropdown title="Your content and third-party data" icon={FileText}>
+        <Answer
+          lines={[
+            'Photos and data your organization adds remain your organization\'s. They are used only to provide the service to you and, with your organization\'s agreement, to test and improve the AI for your area.',
+            'Maps, weather, road and camera data come from public sources (for example OpenStreetMap, NOAA, the National Weather Service and the Illinois Department of Transportation) under their own terms; each is credited where it is shown.',
+          ]}
+        />
+      </Dropdown>
+      <Dropdown title="Changes to these terms" icon={Clock}>
+        <Answer
+          lines={[
+            'When these terms change, everyone sees the new version when they next sign in and is asked to agree again. Each agreement is recorded with its date.',
+          ]}
+        />
       </Dropdown>
     </DropdownList>
   )
@@ -204,22 +369,56 @@ function AccessibilityPanel() {
     <DropdownList>
       <Dropdown title="Our standard" icon={Accessibility} startOpen>
         <p>We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 level AA.</p>
+        <p className="mt-2">This means the application should be usable with a keyboard, with a screen reader, at large text sizes and on small screens, and that information is never given by colour alone.</p>
       </Dropdown>
       <Dropdown title="Checked automatically" icon={ListChecks}>
-        <p>Every main screen is checked automatically for labels, roles, names and headings.</p>
+        <Answer
+          lines={[
+            'Every main screen is checked automatically, each time the application is changed, for:',
+            '- Labels on every field and button, so screen readers can name them.',
+            '- Correct roles and headings, so pages can be navigated by heading.',
+            '- Text contrast, so text is readable.',
+            'A change that breaks one of these checks is not released.',
+          ]}
+        />
       </Dropdown>
       <Dropdown title="Works with the keyboard" icon={Keyboard}>
-        <p>Everything can be done with the keyboard: Tab to move, Enter or Space to choose, Esc to close a window.</p>
+        <Answer
+          lines={[
+            'Everything can be done without a mouse:',
+            '- Tab and Shift+Tab move between links, buttons and fields; the one in focus is always clearly outlined.',
+            '- Enter or Space chooses; arrow keys move within lists and options.',
+            '- Esc closes a window, and focus returns to where you were.',
+            '- The review screen has keyboard shortcuts, shown on the screen, which are off while you type.',
+          ]}
+        />
       </Dropdown>
       <Dropdown title="Never colour alone" icon={Palette}>
-        <p>Levels and states are always written in words, never shown by colour alone.</p>
+        <Answer
+          lines={[
+            'Levels and states are always written in words (for example "High", "Verified", "Not on the map"), with colour as an extra hint only.',
+            'Map lines and pins have a key in words, and every map item can also be found in a list.',
+          ]}
+        />
       </Dropdown>
       <Dropdown title="Tables and easy navigation" icon={Table2}>
-        <p>Every chart can also be read as a table, and every page has Back and a breadcrumb.</p>
+        <Answer
+          lines={[
+            '- Every chart can also be read as a table.',
+            '- Every page has a Back button and a breadcrumb showing where you are.',
+            '- Pages work at 200% zoom and on phones.',
+            '- Messages say in plain words what happened and what to do next.',
+          ]}
+        />
       </Dropdown>
       <Dropdown title="Known limits and feedback" icon={CircleHelp}>
-        <p>Map areas are easiest to use with a mouse or touch; the same information is always also in a list.</p>
-        <p className="mt-2">If something is hard to use, tell your organization's administrator so it can be fixed.</p>
+        <Answer
+          lines={[
+            'Drawing an area on the map is easiest with a mouse or touch; you can search an area by name or upload a map file instead. Everything shown on a map is also available in a list.',
+            'Traffic camera pictures come from IDOT and have no text description beyond the camera\'s location.',
+            'If something is hard to use, tell your organization\'s administrator or use the Contact us tab, so it can be fixed.',
+          ]}
+        />
       </Dropdown>
     </DropdownList>
   )
@@ -229,19 +428,83 @@ function PrivacyPanel() {
   return (
     <DropdownList>
       <Dropdown title="What we store" icon={Database} startOpen>
-        <p>What the application needs: your name, email and role; the photos you upload with their date and location; AI results, review decisions, inspections and reports; and a history of changes.</p>
+        <Answer
+          lines={[
+            'Only what the application needs to work:',
+            '- About you: your name, email address, role and when you signed in.',
+            '- Your work: the photos you upload with their date and location, AI results, review decisions, inspections and reports.',
+            '- A history of changes: who did what, and when.',
+            'We do not track you across other websites and do not sell or share personal data for advertising.',
+          ]}
+        />
       </Dropdown>
-      <Dropdown title="Where it is kept" icon={HardDrive}>
-        <p>Photos are kept in the storage chosen by your organization (ours, or your own space), encrypted (AES-256-GCM). Passwords are stored only as secure hashes.</p>
+      <Dropdown title="Where it is kept and how it is protected" icon={HardDrive}>
+        <Answer
+          lines={[
+            'Photos are kept in the storage chosen by your organization: ours, or your organization\'s own space (a cloud account, its own server or an office computer). Every file is encrypted (AES-256-GCM) before it is saved.',
+            'Text and numbers are kept in the application\'s database. Passwords are stored only as secure fingerprints, never as text. Connections use secure https.',
+          ]}
+        />
       </Dropdown>
       <Dropdown title="Who can see it" icon={Users}>
-        <p>Only people with access to the project, after a permission check, and people a manager sends a share link to (photo only, no location, until the link ends).</p>
+        <Answer
+          lines={[
+            '- People in your organization with access to the project, according to their role, after a permission check on every request.',
+            '- People a manager sends a share link to: one photo only, without its location, until the link ends or is cancelled.',
+            '- The GeoInfraLens AI team, only to keep the service running or when your organization asks for help.',
+          ]}
+        />
       </Dropdown>
       <Dropdown title="How long it is kept" icon={Clock}>
-        <p>Your organization decides how long photos and results are kept. Nothing is deleted automatically until it confirms its rules.</p>
-        <p className="mt-2">Road-risk information comes from public data and contains no personal information.</p>
+        <Answer
+          lines={[
+            'Your organization decides how long photos and results are kept. Nothing is deleted automatically until it confirms its rules.',
+            'If your organization stops using the service, it can ask for its data to be returned or erased.',
+          ]}
+        />
+      </Dropdown>
+      <Dropdown title="Public data and road risk" icon={ShieldCheck}>
+        <Answer
+          lines={[
+            'Road-risk information comes from public data (city pothole reports, weather, roads, road condition, elevation, flood zones). When pothole reports are loaded, only their date, type, status and location are kept: no names, addresses or comments.',
+          ]}
+        />
+      </Dropdown>
+      <Dropdown title="Your questions and requests" icon={Mail}>
+        <Answer
+          lines={[
+            'To see, correct or remove personal data about you, ask your organization\'s administrator, or contact us (Contact us tab). Corrections are recorded in the history.',
+          ]}
+        />
       </Dropdown>
     </DropdownList>
+  )
+}
+
+/** An answer: paragraphs, and lines starting "- " shown together as a list. */
+function Answer({ lines }: { lines: string[] }) {
+  const blocks: (string | string[])[] = []
+  for (const line of lines) {
+    if (line.startsWith('- ')) {
+      const last = blocks[blocks.length - 1]
+      if (Array.isArray(last)) last.push(line.slice(2))
+      else blocks.push([line.slice(2)])
+    } else blocks.push(line)
+  }
+  return (
+    <div className="space-y-2">
+      {blocks.map((block, index) =>
+        Array.isArray(block) ? (
+          <ul key={index} className="list-disc space-y-1 pl-5">
+            {block.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p key={index}>{block}</p>
+        ),
+      )}
+    </div>
   )
 }
 
@@ -249,7 +512,7 @@ function PrivacyPanel() {
 function FaqPanel() {
   const [query, setQuery] = useState('')
   const words = query.trim().toLowerCase()
-  const match = ([q, a]: [string, string]) => !words || `${q} ${a}`.toLowerCase().includes(words)
+  const match = ([q, a]: [string, string[]]) => !words || `${q} ${a.join(' ')}`.toLowerCase().includes(words)
   const storage = STORAGE.filter(match)
   const questions = FAQ.filter(match)
   const open = Boolean(words)
@@ -272,7 +535,7 @@ function FaqPanel() {
           <DropdownList>
             {STEPS.map(([step, text], index) => (
               <Dropdown key={step} title={step} number={index + 1}>
-                <p>{text}</p>
+                <Answer lines={text} />
               </Dropdown>
             ))}
           </DropdownList>
@@ -284,7 +547,7 @@ function FaqPanel() {
           <DropdownList>
             {storage.map(([question, answer]) => (
               <Dropdown key={`${question}-${open}`} title={question} icon={HardDrive} startOpen={open}>
-                <p>{answer}</p>
+                <Answer lines={answer} />
               </Dropdown>
             ))}
           </DropdownList>
@@ -296,7 +559,7 @@ function FaqPanel() {
           <DropdownList>
             {questions.map(([question, answer]) => (
               <Dropdown key={`${question}-${open}`} title={question} icon={CircleHelp} startOpen={open}>
-                <p>{answer}</p>
+                <Answer lines={answer} />
               </Dropdown>
             ))}
           </DropdownList>

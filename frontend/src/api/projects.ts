@@ -123,6 +123,11 @@ export function updateProject(projectId: string, body: Partial<ProjectInput>): P
   return apiRequest(`/v1/projects/${projectId}`, { method: 'PATCH', body })
 }
 
+/** Organization admins only; the project's name must be typed to confirm. Nothing is erased. */
+export function deleteProject(projectId: string, confirmName: string): Promise<null> {
+  return apiRequest<null>(`/v1/projects/${projectId}`, { method: 'DELETE', body: { confirm_name: confirmName } })
+}
+
 export function archiveProject(projectId: string): Promise<ProjectDetail> {
   return apiRequest(`/v1/projects/${projectId}/archive`, { method: 'POST' })
 }

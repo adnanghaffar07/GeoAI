@@ -9,12 +9,17 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from geoalchemy2 import Geography
-from sqlalchemy import ColumnElement, Integer, cast, delete, exists, func, select
+from sqlalchemy import ColumnElement, Integer, cast, delete, exists, func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.auth import OrgContext, ProjectContext
 from app.core.config import get_settings
-from app.core.errors import ConflictError, NotFoundError, ValidationFailedError
+from app.core.errors import (
+    ConflictError,
+    NotFoundError,
+    PermissionDeniedError,
+    ValidationFailedError,
+)
 from app.models import (
     AnalysisJob,
     Finding,
@@ -211,6 +216,44 @@ def update_project(db: Session, ctx: ProjectContext, body: ProjectUpdate) -> Pro
     return project
 
 
+def delete_project(db: Session, ctx: ProjectContext, confirm_name: str) -> None:
+    """Organization admins only. The project disappears for everyone: road risk stops, share
+    links stop working. Nothing is erased (photos, findings, history stay stored and can be
+    brought back by the platform team)."""
+    from app.models import Image, ImageShareLink
+    from app.services import forecasting
+
+    if ctx.org_role != "org_admin":
+        raise PermissionDeniedError("Only an organization administrator can delete a project.")
+    project = ctx.project
+    if confirm_name.strip() != project.name.strip():
+        raise ValidationFailedError("Type the project's name exactly to confirm.")
+    now = utc_now()
+    project.deleted_at = now
+    if project.archived_at is None:
+        project.archived_at = now
+    forecasting.disable(db, project.id, ctx.user.id)
+    db.execute(
+        update(ImageShareLink)
+        .where(
+            ImageShareLink.image_id.in_(select(Image.id).where(Image.project_id == project.id)),
+            ImageShareLink.revoked_at.is_(None),
+        )
+        .values(revoked_at=now)
+    )
+    record_event(
+        db,
+        action="project.deleted",
+        organization_id=project.organization_id,
+        project_id=project.id,
+        actor_user_id=ctx.user.id,
+        actor_roles=ctx.actor_roles,
+        target_type="project",
+        target_id=project.id,
+        details={"name": project.name},
+    )
+
+
 def archive_project(db: Session, ctx: ProjectContext) -> Project:
     project = ctx.project
     if project.archived_at is None:
@@ -356,7 +399,9 @@ def visible_projects(
     db: Session, user: User, org_ctx: OrgContext, *, include_archived: bool
 ) -> list[tuple[Project, list[str]]]:
     """Projects the user can see in this organization, with the user's roles on each."""
-    query = select(Project).where(Project.organization_id == org_ctx.organization.id)
+    query = select(Project).where(
+        Project.organization_id == org_ctx.organization.id, Project.deleted_at.is_(None)
+    )
     if org_ctx.membership.org_role != "org_admin":
         query = query.where(
             Project.id.in_(select(ProjectMember.project_id).where(ProjectMember.user_id == user.id))

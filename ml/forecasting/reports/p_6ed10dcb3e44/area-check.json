@@ -1,0 +1,175 @@
+{
+  "area": "p_6ed10dcb3e44",
+  "name": "PROJECT LINE TESTING",
+  "level": 1,
+  "schema": "p_6ed10dcb3e44",
+  "map_zone": "EPSG:26916",
+  "box": {
+    "min_lon": -88.2596,
+    "min_lat": 41.7903,
+    "max_lon": -88.2478,
+    "max_lat": 41.8011
+  },
+  "area_km2": 0.0,
+  "osm_extract": "2026-11-12T13:53:06Z",
+  "sections_before_boundary_cut": 93,
+  "km_before_boundary_cut": 8.1,
+  "weather": {
+    "stations": [
+      {
+        "id": "USC00110338",
+        "name": "Aurora Water",
+        "lat": 41.7803,
+        "lon": -88.3092
+      },
+      {
+        "id": "USW00094892",
+        "name": "Chicago W Chicago Dupage Ap",
+        "lat": 41.8964,
+        "lon": -88.2511
+      },
+      {
+        "id": "USC00115097",
+        "name": "Lisle - Morton Arboretum",
+        "lat": 41.8128,
+        "lon": -88.0728
+      }
+    ],
+    "snow_station": "USC00115097",
+    "choice": {
+      "rule": {
+        "max_distance_km": 30,
+        "min_complete_share": 0.9,
+        "years": 10,
+        "max_stations": 3,
+        "max_candidates": 8
+      },
+      "measured_from": "2016-01-01",
+      "measured_to": "2025-12-31",
+      "candidates_found": 6,
+      "measured": [
+        {
+          "id": "USC00110338",
+          "lat": 41.7803,
+          "lon": -88.3092,
+          "state": "IL",
+          "name": "AURORA WATER",
+          "distance_km": 4.3,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.998,
+            "rain": 0.999,
+            "snow": 0.891
+          },
+          "file_sha256": "ddc06ee69959e41b02afbaaaa6b64af56f98b5e1a358db06e1dc8299b2454b20"
+        },
+        {
+          "id": "USW00094892",
+          "lat": 41.8964,
+          "lon": -88.2511,
+          "state": "IL",
+          "name": "CHICAGO W CHICAGO DUPAGE AP",
+          "distance_km": 10.6,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.997,
+            "rain": 0.996,
+            "snow": 0.056
+          },
+          "file_sha256": "537c02b4e4e22793b9e55c9ce2c66bc963aaec59474d2c3bab9a64122d4537e6"
+        },
+        {
+          "id": "USC00115097",
+          "lat": 41.8128,
+          "lon": -88.0728,
+          "state": "IL",
+          "name": "LISLE - MORTON ARBORETUM",
+          "distance_km": 14.6,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.966,
+            "rain": 0.983,
+            "snow": 0.993
+          },
+          "file_sha256": "77034fd2edcfdc40a92c7b38505ebab12ffb3a6c2abee4c587b9e95eb339d8de"
+        },
+        {
+          "id": "USW00004808",
+          "lat": 41.7714,
+          "lon": -88.4814,
+          "state": "IL",
+          "name": "CHICAGO AURORA MUNI AP",
+          "distance_km": 18.5,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.997,
+            "rain": 0.993,
+            "snow": 0.055
+          },
+          "file_sha256": "bb30ad8d2a1abfe23fbf951f61400159eabc339c69649db9a46fa3c62d2618c5"
+        },
+        {
+          "id": "USC00117457",
+          "lat": 41.6042,
+          "lon": -88.085,
+          "state": "IL",
+          "name": "ROMEOVILLE WFO",
+          "distance_km": 24.7,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.999,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "15d4eecd9d1fc31d017ac5e924e1238a5f88173f5fdf01ec7ae76a3f6dc12773"
+        },
+        {
+          "id": "USC00112736",
+          "lat": 42.0628,
+          "lon": -88.2861,
+          "state": "IL",
+          "name": "ELGIN WATER",
+          "distance_km": 29.2,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.979,
+            "rain": 0.996,
+            "snow": 0.982
+          },
+          "file_sha256": "3eeeba366322722c4985609e9e75ff9cd57c5177688d2685733dcfaabd2d2183"
+        }
+      ],
+      "stations": [
+        {
+          "id": "USC00110338",
+          "name": "Aurora Water",
+          "lat": 41.7803,
+          "lon": -88.3092
+        },
+        {
+          "id": "USW00094892",
+          "name": "Chicago W Chicago Dupage Ap",
+          "lat": 41.8964,
+          "lon": -88.2511
+        },
+        {
+          "id": "USC00115097",
+          "name": "Lisle - Morton Arboretum",
+          "lat": 41.8128,
+          "lon": -88.0728
+        }
+      ],
+      "snow_station": "USC00115097",
+      "chosen_at": "2026-11-12"
+    }
+  },
+  "layers": {
+    "pothole history (Level 2)": false,
+    "weather (freeze-thaw, rain, snow)": true,
+    "elevation (USGS, national)": true,
+    "flood zones (FEMA, national)": true,
+    "soil (USDA, national)": true,
+    "traffic counts": true,
+    "bus routes": false
+  }
+}

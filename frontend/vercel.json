@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://normal-repeat-dam-controversy.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://biz-arbitrary-backup-frontpage.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

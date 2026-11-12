@@ -53,6 +53,8 @@ class Project(Base):
     survey_end: Mapped[date | None] = mapped_column(Date)
     partner_reference: Mapped[str | None] = mapped_column(String(120))
     archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Deleted by an organization admin: hidden everywhere; the data is kept (nothing is erased).
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_by: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="RESTRICT"))
     created_at: Mapped[datetime] = created_at_column()
     updated_at: Mapped[datetime] = updated_at_column()

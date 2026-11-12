@@ -152,7 +152,11 @@ def load_project_context(db: Session, user: User, project_id: uuid.UUID) -> Proj
             OrganizationMembership,
             OrganizationMembership.organization_id == Project.organization_id,
         )
-        .where(Project.id == project_id, OrganizationMembership.user_id == user.id)
+        .where(
+            Project.id == project_id,
+            OrganizationMembership.user_id == user.id,
+            Project.deleted_at.is_(None),  # a deleted project is "not found" for everyone
+        )
     ).first()
     if row is None:
         raise NotFoundError("Project not found.")
