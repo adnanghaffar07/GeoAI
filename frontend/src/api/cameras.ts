@@ -27,6 +27,20 @@ export const camerasKey = (projectId: string) => ['projects', projectId, 'camera
 
 export const listCameras = (projectId: string, signal?: AbortSignal): Promise<CameraList> => apiRequest(`/v1/projects/${projectId}/cameras`, { signal })
 
+export interface NearbyCamera extends Camera {
+  /** Straight-line distance from the project area, in km. */
+  distance_km: number
+}
+
+export interface NearbyCameraList extends Omit<CameraList, 'cameras'> {
+  cameras: NearbyCamera[]
+  within_km: number
+}
+
+/** Owner, 2026-11-16: the cameras closest to the project area (outside it), nearest first. */
+export const listNearbyCameras = (projectId: string, signal?: AbortSignal): Promise<NearbyCameraList> =>
+  apiRequest(`/v1/projects/${projectId}/cameras/nearby`, { signal })
+
 export const takeSnapshot = (projectId: string, cameraId: number): Promise<{ duplicate: boolean; image: ImageInfo }> =>
   apiRequest(`/v1/projects/${projectId}/cameras/${cameraId}/snapshot`, { method: 'POST' })
 

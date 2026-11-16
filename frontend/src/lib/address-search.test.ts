@@ -46,7 +46,7 @@ describe('searchPlaces', () => {
     expect(url.origin + url.pathname).toBe('https://nominatim.openstreetmap.org/search')
     expect(url.searchParams.get('q')).toBe('Washington Street, Naperville')
     expect(url.searchParams.get('polygon_geojson')).toBe('1')
-    expect(places).toEqual([{ id: '9', label: 'Washington Street, Naperville', kind: 'road', shape: ROAD }])
+    expect(places).toEqual([{ id: '9', label: 'Washington Street, Naperville', kind: 'road', shape: ROAD, roadName: 'Washington Street' }])
   })
 
   it('for coordinates, offers the nearest road and the point itself', async () => {

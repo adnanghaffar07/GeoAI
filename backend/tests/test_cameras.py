@@ -37,6 +37,7 @@ def idot(monkeypatch: pytest.MonkeyPatch) -> list[str]:
         _attributes(1, 37.78, -122.42, f"{IDOT}/inside.jpg"),
         _attributes(2, 40.71, -74.0, f"{IDOT}/outside.jpg"),  # not in the project area
         _attributes(3, 37.78, -122.42, "https://example.com/elsewhere.jpg"),  # not IDOT's server
+        _attributes(4, 37.83, -122.42, f"{IDOT}/near.jpg"),  # a few km outside the project area
     ]
 
     def fake_json(params: dict[str, Any]) -> dict[str, Any]:
@@ -79,3 +80,14 @@ def test_cameras_in_the_area_and_a_snapshot_becomes_a_photo(
     assert s.admin.post(f"{url}/1/snapshot").status_code == 200  # same picture again: kept once
     assert s.admin.post(f"{url}/2/snapshot").status_code == 404  # outside the project area
     assert s.admin.post(f"{url}/3/snapshot").status_code == 404  # not on IDOT's server
+
+
+def test_cameras_near_the_area_are_listed_nearest_first_but_cannot_be_snapshotted(
+    s: Setup, idot: list[str]
+) -> None:
+    url = f"/api/v1/projects/{s.project_id}/cameras"
+    near = s.viewer.get(f"{url}/nearby").json()
+    assert [c["id"] for c in near["cameras"]] == [4]  # not the one inside, not the one in New York
+    assert 0 < near["cameras"][0]["distance_km"] < 15 and near["within_km"] == 15
+    assert [c["id"] for c in s.viewer.get(url).json()["cameras"]] == [1]
+    assert s.admin.post(f"{url}/4/snapshot").status_code == 404  # outside the area: view only

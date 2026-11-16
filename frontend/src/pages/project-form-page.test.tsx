@@ -11,19 +11,17 @@ import { renderWithProviders } from '@/test/render'
 // offers one button that "draws" the test area.
 vi.mock('@/components/map/area-draw-map', () => ({
   AreaDrawMap: ({
-    initialArea,
-    onChange,
-    onShapeAdded,
+    onAreaDrawn,
+    onRoadDrawn,
   }: {
-    initialArea: AreaGeometry | null
-    onChange: (area: AreaGeometry | null) => void
-    onShapeAdded?: (shape: unknown, rest: AreaGeometry | null) => void
+    onAreaDrawn: (area: AreaGeometry) => void
+    onRoadDrawn?: (shape: unknown) => void
   }) => (
     <>
-      <button type="button" onClick={() => onChange(AREA)}>
+      <button type="button" onClick={() => onAreaDrawn(AREA)}>
         Draw test area
       </button>
-      <button type="button" onClick={() => onShapeAdded?.(DRAWN_ROAD, initialArea)}>
+      <button type="button" onClick={() => onRoadDrawn?.(DRAWN_ROAD)}>
         Draw test road
       </button>
     </>
@@ -56,6 +54,8 @@ function mockApi(onCreate: (body: unknown) => Response) {
     if (url.endsWith('/projects') && init?.method === 'POST') return Promise.resolve(onCreate(JSON.parse(String(init.body))))
     if (url.startsWith('https://nominatim.openstreetmap.org/search'))
       return Promise.resolve(json([{ place_id: 7, display_name: 'Washington Street, Naperville, Illinois', geojson: ROAD_LINE }]))
+    if (url.endsWith('/v1/geo/whole-road') && init?.method === 'POST')
+      return Promise.resolve(json({ shape: { type: 'MultiLineString', coordinates: [ROAD_LINE.coordinates] }, pieces: 3, length_km: 4.2 }))
     if (url.endsWith('/v1/geo/area-from-place') && init?.method === 'POST') {
       const body = JSON.parse(String(init.body)) as { add_to: unknown }
       return Promise.resolve(json({ area: body.add_to ? TWO_STRIPS : STRIP, area_square_meters: 30000 }))
@@ -130,8 +130,12 @@ describe('NewProjectPage', () => {
     await userEvent.type(screen.getByLabelText('Find a road, address or area'), '{Enter}')
     await userEvent.click(await screen.findByRole('button', { name: /Washington Street, Naperville, Illinois/ }))
     expect(await screen.findByText(/added to the area/)).toBeInTheDocument()
+    // Each road is its own place; the server joins them into one area for saving.
+    await vi.waitFor(() => expect(screen.getByRole('button', { name: 'Save project' })).toBeEnabled())
     const calls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/v1/geo/area-from-place'))
-    expect(JSON.parse(String(calls[1]?.[1]?.body)).add_to).toEqual(STRIP)
+    expect(JSON.parse(String(calls[1]?.[1]?.body)).add_to).toBeNull()
+    expect(JSON.parse(String(calls[2]?.[1]?.body))).toEqual({ shape: STRIP, road_width_m: 50, add_to: STRIP })
+    expect(screen.getAllByRole('button', { name: /^Remove Washington Street/ })).toHaveLength(2)
 
     await userEvent.click(screen.getByRole('button', { name: 'Save project' }))
     await vi.waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/projects') && init?.method === 'POST')).toBe(true))
@@ -139,7 +143,7 @@ describe('NewProjectPage', () => {
     expect(JSON.parse(String(createCall?.[1]?.body)).boundary).toEqual(TWO_STRIPS)
   })
 
-  it('a road drawn on the map is joined to the area already selected', async () => {
+  it('a road drawn on the map becomes its own place and is joined to the area already selected', async () => {
     const fetchMock = mockApi(() => json({ id: 'p9' }, 201))
     renderWithProviders(<NewProjectPage />, { me: ADMIN_WITH_PROJECTS })
     await screen.findByText('Pothole')
@@ -148,9 +152,51 @@ describe('NewProjectPage', () => {
     await userEvent.selectOptions(screen.getByLabelText('Road width (searched and drawn roads)'), '20')
     await userEvent.click(screen.getByRole('button', { name: 'Draw test road' })) // then a road
 
-    await vi.waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/v1/geo/area-from-place'))).toBe(true))
-    const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/v1/geo/area-from-place'))
-    expect(JSON.parse(String(call?.[1]?.body))).toEqual({ shape: DRAWN_ROAD, road_width_m: 20, add_to: AREA })
+    await vi.waitFor(() => expect(fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/v1/geo/area-from-place'))).toHaveLength(2))
+    const calls = fetchMock.mock.calls.filter(([url]) => String(url).endsWith('/v1/geo/area-from-place'))
+    expect(JSON.parse(String(calls[0]?.[1]?.body))).toEqual({ shape: DRAWN_ROAD, road_width_m: 20, add_to: null })
+    expect(JSON.parse(String(calls[1]?.[1]?.body))).toEqual({ shape: STRIP, road_width_m: 20, add_to: AREA })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    const list = screen.getByRole('list', { name: 'Selected places' })
+    expect(list).toHaveTextContent('Drawn area 1')
+    expect(list).toHaveTextContent('Drawn road 1')
+  })
+
+  it('removes one selected place after asking, and keeps the others', async () => {
+    const fetchMock = mockApi(() => json({ id: 'p9' }, 201))
+    renderWithProviders(<NewProjectPage />, { me: ADMIN_WITH_PROJECTS })
+    await screen.findByText('Pothole')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Draw test area' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Draw test area' }))
+    expect(screen.getByRole('list', { name: 'Selected places' }).children).toHaveLength(2)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Drawn area 1' }))
+    const ask = screen.getByRole('alertdialog', { name: 'Remove a place' })
+    expect(ask).toHaveTextContent('Remove Drawn area 1 from the survey area?')
+    await userEvent.click(screen.getByRole('button', { name: 'Keep' }))
+    expect(screen.getByRole('list', { name: 'Selected places' }).children).toHaveLength(2)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Remove Drawn area 1' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    const list = screen.getByRole('list', { name: 'Selected places' })
+    expect(list.children).toHaveLength(1)
+    expect(list).toHaveTextContent('Drawn area 2')
+    expect(list).not.toHaveTextContent('Drawn area 1')
+    expect(screen.getByRole('button', { name: 'Save project' })).toBeEnabled()
+    expect(fetchMock).toBeDefined()
+  })
+
+  it('selects the whole road: every part with the same name nearby', async () => {
+    const fetchMock = mockApi(() => json({ id: 'p9' }, 201))
+    renderWithProviders(<NewProjectPage />, { me: ADMIN_WITH_PROJECTS })
+    await screen.findByText('Pothole')
+
+    await userEvent.type(screen.getByLabelText('Find a road, address or area'), 'Washington Street, Naperville{Enter}')
+    await userEvent.click(await screen.findByRole('button', { name: 'Whole road: Washington Street (Naperville)' }))
+    expect(await screen.findByText(/Whole road “Washington Street” selected: 3 parts, about 4.2 km/)).toBeInTheDocument()
+    const ask = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/v1/geo/whole-road'))
+    expect(JSON.parse(String(ask?.[1]?.body))).toEqual({ name: 'Washington Street', by_ref: false, latitude: 41.78, longitude: -88.15, radius_m: 5000 })
+    expect(screen.getByRole('list', { name: 'Selected places' })).toHaveTextContent('Washington Street, Naperville (whole road)')
   })
 })

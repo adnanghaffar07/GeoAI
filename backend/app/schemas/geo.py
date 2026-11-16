@@ -42,9 +42,25 @@ class AreaFromPlaceRequest(BaseModel):
     add_to: GeoJsonArea | None = None
 
 
+class WholeRoadRequest(BaseModel):
+    """A road name (or route number) and a point on it; pieces within `radius_m` are used."""
+
+    name: str = Field(min_length=1, max_length=200)
+    by_ref: bool = False  # True: `name` is a route number such as "IL 59"
+    latitude: float = Field(ge=-90, le=90)
+    longitude: float = Field(ge=-180, le=180)
+    radius_m: int = Field(default=5000, ge=500, le=10_000)
+
+
 class AreaFromPlaceResponse(BaseModel):
     area: dict[str, Any]
     area_square_meters: float
 
 
-__all__ = ["MAX_BOUNDARY_POINTS", "AreaFromPlaceRequest", "AreaFromPlaceResponse", "PlaceShape"]
+__all__ = [
+    "MAX_BOUNDARY_POINTS",
+    "AreaFromPlaceRequest",
+    "AreaFromPlaceResponse",
+    "PlaceShape",
+    "WholeRoadRequest",
+]

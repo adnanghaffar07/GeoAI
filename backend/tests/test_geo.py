@@ -1,5 +1,8 @@
 """Turning a searched road, address or area into a survey area."""
 
+from typing import Any
+
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -122,3 +125,52 @@ def test_a_road_with_two_carriageways_becomes_one_solid_strip(
     )
     assert all(len(rings) == 1 for rings in polygons)  # no holes
     validate_area(db, GeoJsonArea.model_validate(body["area"]))
+
+
+def test_the_whole_road_collects_every_piece_with_that_name(
+    db: Session, client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.services import whole_road
+
+    asked: list[str] = []
+
+    def fake_overpass(query: str) -> dict[str, Any]:
+        asked.append(query)
+        if '"Nowhere Road"' in query:
+            return {"elements": []}
+        return {
+            "elements": [
+                {
+                    "type": "way",
+                    "geometry": [{"lat": 41.77, "lon": -88.15}, {"lat": 41.775, "lon": -88.15}],
+                },
+                {
+                    "type": "way",
+                    "geometry": [{"lat": 41.775, "lon": -88.15}, {"lat": 41.779, "lon": -88.15}],
+                },
+                {
+                    "type": "way",
+                    "geometry": [{"lat": 41.78, "lon": -88.15}],
+                },  # one point: not a line
+            ]
+        }
+
+    monkeypatch.setattr(whole_road, "_overpass", fake_overpass)
+    admin = _admin(db, client)
+    body = {"name": 'Diehl "Road"', "latitude": 41.775, "longitude": -88.15}
+    found = admin.post("/api/v1/geo/whole-road", json=body)
+    assert found.status_code == 200, found.text
+    road = found.json()
+    assert road["pieces"] == 2 and road["shape"]["type"] == "MultiLineString"
+    assert 0.9 < road["length_km"] < 1.1
+    assert 'way(around:5000,41.775000,-88.150000)["highway"]["name"="Diehl \\"Road\\""]' in asked[0]
+
+    strip = admin.post(URL, json={"shape": road["shape"], "road_width_m": 30})
+    assert (
+        strip.status_code == 200 and strip.json()["area"]["type"] == "Polygon"
+    )  # pieces join into one strip
+
+    by_ref = admin.post("/api/v1/geo/whole-road", json={**body, "name": "IL 59", "by_ref": True})
+    assert by_ref.status_code == 200 and '["ref"="IL 59"]' in asked[-1]
+    missing = admin.post("/api/v1/geo/whole-road", json={**body, "name": "Nowhere Road"})
+    assert missing.status_code == 404

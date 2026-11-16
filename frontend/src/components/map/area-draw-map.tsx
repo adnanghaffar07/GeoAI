@@ -1,3 +1,4 @@
+import { Marker, type Map as MapLibreMap } from 'maplibre-gl'
 import { useEffect, useRef, useState } from 'react'
 import { TerraDraw, TerraDrawLineStringMode, TerraDrawPolygonMode, TerraDrawSelectMode, type GeoJSONStoreFeatures } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
@@ -8,73 +9,122 @@ import { BaseMapNotice } from '@/components/map/area-map'
 import { fitToArea } from '@/components/map/map-layers'
 import { useMap } from '@/components/map/use-map'
 import { Button } from '@/components/ui/button'
-import { areaFromPolygons, polygonsOf } from '@/lib/geojson'
+import { areaFromPolygons, boundsOf, polygonsOf } from '@/lib/geojson'
+import type { Place } from '@/lib/places'
 
 export type DrawMode = 'polygon' | 'linestring' | 'select'
 
 const round = (value: number) => Math.round(value * 1e7) / 1e7 // ~1 cm; Terra Draw limits precision
 
-function toFeatures(area: AreaGeometry): GeoJSONStoreFeatures[] {
-  return polygonsOf(area).map((polygon) => ({
+function toFeatures(place: Place): GeoJSONStoreFeatures[] {
+  return polygonsOf(place.area).map((polygon) => ({
     type: 'Feature',
-    properties: { mode: 'polygon' },
+    properties: { mode: 'polygon', placeId: place.id },
     // Outer edge only: the drawing tool cannot edit shapes with holes (a road with two carriageways,
     // a city with pockets), so holes are filled; the area then always shows and can be edited.
     geometry: { type: 'Polygon', coordinates: polygon.slice(0, 1).map((ring) => ring.map(([lon = 0, lat = 0]) => [round(lon), round(lat)])) },
   }))
 }
 
-function drawnArea(draw: TerraDraw, except?: string | number): AreaGeometry | null {
+/** The shape of one place as it is now on the map (null when none of it is left). */
+function placeArea(draw: TerraDraw, placeId: string): AreaGeometry | null {
   const polygons = draw
     .getSnapshot()
-    .filter((feature) => feature.id !== except && feature.geometry.type === 'Polygon' && feature.properties.mode === 'polygon')
+    .filter((feature) => feature.properties.placeId === placeId && feature.geometry.type === 'Polygon')
     .map((feature) => feature.geometry.coordinates as number[][][])
   return areaFromPolygons(polygons)
 }
 
+/** Top-right corner of a shape, where its Edit and Remove icons sit. */
+const cornerOf = (area: AreaGeometry): [number, number] => {
+  const [, [east, north]] = boundsOf(area)
+  return [east, north]
+}
+
+const PENCIL =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/></svg>'
+const TRASH =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>'
+
+/** The two round icons on a place's corner (map markers are plain page elements, not React). */
+function cornerIcons(label: string, onEdit: () => void, onRemove: () => void): HTMLElement {
+  const box = document.createElement('div')
+  box.className = 'flex gap-1 rounded-full bg-white/95 p-1 shadow-md ring-1 ring-asphalt-200'
+  const make = (html: string, name: string, colours: string, action: () => void) => {
+    const button = document.createElement('button')
+    button.type = 'button'
+    button.innerHTML = html
+    button.title = name
+    button.setAttribute('aria-label', name)
+    button.className = `grid size-8 place-items-center rounded-full ${colours} focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-lane-600`
+    button.addEventListener('click', (event) => {
+      event.stopPropagation()
+      action()
+    })
+    // Keep the drawing tool from treating a click on the icon as a click on the map.
+    for (const type of ['mousedown', 'pointerdown', 'touchstart', 'dblclick'] as const) button.addEventListener(type, (event) => event.stopPropagation())
+    box.append(button)
+  }
+  make(PENCIL, `Edit ${label}`, 'bg-asphalt-900 text-white hover:bg-asphalt-700', onEdit)
+  make(TRASH, `Remove ${label}`, 'bg-red-600 text-white hover:bg-red-700', onRemove)
+  return box
+}
+
 interface AreaDrawMapProps {
-  /** The area when the map opens. To load a different area later, remount with a new `key`. */
-  initialArea: AreaGeometry | null
-  onChange: (area: AreaGeometry | null) => void
+  /** The places when the map opens. To show a different set later, remount with a new `key`. */
+  places: Place[]
   disabled?: boolean
   /** Width of the strip a drawn road becomes (meters), shown in the hint. */
   roadWidthM?: number
   /** Drawing tool to start with (kept when the map reopens after adding a shape). */
   initialMode?: DrawMode
   onModeChange?: (mode: DrawMode) => void
-  /**
-   * A drawn road (line), or a new area drawn next to existing shapes, to be joined to the
-   * rest of the area by the server. When absent, roads cannot be drawn.
-   */
-  onShapeAdded?: (shape: PlaceShape, rest: AreaGeometry | null) => void
+  /** The place being edited: its shape is selected and the map moves to it. */
+  editingId?: string | null
+  onEdit: (placeId: string | null) => void
+  /** A new area drawn on the map. */
+  onAreaDrawn: (area: AreaGeometry) => void
+  /** A road drawn on the map (the server turns it into a strip). When absent, roads cannot be drawn. */
+  onRoadDrawn?: (shape: PlaceShape) => void
+  /** A place's shape was moved or its corners changed. */
+  onPlaceChanged: (placeId: string, area: AreaGeometry) => void
+  /** The Remove icon was pressed (the page asks to confirm). */
+  onRemoveRequest: (placeId: string) => void
+  /** A place's shape was deleted on the map (Delete key). */
+  onPlaceDeleted: (placeId: string) => void
+  onClearAll: () => void
 }
 
 /**
- * Draw the survey area: click to add corners, click the first corner to finish.
- * Several shapes are allowed (they are saved together as one area).
+ * Draw and adjust the survey area. Every place (searched road or area, drawn shape, uploaded
+ * file) is a separate shape with Edit and Remove icons on its top-right corner.
  */
 export function AreaDrawMap({
-  initialArea,
-  onChange,
+  places,
   disabled = false,
   roadWidthM = 30,
   initialMode,
   onModeChange,
-  onShapeAdded,
+  editingId = null,
+  onEdit,
+  onAreaDrawn,
+  onRoadDrawn,
+  onPlaceChanged,
+  onRemoveRequest,
+  onPlaceDeleted,
+  onClearAll,
 }: AreaDrawMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const { map, baseMapFailed } = useMap(containerRef)
   const drawRef = useRef<TerraDraw | null>(null)
-  const onChangeRef = useRef(onChange)
-  const onShapeAddedRef = useRef(onShapeAdded)
-  const startMode: DrawMode = initialMode ?? (initialArea ? 'select' : 'polygon')
+  const callbacks = useRef({ onEdit, onAreaDrawn, onRoadDrawn, onPlaceChanged, onRemoveRequest, onPlaceDeleted })
+  const startMode: DrawMode = initialMode ?? (places.length > 0 ? 'select' : 'polygon')
   const [mode, setMode] = useState<DrawMode>(startMode)
   const [loadProblem, setLoadProblem] = useState(false)
 
   useEffect(() => {
-    onChangeRef.current = onChange
-    onShapeAddedRef.current = onShapeAdded
-  }, [onChange, onShapeAdded])
+    callbacks.current = { onEdit, onAreaDrawn, onRoadDrawn, onPlaceChanged, onRemoveRequest, onPlaceDeleted }
+  }, [onEdit, onAreaDrawn, onRoadDrawn, onPlaceChanged, onRemoveRequest, onPlaceDeleted])
 
   useEffect(() => {
     if (!map) return
@@ -96,58 +146,92 @@ export function AreaDrawMap({
       ],
     })
     draw.start()
-    if (initialArea) {
-      const results = draw.addFeatures(toFeatures(initialArea))
-      setLoadProblem(results.some((result) => !result.valid))
-      fitToArea(map, initialArea)
+    const placeOf = new Map<string | number, string>() // shape id → place id
+    const markers = new Map<string, Marker>()
+    let quiet = false // our own removals are not reported as the person's
+    const valid = places.flatMap((place) => {
+      const results = draw.addFeatures(toFeatures(place))
+      for (const result of results) if (result.valid && result.id != null) placeOf.set(result.id, place.id)
+      if (results.some((result) => !result.valid)) setLoadProblem(true)
+      if (!results.some((result) => result.valid)) return []
+      return [place]
+    })
+    if (!disabled) {
+      for (const place of valid) {
+        const element = cornerIcons(place.label, () => callbacks.current.onEdit(place.id), () => callbacks.current.onRemoveRequest(place.id))
+        markers.set(place.id, new Marker({ element, anchor: 'bottom-left', offset: [4, -4] }).setLngLat(cornerOf(place.area)).addTo(map))
+      }
     }
-    const report = () => onChangeRef.current(drawnArea(draw))
+    const all = areaFromPolygons(places.flatMap((place) => polygonsOf(place.area)))
+    if (all) fitToArea(map, all)
+
     draw.on('finish', (id, context) => {
       const feature = draw.getSnapshotFeature(id)
-      const addShape = onShapeAddedRef.current
-      if (addShape && feature?.geometry.type === 'LineString') {
-        // A drawn road: the server turns it into a strip and joins it to the rest.
-        const rest = drawnArea(draw, id)
-        draw.removeFeatures([id])
-        addShape({ type: 'LineString', coordinates: feature.geometry.coordinates }, rest)
+      if (!feature) return
+      if (context.mode === 'select') {
+        const placeId = placeOf.get(id)
+        const area = placeId ? placeArea(draw, placeId) : null
+        if (placeId && area) {
+          markers.get(placeId)?.setLngLat(cornerOf(area))
+          callbacks.current.onPlaceChanged(placeId, area)
+        }
         return
       }
-      if (addShape && context.mode === 'polygon' && feature?.geometry.type === 'Polygon') {
-        const rest = drawnArea(draw, id)
-        if (rest) {
-          // A new area next to existing shapes: join them, so overlaps never make the area invalid.
-          draw.removeFeatures([id])
-          addShape({ type: 'Polygon', coordinates: feature.geometry.coordinates }, rest)
-          return
+      quiet = true
+      draw.removeFeatures([id]) // shown again, as its own place, when the map reopens
+      quiet = false
+      if (feature.geometry.type === 'LineString') {
+        callbacks.current.onRoadDrawn?.({ type: 'LineString', coordinates: feature.geometry.coordinates })
+      } else if (feature.geometry.type === 'Polygon') {
+        callbacks.current.onAreaDrawn({ type: 'Polygon', coordinates: feature.geometry.coordinates as number[][][] })
+      }
+    })
+    draw.on('change', (ids, type) => {
+      if (type !== 'delete' || quiet) return
+      for (const id of ids) {
+        const placeId = placeOf.get(id)
+        if (!placeId) continue
+        placeOf.delete(id)
+        const rest = placeArea(draw, placeId)
+        if (rest) callbacks.current.onPlaceChanged(placeId, rest)
+        else {
+          markers.get(placeId)?.remove()
+          callbacks.current.onPlaceDeleted(placeId)
         }
       }
-      report()
-    })
-    draw.on('change', (_ids, type) => {
-      if (type === 'delete') report()
     })
     draw.setMode(disabled ? 'static' : startMode)
     drawRef.current = draw
     return () => {
       drawRef.current = null
+      for (const marker of markers.values()) marker.remove()
       // When the page closes, the map can be removed before this runs; then the drawing
       // layers are already gone with it and there is nothing left to stop.
       if (map.getStyle()) draw.stop()
     }
-    // initialArea is only read when the map opens (see prop docs).
+    // places is only read when the map opens (see prop docs).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, disabled])
+
+  // Edit: select the place's shape so it can be dragged or reshaped, and bring it into view.
+  useEffect(() => {
+    const draw = drawRef.current
+    if (!draw || !map || !editingId || disabled) return
+    const shapes = draw.getSnapshot().filter((feature) => feature.properties.placeId === editingId)
+    const first = shapes[0]
+    if (!first) return
+    draw.setMode('select')
+    setMode('select')
+    draw.selectFeature(first.id as string)
+    const area = placeArea(draw, editingId)
+    if (area) fitView(map, area)
+  }, [editingId, map, disabled])
 
   const choose = (next: DrawMode) => {
     drawRef.current?.setMode(next)
     setMode(next)
     onModeChange?.(next)
-  }
-
-  const clearAll = () => {
-    drawRef.current?.clear()
-    onChangeRef.current(null)
-    choose('polygon')
+    if (next !== 'select') onEdit(null)
   }
 
   return (
@@ -157,7 +241,7 @@ export function AreaDrawMap({
           <Button variant={mode === 'polygon' ? 'primary' : 'secondary'} onClick={() => choose('polygon')} aria-pressed={mode === 'polygon'}>
             Draw an area
           </Button>
-          {onShapeAdded && (
+          {onRoadDrawn && (
             <Button variant={mode === 'linestring' ? 'primary' : 'secondary'} onClick={() => choose('linestring')} aria-pressed={mode === 'linestring'}>
               Draw a road
             </Button>
@@ -165,7 +249,7 @@ export function AreaDrawMap({
           <Button variant={mode === 'select' ? 'primary' : 'secondary'} onClick={() => choose('select')} aria-pressed={mode === 'select'}>
             Move or adjust
           </Button>
-          <Button variant="ghost" onClick={clearAll}>
+          <Button variant="ghost" onClick={onClearAll}>
             Clear all
           </Button>
           <span className="text-xs text-asphalt-500">
@@ -173,7 +257,7 @@ export function AreaDrawMap({
               ? 'Click the map to add corners. Click the first corner again to finish.'
               : mode === 'linestring'
                 ? `Click along the road, one click at each bend. Click the last point again (or press Enter) to finish. It is added as a ${roadWidthM} m wide strip.`
-                : 'Click a shape, then drag it or its corners. Press Delete to remove a selected shape.'}
+                : 'Click a shape (or its pencil icon), then drag it or its corners. The bin icon removes that place only.'}
           </span>
         </div>
       )}
@@ -183,9 +267,13 @@ export function AreaDrawMap({
       </div>
       {loadProblem && (
         <p className="text-sm text-amber-700">
-          Part of this area could not be shown for editing. It is kept as it is unless you draw or clear shapes.
+          Part of this area could not be shown for editing. It is kept as it is unless you remove it or clear all.
         </p>
       )}
     </div>
   )
+}
+
+function fitView(map: MapLibreMap, area: AreaGeometry) {
+  map.fitBounds(boundsOf(area), { padding: 48, duration: 400, maxZoom: 17 })
 }

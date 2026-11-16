@@ -17,3 +17,17 @@ export function areaFromPlace(
     body: { shape, road_width_m: options.roadWidthM, add_to: options.addTo },
   })
 }
+
+export interface WholeRoad {
+  shape: PlaceShape
+  pieces: number
+  length_km: number
+}
+
+/** Owner, 2026-11-16: every piece of a named road within `radiusM` of a point (OpenStreetMap). */
+export function findWholeRoad(input: { name: string; byRef: boolean; latitude: number; longitude: number; radiusM: number }): Promise<WholeRoad> {
+  return apiRequest('/v1/geo/whole-road', {
+    method: 'POST',
+    body: { name: input.name, by_ref: input.byRef, latitude: input.latitude, longitude: input.longitude, radius_m: input.radiusM },
+  })
+}

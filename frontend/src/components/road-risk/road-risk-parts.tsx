@@ -62,8 +62,16 @@ export function LevelMeaning({ level }: { level: 1 | 2 | null }) {
 }
 
 const day = (date: string) => new Date(`${date}T00:00:00`).toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })
-const temp = (value: number | null) => (value === null ? '–' : `${Math.round(value)}°`)
-const amount = (value: number | null) => (value === null ? '–' : `${formatNumber(value)} mm`)
+// Owner, 2026-11-16: US areas (Naperville, Chicago) read temperatures in °F and rain in inches;
+// the forecast is stored in °C and mm, and freeze-thaw is still decided on 0 °C (= 32 °F).
+const fahrenheit = (celsius: number) => Math.round((celsius * 9) / 5 + 32)
+const temp = (value: number | null) => (value === null ? '–' : `${fahrenheit(value)}°F`)
+const tempC = (value: number | null) => (value === null ? '–' : `${Math.round(value)}°C`)
+const inches = (mm: number) => {
+  const value = mm / 25.4
+  return value > 0 && value < 0.05 ? '<0.1 in' : `${value.toFixed(1)} in`
+}
+const amount = (value: number | null) => (value === null ? '–' : inches(value))
 
 /** The next 7 days from the National Weather Service, and the recent weather inputs. */
 export function WeatherStrip({ weather }: { weather: Weather }) {
@@ -79,8 +87,11 @@ export function WeatherStrip({ weather }: { weather: Weather }) {
               return (
                 <li key={item.date} className={cn('rounded-lg border p-2', freezeThaw ? 'border-sky-300 bg-sky-50' : 'border-asphalt-100')}>
                   <p className="font-medium text-asphalt-800">{day(item.date)}</p>
-                  <p>
+                  <p className="font-medium text-asphalt-900">
                     {temp(item.max_c)} / {temp(item.min_c)}
+                  </p>
+                  <p className="text-[0.7rem] text-asphalt-500">
+                    {tempC(item.max_c)} / {tempC(item.min_c)}
                   </p>
                   {freezeThaw && (
                     <p className="flex items-center justify-center gap-0.5 font-medium text-sky-800">
@@ -108,7 +119,11 @@ export function WeatherStrip({ weather }: { weather: Weather }) {
           <p className="text-sm text-asphalt-700">
             Next 7 days: {outlook.freeze_thaw_days} freeze-thaw day{outlook.freeze_thaw_days === 1 ? '' : 's'}, {outlook.frost_days} frost day
             {outlook.frost_days === 1 ? '' : 's'}, {outlook.heavy_rain_days} heavy-rain day{outlook.heavy_rain_days === 1 ? '' : 's'}, snow{' '}
-            {formatNumber(outlook.snow_mm)} mm.
+            {inches(outlook.snow_mm)}.
+          </p>
+          <p className="text-xs text-asphalt-500">
+            Each day shows the highest / lowest temperature in °F, with °C below. A freeze-thaw day goes above 32 °F (0 °C) and below 32 °F on the same
+            day, which opens cracks in the road. Rain and snow are in inches.
           </p>
           <p className="text-xs text-asphalt-500">
             Source: National Weather Service ({outlook.source}), issued{' '}

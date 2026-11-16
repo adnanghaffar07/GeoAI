@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { Building2, Loader2, MapPin, Route, Search } from 'lucide-react'
 import { useId, useState } from 'react'
 
-import { areaFromPlace } from '@/api/geo'
+import { areaFromPlace, findWholeRoad, type PlaceShape } from '@/api/geo'
 import type { AreaGeometry } from '@/api/projects'
 import { Button } from '@/components/ui/button'
 import { PlaceSearchError, searchPlaces, type PlaceKind, type PlaceResult } from '@/lib/address-search'
@@ -26,8 +26,8 @@ interface PlaceSearchProps {
   /** Strip width for roads (shared with "Draw a road" on the map). */
   roadWidthM: number
   onRoadWidthChange: (width: number) => void
-  /** Called with the new area (the chosen place, or the current area plus the place). */
-  onChoose: (area: AreaGeometry) => void
+  /** Called with the chosen place's own area, its name, and whether it is added to the places already selected. */
+  onChoose: (area: AreaGeometry, label: string, add: boolean) => void
 }
 
 /**
@@ -43,9 +43,35 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
   const [message, setMessage] = useState<string | null>(null)
   const search = useMutation({ mutationFn: (text: string) => searchPlaces(text) })
   const build = useMutation({
-    mutationFn: (place: PlaceResult) => areaFromPlace(place.shape, { roadWidthM: width, addTo: mode === 'add' ? currentArea : null }),
+    mutationFn: (place: PlaceResult) => areaFromPlace(place.shape, { roadWidthM: width, addTo: null }),
   })
   const adding = mode === 'add' && currentArea != null
+  // Owner, 2026-11-16: "Whole road" collects every piece of the road with the same name nearby.
+  const whole = useMutation({
+    mutationFn: async (place: PlaceResult) => {
+      const name = place.roadName ?? place.label.split(',')[0] ?? ''
+      const [longitude, latitude] = middleOf(place.shape)
+      const road = await findWholeRoad({ name, byRef: ROUTE_NUMBER.test(name), latitude, longitude, radiusM: WHOLE_ROAD_M })
+      const { area } = await areaFromPlace(road.shape, { roadWidthM: width, addTo: null })
+      return { area, road, name }
+    },
+  })
+  const busyAny = build.isPending || whole.isPending
+
+  const chooseWhole = (place: PlaceResult) => {
+    build.reset()
+    whole.mutate(place, {
+      onSuccess: ({ area, road, name }) => {
+        const town = place.label.split(',')[1]?.trim()
+        onChoose(area, `${name}${town ? `, ${town}` : ''} (whole road)`, adding)
+        search.reset()
+        setMessage(
+          `Whole road “${name}” ${adding ? 'added to the area' : 'selected'}: ${road.pieces} part${road.pieces === 1 ? '' : 's'}, about ${road.length_km} km, within ${WHOLE_ROAD_M / 1000} km of the place found, ${width} m wide. Check it on the map; the bin icon removes it.`,
+        )
+        setMode('add')
+      },
+    })
+  }
 
   const run = () => {
     const text = query.trim()
@@ -56,14 +82,15 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
   }
 
   const choose = (place: PlaceResult) => {
+    whole.reset()
     build.mutate(place, {
       onSuccess: ({ area }) => {
-        onChoose(area)
+        const name = place.label.split(',')[0] ?? place.label
+        onChoose(area, place.label.split(',').slice(0, 2).join(',').trim() || name, adding)
         search.reset()
-        const name = place.label.split(',')[0]
         const what = place.kind === 'road' ? `Road “${name}” (${width} m wide)` : `“${name}”`
         setMessage(
-          `${what} ${adding ? 'added to the area' : 'selected'}. Check it on the map; use Move or adjust to change it. To add another road, search again and choose “Add to the area”.`,
+          `${what} ${adding ? 'added to the area' : 'selected'}. Check it on the map: the pencil icon on its corner changes it, the bin icon removes it. To add another road, search again and choose “Add to the area”.`,
         )
         setMode('add') // the next place is added, so nothing already selected is lost by accident
       },
@@ -141,6 +168,11 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
           {build.error instanceof Error ? build.error.message : 'This place could not be used. Try another result.'}
         </p>
       )}
+      {whole.isError && (
+        <p role="alert" className="text-sm text-red-700">
+          {whole.error instanceof Error ? whole.error.message : 'The whole road could not be found. Add its parts one by one.'}
+        </p>
+      )}
       {search.isSuccess && search.data.length === 0 && (
         <p role="status" className="text-sm text-asphalt-600">
           Nothing found. Check the spelling, or add the city (for example “Main Street, Aurora, Illinois”).
@@ -152,12 +184,12 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
             const kind = KIND[place.kind]
             const busy = build.isPending && build.variables?.id === place.id
             return (
-              <li key={place.id}>
+              <li key={place.id} className="flex flex-wrap items-stretch">
                 <button
                   type="button"
-                  disabled={build.isPending}
+                  disabled={busyAny}
                   onClick={() => choose(place)}
-                  className="flex w-full items-start gap-3 px-3 py-2.5 text-left text-sm hover:bg-lane-50 focus-visible:bg-lane-50 disabled:opacity-60"
+                  className="flex min-w-0 flex-1 items-start gap-3 px-3 py-2.5 text-left text-sm hover:bg-lane-50 focus-visible:bg-lane-50 disabled:opacity-60"
                 >
                   {busy ? (
                     <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-asphalt-500" aria-hidden />
@@ -177,6 +209,23 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
                     {kind.label}
                   </span>
                 </button>
+                {place.kind === 'road' && (
+                  <button
+                    type="button"
+                    disabled={busyAny}
+                    onClick={() => chooseWhole(place)}
+                    aria-label={`Whole road: ${place.roadName ?? place.label.split(',')[0]} (${place.label.split(',')[1]?.trim() ?? ''})`}
+                    title={`Every part of this road within ${WHOLE_ROAD_M / 1000} km`}
+                    className="flex shrink-0 items-center gap-1.5 border-l border-asphalt-100 px-3 text-xs font-medium text-lane-800 hover:bg-lane-50 focus-visible:bg-lane-50 disabled:opacity-60"
+                  >
+                    {whole.isPending && whole.variables?.id === place.id ? (
+                      <Loader2 className="size-4 animate-spin" aria-hidden />
+                    ) : (
+                      <Route className="size-4" aria-hidden />
+                    )}
+                    Whole road
+                  </button>
+                )}
               </li>
             )
           })}
@@ -188,8 +237,20 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
         </p>
       )}
       <p className="text-xs text-asphalt-400">
-        Search by OpenStreetMap. Long roads can be split into parts: if only part of a road is selected, search again for the rest and add it.
+        Search by OpenStreetMap. OpenStreetMap stores a road in many short parts, so choosing a road selects one part. “Whole road” selects every part with the same name within {WHOLE_ROAD_M / 1000} km.
       </p>
     </div>
   )
+}
+
+const WHOLE_ROAD_M = 5000
+/** Route numbers ("IL 59", "US 34", "I-88") are matched on the road's route number, not its name. */
+const ROUTE_NUMBER = /^(IL|US|I|SR|CR)[ -]?\d+[A-Z]?$/i
+
+/** A point in the middle of a road line (longitude, latitude). */
+function middleOf(shape: PlaceShape): [number, number] {
+  const lines = (shape.type === 'MultiLineString' ? shape.coordinates : [shape.coordinates]) as number[][][]
+  const points = lines.flat()
+  const middle = points[Math.floor(points.length / 2)] ?? [0, 0]
+  return [middle[0] ?? 0, middle[1] ?? 0]
 }

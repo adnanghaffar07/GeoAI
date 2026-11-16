@@ -24,11 +24,14 @@ export interface PlaceResult {
   label: string
   kind: PlaceKind
   shape: PlaceShape
+  /** The road's own name on OpenStreetMap (e.g. "Diehl Road"), for "Whole road". */
+  roadName?: string
 }
 
 interface NominatimPlace {
   place_id: number
   display_name: string
+  name?: string
   boundingbox?: [string, string, string, string] // south, north, west, east
   geojson?: { type: string; coordinates: unknown }
   lat?: string
@@ -82,7 +85,9 @@ async function getJson(url: string, signal?: AbortSignal): Promise<unknown> {
 
 function toResult(place: NominatimPlace): PlaceResult | null {
   const found = placeShape(place)
-  return found ? { id: String(place.place_id), label: place.display_name, ...found } : null
+  if (!found) return null
+  const roadName = found.kind === 'road' ? (place.name || place.display_name.split(',')[0] || '').trim() : ''
+  return { id: String(place.place_id), label: place.display_name, ...found, ...(roadName ? { roadName } : {}) }
 }
 
 /**

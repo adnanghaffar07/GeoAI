@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState, type ChangeEvent } from 'react'
+import { MapPin, Pencil, Trash2 } from 'lucide-react'
+import { useRef, useState, type ChangeEvent } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
 import { z } from 'zod'
@@ -27,6 +28,7 @@ import { TextField } from '@/components/ui/field'
 import { SkeletonRows } from '@/components/ui/loading-screen'
 import { PageIntro } from '@/components/ui/page-intro'
 import { AreaFileError, areaFromGeoJsonText } from '@/lib/geojson'
+import { newPlaceId, nextLabel, placesFromArea, type Place } from '@/lib/places'
 import { hasProjectPermission, useProject } from '@/pages/project/project-layout'
 
 const MAX_AREA_FILE_BYTES = 5 * 1024 * 1024
@@ -238,24 +240,58 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
 
   const [roadWidth, setRoadWidth] = useState(30)
   const [drawMode, setDrawMode] = useState<DrawMode | undefined>(undefined)
-  const joinShape = useMutation({
-    mutationFn: ({ shape, rest }: { shape: PlaceShape; rest: AreaGeometry | null }) =>
-      areaFromPlace(shape, { roadWidthM: roadWidth, addTo: rest }),
-  })
-  // A road drawn on the map (or a new area next to existing shapes): the server joins it to
-  // the rest of the area, then the map reopens showing the result in the same drawing tool.
-  const addDrawnShape = (shape: PlaceShape, rest: AreaGeometry | null) => {
-    joinShape.mutate(
-      { shape, rest },
-      {
-        onSuccess: ({ area }) => setArea(area),
-        onError: () => setArea(rest),
-        onSettled: () => setMapKey((key) => key + 1),
-      },
-    )
-  }
-
   const setArea = (area: AreaGeometry | null) => form.setValue('boundary', area, { shouldValidate: form.formState.isSubmitted, shouldDirty: true })
+
+  // Owner, 2026-11-16: every searched or drawn place stays separate (with its own Edit and
+  // Remove icons) while the area is edited; the server joins them into one area for saving.
+  const [places, setPlaces] = useState<Place[]>(() => placesFromArea(project?.boundary ?? null))
+  const placesRef = useRef(places)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [removeId, setRemoveId] = useState<string | null>(null)
+  const [joining, setJoining] = useState(false)
+  const [joinProblem, setJoinProblem] = useState<string | null>(null)
+  const joinRun = useRef(0)
+  const applyPlaces = (next: Place[], { reopenMap = true } = {}) => {
+    placesRef.current = next
+    setPlaces(next)
+    setRemoveId(null)
+    if (reopenMap) {
+      setEditingId(null)
+      setMapKey((key) => key + 1)
+    }
+    const run = ++joinRun.current
+    setJoinProblem(null)
+    if (next.length <= 1) {
+      setJoining(false)
+      setArea(next[0]?.area ?? null)
+      return
+    }
+    setJoining(true)
+    joinPlaces(next, roadWidth)
+      .then((area) => {
+        if (run === joinRun.current) setArea(area)
+      })
+      .catch((cause: unknown) => {
+        if (run === joinRun.current) setJoinProblem(cause instanceof Error ? cause.message : 'The places could not be joined. Try again.')
+      })
+      .finally(() => {
+        if (run === joinRun.current) setJoining(false)
+      })
+  }
+  const addPlace = (area: AreaGeometry, label: string, add = true) =>
+    applyPlaces([...(add ? placesRef.current : []), { id: newPlaceId(), label, area }])
+  const removePlace = (placeId: string) => applyPlaces(placesRef.current.filter((place) => place.id !== placeId))
+
+  // A road drawn on the map: the server turns it into a strip of the chosen width.
+  const joinShape = useMutation({
+    mutationFn: (shape: PlaceShape) => areaFromPlace(shape, { roadWidthM: roadWidth, addTo: null }),
+  })
+  const addDrawnRoad = (shape: PlaceShape) => {
+    joinShape.mutate(shape, {
+      onSuccess: ({ area }) => addPlace(area, nextLabel(placesRef.current, 'Drawn road')),
+      onError: () => setMapKey((key) => key + 1),
+    })
+  }
 
   const loadAreaFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -267,8 +303,7 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
       return
     }
     try {
-      setArea(areaFromGeoJsonText(await file.text()))
-      setMapKey((key) => key + 1) // reopen the map with the uploaded area
+      addPlace(areaFromGeoJsonText(await file.text()), file.name, false)
     } catch (cause) {
       setFileProblem(cause instanceof AreaFileError ? cause.message : 'The file could not be read.')
     }
@@ -399,37 +434,71 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
           )}
           {!readOnly && (
             <PlaceSearch
-              currentArea={boundary ?? null}
+              currentArea={places.length > 0 ? (boundary ?? places[0]?.area ?? null) : null}
               roadWidthM={roadWidth}
               onRoadWidthChange={setRoadWidth}
-              onChoose={(area) => {
+              onChoose={(area, label, add) => {
                 setFileProblem(null)
-                setArea(area)
-                setMapKey((key) => key + 1) // reopen the map showing the new area
+                addPlace(area, label, add)
               }}
             />
           )}
           <div className="relative">
             <AreaDrawMap
               key={mapKey}
-              initialArea={form.getValues('boundary')}
-              onChange={setArea}
+              places={places}
               disabled={readOnly || joinShape.isPending}
               roadWidthM={roadWidth}
               initialMode={drawMode}
               onModeChange={setDrawMode}
-              onShapeAdded={addDrawnShape}
+              editingId={editingId}
+              onEdit={setEditingId}
+              onAreaDrawn={(area) => addPlace(area, nextLabel(placesRef.current, 'Drawn area'))}
+              onRoadDrawn={addDrawnRoad}
+              onPlaceChanged={(placeId, area) =>
+                applyPlaces(
+                  placesRef.current.map((place) => (place.id === placeId ? { ...place, area } : place)),
+                  { reopenMap: false },
+                )
+              }
+              onRemoveRequest={setRemoveId}
+              onPlaceDeleted={(placeId) => applyPlaces(placesRef.current.filter((place) => place.id !== placeId), { reopenMap: false })}
+              onClearAll={() => {
+                setDrawMode('polygon')
+                applyPlaces([])
+              }}
             />
-            {joinShape.isPending && (
+            {(joinShape.isPending || joining) && (
               <p role="status" className="absolute top-14 left-3 rounded-lg bg-white/95 px-3 py-2 text-sm font-medium shadow">
-                Adding to the area…
+                Updating the area…
               </p>
+            )}
+            {removeId && (
+              <RemovePlaceBox
+                label={places.find((place) => place.id === removeId)?.label ?? 'this place'}
+                onRemove={() => removePlace(removeId)}
+                onKeep={() => setRemoveId(null)}
+              />
             )}
           </div>
           {joinShape.isError && (
             <p role="alert" className="text-sm text-red-700">
               That shape could not be added: {joinShape.error instanceof Error ? joinShape.error.message : 'try drawing it again.'}
             </p>
+          )}
+          {joinProblem && (
+            <p role="alert" className="text-sm text-red-700">
+              {joinProblem}
+            </p>
+          )}
+          {places.length > 0 && (
+            <SelectedPlaces
+              places={places}
+              readOnly={readOnly}
+              editingId={editingId}
+              onEdit={(placeId) => setEditingId(placeId)}
+              onRemove={setRemoveId}
+            />
           )}
           {errors.boundary && <p className="text-sm text-red-700">{errors.boundary.message}</p>}
         </div>
@@ -438,7 +507,7 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
 
         {!readOnly && (
           <div className="flex gap-3">
-            <Button type="submit" variant="accent" busy={save.isPending}>
+            <Button type="submit" variant="accent" busy={save.isPending} disabled={joining || joinShape.isPending}>
               Save project
             </Button>
             <Link to={project ? `/projects/${project.id}` : '/projects'} className="btn btn-ghost">
@@ -448,5 +517,93 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
         )}
       </form>
     </section>
+  )
+}
+
+/** Join the places into one survey area on the server (overlaps merge into one valid shape). */
+async function joinPlaces(places: Place[], roadWidthM: number): Promise<AreaGeometry | null> {
+  const [first, ...rest] = places
+  if (!first) return null
+  let area = first.area
+  for (const place of rest) {
+    area = (await areaFromPlace(place.area as PlaceShape, { roadWidthM, addTo: area })).area
+  }
+  return area
+}
+
+/** "Selected places": every place in the survey area, each with Edit and Remove. */
+function SelectedPlaces({
+  places,
+  readOnly,
+  editingId,
+  onEdit,
+  onRemove,
+}: {
+  places: Place[]
+  readOnly: boolean
+  editingId: string | null
+  onEdit: (placeId: string) => void
+  onRemove: (placeId: string) => void
+}) {
+  return (
+    <div className="rounded-xl border border-asphalt-100 bg-white">
+      <h3 className="border-b border-asphalt-100 px-4 py-2 text-sm font-medium text-asphalt-800">Selected places ({places.length})</h3>
+      <ul aria-label="Selected places" className="divide-y divide-asphalt-100">
+        {places.map((place) => (
+          <li key={place.id} className={`flex items-center gap-3 px-4 py-2 text-sm ${editingId === place.id ? 'bg-amber-50' : ''}`}>
+            <MapPin className="size-4 shrink-0 text-lane-600" aria-hidden />
+            <span className="min-w-0 flex-1 truncate text-asphalt-900">
+              {place.label}
+              {editingId === place.id && <span className="ml-2 text-xs text-amber-800">editing on the map</span>}
+            </span>
+            {!readOnly && (
+              <span className="flex gap-1">
+                <button
+                  type="button"
+                  aria-label={`Edit ${place.label}`}
+                  title="Edit on the map"
+                  onClick={() => onEdit(place.id)}
+                  className="grid size-8 place-items-center rounded-full text-asphalt-700 hover:bg-asphalt-100 focus-visible:outline-2 focus-visible:outline-lane-600"
+                >
+                  <Pencil className="size-4" aria-hidden />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Remove ${place.label}`}
+                  title="Remove this place"
+                  onClick={() => onRemove(place.id)}
+                  className="grid size-8 place-items-center rounded-full text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600"
+                >
+                  <Trash2 className="size-4" aria-hidden />
+                </button>
+              </span>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/** Asks before one place is removed (from its bin icon on the map or in the list). */
+function RemovePlaceBox({ label, onRemove, onKeep }: { label: string; onRemove: () => void; onKeep: () => void }) {
+  return (
+    <div
+      role="alertdialog"
+      aria-label="Remove a place"
+      className="absolute top-3 left-1/2 z-10 w-[min(26rem,calc(100%-1.5rem))] -translate-x-1/2 rounded-xl border border-red-200 bg-white p-4 shadow-lg"
+    >
+      <p className="text-sm text-asphalt-900">
+        Remove <strong>{label}</strong> from the survey area? The other places stay.
+      </p>
+      <div className="mt-3 flex gap-2">
+        <Button variant="danger" onClick={onRemove}>
+          Remove
+        </Button>
+        <Button variant="secondary" onClick={onKeep}>
+          Keep
+        </Button>
+      </div>
+    </div>
   )
 }

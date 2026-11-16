@@ -184,6 +184,7 @@ const FAQ: [string, string[]][] = [
   ]],
   ['Where do the traffic camera pictures come from?', [
     'From the Illinois Department of Transportation\'s Gateway traffic cameras, shared under the Creative Commons Attribution-ShareAlike 2.0 licence. The Cameras tab shows the cameras inside your project area with their latest picture, refreshed by IDOT every few minutes.',
+    'If no camera is inside the area, the tab lists the cameras nearest to it (up to 15 km away) with their exact location, so you can look at their pictures and add that crossing to the area. Snapshots can only be taken from cameras inside the area.',
     'Viewing them stores nothing. "Take snapshot" saves that one picture (about 70 KB) as a project photo in your organization\'s storage, credited to IDOT, so it can go to the AI check like any upload.',
   ]],
   ['Why does a road say "Not on the map" for its speed limit?', [

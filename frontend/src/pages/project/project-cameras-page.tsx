@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Camera as CameraIcon, RefreshCw } from 'lucide-react'
+import { Camera as CameraIcon, MapPin, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 
-import { camerasKey, DIRECTION_LABELS, listCameras, takeSnapshot, type Camera, type CameraList } from '@/api/cameras'
+import { camerasKey, DIRECTION_LABELS, listCameras, listNearbyCameras, takeSnapshot, type Camera, type CameraList } from '@/api/cameras'
 import { imageQueryKeys } from '@/api/images'
 import { ErrorMessage } from '@/components/error-message'
 import { CamerasMap } from '@/components/map/cameras-map'
@@ -30,7 +30,12 @@ export function ProjectCamerasPage() {
       </PageIntro>
       {query.isError && <ErrorMessage error={query.error} onRetry={() => void query.refetch()} />}
       {query.isPending && <SkeletonRows />}
-      {query.data && cameras.length === 0 && <EmptyState title="No traffic cameras in this area">IDOT has no cameras inside this project's area.</EmptyState>}
+      {query.data && cameras.length === 0 && (
+        <EmptyState title="No traffic cameras in this area">
+          IDOT has no cameras inside this project's area. Cameras usually stand at road crossings, so a narrow road strip can miss them. The cameras nearest
+          to the area are listed below.
+        </EmptyState>
+      )}
       {cameras.length > 0 && (
         <div className="grid gap-4 lg:grid-cols-[1fr_24rem]">
           <CamerasMap area={project.boundary} cameras={cameras} selectedId={selectedId} onSelect={setSelectedId} className="h-96 lg:h-[calc(100dvh-14rem)]" />
@@ -54,7 +59,81 @@ export function ProjectCamerasPage() {
           </aside>
         </div>
       )}
+      {query.data && <NearbyCameras projectId={project.id} startOpen={cameras.length === 0} />}
     </div>
+  )
+}
+
+/** Owner, 2026-11-16 ("camera search help"): the cameras closest to the area, with where they are. */
+function NearbyCameras({ projectId, startOpen }: { projectId: string; startOpen: boolean }) {
+  const [open, setOpen] = useState(startOpen)
+  const [viewId, setViewId] = useState<number | null>(null)
+  const query = useQuery({
+    queryKey: [...camerasKey(projectId), 'nearby'],
+    queryFn: ({ signal }) => listNearbyCameras(projectId, signal),
+    enabled: open,
+  })
+  if (!open) {
+    return (
+      <Button variant="secondary" onClick={() => setOpen(true)}>
+        <MapPin className="size-4" aria-hidden />
+        Show cameras near this area
+      </Button>
+    )
+  }
+  const near = query.data?.cameras ?? []
+  const viewing = near.find((c) => c.id === viewId) ?? null
+  return (
+    <section aria-labelledby="nearby-heading" className="space-y-3 rounded-lg border border-asphalt-100 p-4 text-sm">
+      <div>
+        <h2 id="nearby-heading" className="font-semibold text-asphalt-800">
+          Cameras near this area
+        </h2>
+        <p className="text-asphalt-500">
+          The nearest IDOT cameras outside the project area{query.data ? `, up to ${query.data.within_km} km away` : ''}, nearest first. You can look at their
+          pictures here. To take snapshots from one, add its crossing to the project area: copy its location, then in Settings search it (or paste it) and
+          choose “Add to the area”.
+        </p>
+      </div>
+      {query.isError && <ErrorMessage error={query.error} onRetry={() => void query.refetch()} />}
+      {query.isPending && <SkeletonRows />}
+      {query.data && near.length === 0 && <p className="text-asphalt-600">No IDOT cameras within {query.data.within_km} km of this area.</p>}
+      {near.length > 0 && (
+        <div className="grid gap-4 lg:grid-cols-[1fr_24rem]">
+          <ul aria-label="Cameras near this area" className="divide-y divide-asphalt-100 rounded-lg border border-asphalt-100">
+            {near.map((c) => {
+              const where = `${c.latitude.toFixed(5)}, ${c.longitude.toFixed(5)}`
+              return (
+                <li key={c.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2">
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-medium text-asphalt-900">{cameraName(c)}</span>
+                    <span className="block text-xs text-asphalt-500">
+                      About {c.distance_km} km outside the area · location {where}
+                    </span>
+                  </span>
+                  <Button variant="secondary" aria-pressed={c.id === viewId} onClick={() => setViewId(c.id)}>
+                    View picture
+                  </Button>
+                  <Button variant="ghost" onClick={() => void navigator.clipboard?.writeText(where)}>
+                    Copy location
+                  </Button>
+                </li>
+              )
+            })}
+          </ul>
+          <aside aria-label="Nearby camera" className="rounded-lg border border-asphalt-100 p-3">
+            {viewing && query.data ? (
+              <CameraPanel key={viewing.id} camera={viewing} list={query.data} projectId={projectId} canSave={false} />
+            ) : (
+              <p className="text-asphalt-500">Choose “View picture” to see a camera’s latest picture.</p>
+            )}
+          </aside>
+        </div>
+      )}
+      <Link className="inline-block underline" to={`/projects/${projectId}/settings`}>
+        Change the project area in Settings
+      </Link>
+    </section>
   )
 }
 

@@ -24,6 +24,15 @@ def list_cameras(
     return service.list_cameras(db, ctx)
 
 
+@router.get("/nearby")
+def nearby_cameras(
+    ctx: ProjectContext = Depends(require_project_permission(Perm.PROJECT_VIEW)),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """The IDOT cameras closest to the project area (outside it, up to 15 km), nearest first."""
+    return service.nearby_cameras(db, ctx)
+
+
 @router.post(
     "/{camera_id}/snapshot", response_model=UploadResult, status_code=status.HTTP_201_CREATED
 )

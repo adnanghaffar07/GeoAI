@@ -12,6 +12,7 @@ Licence: Creative Commons Attribution-ShareAlike 2.0 (credit IDOT; snapshots kee
 
 import io
 import logging
+import math
 import time
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -152,6 +153,74 @@ def list_cameras(db: Session, ctx: ProjectContext) -> dict[str, Any]:
     ]
     inside.sort(key=lambda c: (c["location"], c["direction"]))
     return {"cameras": inside, "source": SOURCE, "licence": LICENCE, "licence_url": LICENCE_URL}
+
+
+NEARBY_KM = 15
+NEARBY_LIMIT = 12
+
+
+def _km_to_box(lat: float, lon: float, box: tuple[float, float, float, float]) -> float:
+    """Straight-line distance (km) from a point to the nearest edge of the area's box (0 inside it)."""
+    west, south, east, north = box
+    near_lon = min(max(lon, west), east)
+    near_lat = min(max(lat, south), north)
+    radius = 6371.0
+    dlat = math.radians(lat - near_lat)
+    dlon = math.radians(lon - near_lon)
+    h = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(math.radians(lat)) * math.cos(math.radians(near_lat)) * math.sin(dlon / 2) ** 2
+    )
+    return 2 * radius * math.asin(math.sqrt(h))
+
+
+def nearby_cameras(db: Session, ctx: ProjectContext) -> dict[str, Any]:
+    """Owner, 2026-11-16 ("show cameras near me"): the cameras closest to the project area but outside it,
+    up to 15 km away, nearest first, so people see where cameras are when none is inside the area.
+    View only: a snapshot needs the camera inside the area (add its crossing to the area first)."""
+    box = _project_box(db, ctx.project.id)
+    west, south, east, north = box
+    mid_lat = (south + north) / 2
+    pad_lat = NEARBY_KM / 111.0
+    pad_lon = NEARBY_KM / (111.0 * max(math.cos(math.radians(mid_lat)), 0.2))
+    key = f"{west - pad_lon:.4f},{south - pad_lat:.4f},{east + pad_lon:.4f},{north + pad_lat:.4f}"
+    cached = _cache.get(key)
+    if cached and time.monotonic() - cached[0] < CACHE_SECONDS:
+        cameras = cached[1]
+    else:
+        data = _get_json(
+            {
+                "where": "1=1",
+                "geometry": key,
+                "geometryType": "esriGeometryEnvelope",
+                "inSR": 4326,
+                "spatialRel": "esriSpatialRelIntersects",
+                "outFields": FIELDS,
+                "returnGeometry": "false",
+                "resultRecordCount": MAX_CAMERAS * 2,
+                "f": "json",
+            }
+        )
+        cameras = [
+            c for c in (_camera(f.get("attributes") or {}) for f in data.get("features", [])) if c
+        ]
+        _cache[key] = (time.monotonic(), cameras)
+    near: list[dict[str, Any]] = []
+    for camera in cameras:
+        km = _km_to_box(camera["latitude"], camera["longitude"], box)
+        if km > NEARBY_KM:
+            continue
+        if images._inside_project(db, ctx.project.id, camera["latitude"], camera["longitude"]):
+            continue
+        near.append({**camera, "distance_km": round(max(km, 0.1), 1)})
+    near.sort(key=lambda c: (c["distance_km"], c["location"], c["direction"]))
+    return {
+        "cameras": near[:NEARBY_LIMIT],
+        "within_km": NEARBY_KM,
+        "source": SOURCE,
+        "licence": LICENCE,
+        "licence_url": LICENCE_URL,
+    }
 
 
 def take_snapshot(db: Session, ctx: ProjectContext, camera_id: int) -> images.UploadOutcome:
