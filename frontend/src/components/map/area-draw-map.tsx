@@ -1,5 +1,5 @@
-import { Marker, type Map as MapLibreMap } from 'maplibre-gl'
-import { useEffect, useRef, useState } from 'react'
+import { Marker, type Map as MapLibreMap, type MapMouseEvent } from 'maplibre-gl'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { TerraDraw, TerraDrawLineStringMode, TerraDrawPolygonMode, TerraDrawSelectMode, type GeoJSONStoreFeatures } from 'terra-draw'
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter'
 
@@ -12,7 +12,10 @@ import { Button } from '@/components/ui/button'
 import { areaFromPolygons, boundsOf, polygonsOf } from '@/lib/geojson'
 import type { Place } from '@/lib/places'
 
-export type DrawMode = 'polygon' | 'linestring' | 'select'
+export type DrawMode = 'polygon' | 'linestring' | 'select' | 'route'
+
+/** West, south, east, north of the part of the map on screen. */
+export type MapView = [number, number, number, number]
 
 const round = (value: number) => Math.round(value * 1e7) / 1e7 // ~1 cm; Terra Draw limits precision
 
@@ -86,6 +89,10 @@ interface AreaDrawMapProps {
   onAreaDrawn: (area: AreaGeometry) => void
   /** A road drawn on the map (the server turns it into a strip). When absent, roads cannot be drawn. */
   onRoadDrawn?: (shape: PlaceShape) => void
+  /** "Road between two points": the start and end clicked ([longitude, latitude] each). When absent, the tool is hidden. */
+  onRoute?: (from: [number, number], to: [number, number]) => void
+  /** Filled with a function that tells which part of the map is on screen (for "Find all parts by name"). */
+  viewRef?: RefObject<(() => MapView | null) | null>
   /** A place's shape was moved or its corners changed. */
   onPlaceChanged: (placeId: string, area: AreaGeometry) => void
   /** The Remove icon was pressed (the page asks to confirm). */
@@ -109,6 +116,8 @@ export function AreaDrawMap({
   onEdit,
   onAreaDrawn,
   onRoadDrawn,
+  onRoute,
+  viewRef,
   onPlaceChanged,
   onRemoveRequest,
   onPlaceDeleted,
@@ -117,14 +126,26 @@ export function AreaDrawMap({
   const containerRef = useRef<HTMLDivElement>(null)
   const { map, baseMapFailed } = useMap(containerRef)
   const drawRef = useRef<TerraDraw | null>(null)
-  const callbacks = useRef({ onEdit, onAreaDrawn, onRoadDrawn, onPlaceChanged, onRemoveRequest, onPlaceDeleted })
+  const callbacks = useRef({ onEdit, onAreaDrawn, onRoadDrawn, onRoute, onPlaceChanged, onRemoveRequest, onPlaceDeleted })
   const startMode: DrawMode = initialMode ?? (places.length > 0 ? 'select' : 'polygon')
   const [mode, setMode] = useState<DrawMode>(startMode)
   const [loadProblem, setLoadProblem] = useState(false)
 
   useEffect(() => {
-    callbacks.current = { onEdit, onAreaDrawn, onRoadDrawn, onPlaceChanged, onRemoveRequest, onPlaceDeleted }
-  }, [onEdit, onAreaDrawn, onRoadDrawn, onPlaceChanged, onRemoveRequest, onPlaceDeleted])
+    callbacks.current = { onEdit, onAreaDrawn, onRoadDrawn, onRoute, onPlaceChanged, onRemoveRequest, onPlaceDeleted }
+  }, [onEdit, onAreaDrawn, onRoadDrawn, onRoute, onPlaceChanged, onRemoveRequest, onPlaceDeleted])
+
+  // Tell the page which part of the map is on screen.
+  useEffect(() => {
+    if (!map || !viewRef) return
+    viewRef.current = () => {
+      const bounds = map.getBounds()
+      return [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]
+    }
+    return () => {
+      viewRef.current = null
+    }
+  }, [map, viewRef])
 
   useEffect(() => {
     if (!map) return
@@ -200,7 +221,7 @@ export function AreaDrawMap({
         }
       }
     })
-    draw.setMode(disabled ? 'static' : startMode)
+    draw.setMode(disabled || startMode === 'route' ? 'static' : startMode)
     drawRef.current = draw
     return () => {
       drawRef.current = null
@@ -227,8 +248,42 @@ export function AreaDrawMap({
     if (area) fitView(map, area)
   }, [editingId, map, disabled])
 
+  // Road between two points: the first click is the start (A), the second the end (B).
+  useEffect(() => {
+    if (!map || disabled || mode !== 'route') return
+    const pins: Marker[] = []
+    let start: [number, number] | null = null
+    const pin = (letter: string, at: [number, number]) => {
+      const element = document.createElement('div')
+      element.textContent = letter
+      element.className = 'grid size-7 place-items-center rounded-full bg-asphalt-900 text-sm font-bold text-white shadow-md ring-2 ring-white'
+      pins.push(new Marker({ element }).setLngLat(at).addTo(map))
+    }
+    const click = (event: MapMouseEvent) => {
+      const point: [number, number] = [event.lngLat.lng, event.lngLat.lat]
+      if (!start) {
+        start = point
+        pin('A', point)
+        return
+      }
+      const from = start
+      start = null
+      callbacks.current.onRoute?.(from, point)
+      setMode('select') // the route is added once found; the map reopens with it
+      onModeChange?.('select')
+    }
+    map.on('click', click)
+    const canvas = map.getCanvas()
+    canvas.style.cursor = 'crosshair'
+    return () => {
+      map.off('click', click)
+      canvas.style.cursor = ''
+      for (const marker of pins) marker.remove()
+    }
+  }, [map, disabled, mode, onModeChange])
+
   const choose = (next: DrawMode) => {
-    drawRef.current?.setMode(next)
+    drawRef.current?.setMode(next === 'route' ? 'static' : next)
     setMode(next)
     onModeChange?.(next)
     if (next !== 'select') onEdit(null)
@@ -246,6 +301,11 @@ export function AreaDrawMap({
               Draw a road
             </Button>
           )}
+          {onRoute && (
+            <Button variant={mode === 'route' ? 'primary' : 'secondary'} onClick={() => choose('route')} aria-pressed={mode === 'route'}>
+              Road between two points
+            </Button>
+          )}
           <Button variant={mode === 'select' ? 'primary' : 'secondary'} onClick={() => choose('select')} aria-pressed={mode === 'select'}>
             Move or adjust
           </Button>
@@ -257,7 +317,9 @@ export function AreaDrawMap({
               ? 'Click the map to add corners. Click the first corner again to finish.'
               : mode === 'linestring'
                 ? `Click along the road, one click at each bend. Click the last point again (or press Enter) to finish. It is added as a ${roadWidthM} m wide strip.`
-                : 'Click a shape (or its pencil icon), then drag it or its corners. The bin icon removes that place only.'}
+                : mode === 'route'
+                  ? `Click the start point (A) on a street, then the end point (B). The streets between them are found and added as a ${roadWidthM} m wide strip.`
+                  : 'Click a shape (or its pencil icon), then drag it or its corners. The bin icon removes that place only.'}
           </span>
         </div>
       )}

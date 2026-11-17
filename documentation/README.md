@@ -2,7 +2,7 @@
 
 AI GIS Road and Sidewalk Assessment Platform. Built by one developer, with Claude as senior engineer and mentor.
 
-**Start here every session:** `CURRENT_PHASE.md` says where the project is and what to do next.
+**Start here every session:** `01-overview/project-picture.md` (the whole project on one page, 2026-11-17), then `CURRENT_PHASE.md` (where the project is and what to do next).
 All paths in these documents are written from this `documentation/` folder.
 
 ## Folder layout
@@ -30,6 +30,7 @@ documentation/
 |------|-----------------|--------|
 | `CURRENT_PHASE.md` | Where are we, what may the agent do, what are the working rules? | Live |
 | `project-decisions.md` | What was decided, when, and why? | Live |
+| `01-overview/project-picture.md` | What is the whole project: what it does, who uses it, how it is built, how to run and ship it, where it stands, open work and risks? | Live, written 2026-11-17 |
 | `GeoInfraLens AI - Technical Document and User Manual.docx` | Links, login, user manual with screenshots, stack, architecture, operations (for the team and Google Drive) | v1.0, 2026-10-28 |
 | `Geo_Infra_Lens_AI_Orange_Deck_Adnan_Ghaffar.pdf` | Research concept deck: forecasting road damage (Chicago suburbs) | Source for `04-design/forecasting-roadmap.md` |
 
@@ -37,7 +38,7 @@ documentation/
 | File | What it answers | Status |
 |------|-----------------|--------|
 | `01-overview/project-flow.md` | How does the product work, end to end? | Approved |
-| `01-overview/tech-stack.md` | Which technologies, and why? | Approved |
+| `01-overview/tech-stack.md` | Which technologies, and why? (section 10: outside services) | Approved; section 10 added 2026-11-17 |
 
 ### 02-process
 | File | What it answers | Status |
@@ -51,25 +52,29 @@ documentation/
 ### 03-requirements (P1)
 | File | What it answers | Status |
 |------|-----------------|--------|
-| `03-requirements/requirements.md` | What must version 1 do (FR/NFR), and what not? | Approved (incl. CR-001; additions CR-003, CR-004 in §13) |
-| `03-requirements/permission-matrix.md` | Who may do what? | Approved (incl. CR-001; platform admin CR-004 in §7) |
+| `03-requirements/requirements.md` | What must version 1 do (FR/NFR), and what not? | Approved (incl. CR-001; additions CR-003, CR-004 and the team-lead features FR-62–FR-73 in §13) |
+| `03-requirements/permission-matrix.md` | Who may do what? | Approved (incl. CR-001; platform admin CR-004 in §7; team-lead additions in §8) |
 | `03-requirements/partner-inputs.md` | What must the customer decide? Placeholders until then | Waiting for customer |
-| `03-requirements/acceptance-checklist.md` | The tests the app must pass (AC-01…AC-60) | Live checklist |
+| `03-requirements/acceptance-checklist.md` | The tests the app must pass (AC-01…AC-81) | Live checklist |
 
 ### 04-design (P2)
 | File | What it answers | Status |
 |------|-----------------|--------|
-| `04-design/database-schema.md` | Which tables, columns, and rules? | Frozen; additions via change control (§6, to migration 0012) |
-| `04-design/api-spec.md` | Which requests can the screens send? | Frozen; additive notes up to 2026-11-03 |
+| `04-design/database-schema.md` | Which tables, columns, and rules? | Frozen; additions via change control (§6, to migration 0017) |
+| `04-design/api-spec.md` | Which requests can the screens send? | Frozen; additive notes up to 2026-11-17 |
 | `04-design/model-output-contract.md` | What must the AI hand back? | Approved, frozen |
-| `04-design/ui-screens.md` | Which screens, and their loading/empty/error states? | Frozen; changes in §4 (2026-10-20), §5 (2026-10-28) and §6 (2026-11-03) |
+| `04-design/ui-screens.md` | Which screens, and their loading/empty/error states? | Frozen; changes in §4 (2026-10-20), §5 (2026-10-28), §6 (2026-11-03) and §7 (2026-11-17) |
 | `04-design/ml-baseline-plan.md` | P8: model classes, how it is measured, pass marks, gate | Done to P8.7 as TRIAL (CR-003); pass marks PLACEHOLDER |
 | `04-design/forecasting-roadmap.md` | V2 research track: predicting which roads will be damaged next, and how it fits into the app | Approved (CR-005, 2026-10-28) |
 | `04-design/forecasting-f4-plan.md`, `forecasting-f4b-design.md`, `forecasting-f4d-design.md`, `forecasting-f4e-design.md` | Forecasting in the app: jobs, Road risk screens, road inspections, alerts | Approved and built 2026-10-30 to 2026-11-02 |
 | `04-design/cr-006-ask-road-risk-proposal.md` | "Ask about road risk" with a free local model | Approved and built 2026-11-02 (model qwen2.5:0.5b) |
 | `04-design/p9-system-testing-plan.md` | P9: what is tested and how | Approved 2026-11-03; P9 closed 2026-11-05 |
-| `04-design/forecasting-us-plan.md` | Road risk for the whole US: free data, minimum storage, steps A–E | Draft 2026-11-05, waiting for approval |
+| `04-design/forecasting-us-plan.md` | Road risk for the whole US: free data, minimum storage, steps A–E | Approved 2026-11-05; paused for the team-lead work (Boston and Philadelphia set up as Level 1 areas) |
 | `04-design/forecasting-f0-ground-rules.md` | Forecasting F0: what is predicted, inputs, test periods, measures, pass marks | Approved and frozen 2026-10-28 (pass marks PLACEHOLDER until PI-20) |
+
+| `04-design/whole-road-always-works.md` | The chain that finds every part of a road, Road between two points, Find all parts by name | Built and tests passed 2026-11-17; hand check on a real road pending |
+
+Team-lead phase notes kept in the Claude project (not yet in this folder): `04-design/team-lead-improvements-plan.md`, `tl-phase1-design.md`, `tl-items-5-9-design.md`, `tl-items-8-10-cameras-design.md`, `naperville-plan.md`, `places-whole-road-nearby-cameras.md`, `06-demo/guide-client-own-storage.md` and `guide-client-own-storage-simple.md`, `02-process/handover-2026-11-17.md`, `updates-2026-11-09-to-11-17.md` (now folded into the main documents).
 
 ### 07-ml (P8)
 | File | What it answers | Status |

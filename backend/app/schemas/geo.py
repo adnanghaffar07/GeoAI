@@ -30,7 +30,9 @@ class PlaceShape(BaseModel):
     @model_validator(mode="after")
     def check_points(self) -> "PlaceShape":
         if _count_points(self.coordinates) > MAX_PLACE_POINTS:
-            raise ValueError(f"The place has too many points (maximum {MAX_PLACE_POINTS}).")
+            raise ValueError(
+                f"The place has too many points (maximum {MAX_PLACE_POINTS})."
+            )
         return self
 
 
@@ -42,16 +44,50 @@ class AreaFromPlaceRequest(BaseModel):
     add_to: GeoJsonArea | None = None
 
 
+MAX_BOX_DEGREES = 0.6  # about 65 km: a bigger box makes the map servers time out
+
+RoadSource = Literal["overpass", "database"]
+
+
 class WholeRoadRequest(BaseModel):
-    """A road name (or route number) and a point on it; pieces within `radius_m` are used."""
+    """A road name (or route number) and where to look for its parts.
+
+    `extent` says where: "radius" (within `radius_m` of the point, a box about twice as wide),
+    "box" (the map view: `box` = west, south, east, north) or "town" (inside the town limits of
+    `town`, the town that contains the point). `sources` are tried in this order.
+    """
 
     name: str = Field(min_length=1, max_length=200)
     by_ref: bool = False  # True: `name` is a route number such as "IL 59"
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
-    radius_m: int = Field(default=5000, ge=500, le=10_000)
+    radius_m: int = Field(default=5000, ge=500, le=20_000)
     # The OpenStreetMap piece that was found: its own name and route numbers are matched too.
     osm_way_id: int | None = Field(default=None, gt=0)
+    extent: Literal["radius", "box", "town"] = "radius"
+    box: tuple[float, float, float, float] | None = None
+    town: str | None = Field(default=None, min_length=1, max_length=100)
+    sources: list[RoadSource] = Field(
+        default_factory=lambda: ["overpass", "database"], min_length=1
+    )
+
+    @model_validator(mode="after")
+    def check_extent(self) -> "WholeRoadRequest":
+        if self.extent == "town" and not self.town:
+            raise ValueError("Give the town name for “town limits”.")
+        if self.extent == "box":
+            if self.box is None:
+                raise ValueError("Give the map box (west, south, east, north).")
+            west, south, east, north = self.box
+            if not (-180 <= west < east <= 180 and -90 <= south < north <= 90):
+                raise ValueError(
+                    "The map box must be west, south, east, north, in that order."
+                )
+            if east - west > MAX_BOX_DEGREES or north - south > MAX_BOX_DEGREES:
+                raise ValueError(
+                    "The map view is too large. Zoom in, or use “within 20 km”."
+                )
+        return self
 
 
 class AreaFromPlaceResponse(BaseModel):

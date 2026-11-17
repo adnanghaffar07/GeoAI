@@ -222,3 +222,19 @@ A **platform admin** is above all organizations. It is a flag on the user accoun
 Being a platform admin gives **no** access to any organization's projects, photos or findings. A platform admin who also works in an organization uses their normal organization and project roles there.
 
 **Map helper (2026-10-28):** `POST /geo/area-from-place` (turn a searched or drawn road, point or area into a survey area) is open to any signed-in person: it only calculates a shape and saves nothing. Saving the project still needs `project.create` / `project.edit`.
+
+---
+
+## 8. Team-lead phase additions (2026-11-09 to 2026-11-17)
+
+| Action | Who | Notes |
+|--------|-----|-------|
+| Make, list and stop photo share links (`image.share`) | Project managers (and org admins) | Links expire (1–30 days) and can be stopped; the public link shows the photo without its location |
+| Delete a project | **Organization admin only** | The person types the project name to confirm; nothing is erased (`projects.deleted_at`); audited as `project.deleted` |
+| Take a camera snapshot (`image.upload`) | Whoever may upload photos | Cameras are viewed with `project.view`; the camera must be inside the project area |
+| Photo map (`image.view`) | Viewers and above | Viewers see photos, but findings only when verified |
+| Accept the sign-in agreement | Everyone, at every sign-in | "Sign out" is the other choice |
+| Choose where photos are stored (data storage settings) | Organization admin | The client's own storage; the access key is stored encrypted |
+| Whole road, Find all parts by name, Road between two points | Any signed-in person | Only calculates a shape and saves nothing, like `/geo/area-from-place` |
+
+**Open (owner asked 2026-11-12): per-user function control.** Today access is by role only. The owner is to choose (a) per-person switches on top of roles (1–2 days, with a migration) or (b) a read-only roles screen.

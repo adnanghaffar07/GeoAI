@@ -41,7 +41,7 @@ describe('Data storage (team lead plan, Phase 2)', () => {
     expect(await screen.findByText(/minio.city.example · photos/)).toBeInTheDocument()
     const put = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')!
     expect(JSON.parse(String(put[1]!.body))).toMatchObject({ kind: 's3', bucket: 'photos', secret_key: 'very-secret' })
-  })
+  }, 20_000) // many typed characters plus the accessibility scan: slow on a busy laptop
 
   it('shows members where the data is, without the form', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValue(json({ ...APP, can_edit: false }))

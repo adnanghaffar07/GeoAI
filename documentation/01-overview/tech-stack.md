@@ -122,3 +122,17 @@ GeoInfraLens AI/
   docker-compose.yml
   .env.example            no real secrets in git
 ```
+
+## 10. Outside services used by the app (all free; added 2026-11-17)
+
+No contact details (such as an e-mail address) are put in any request sent to these services.
+
+| Service | Used for |
+|---------|----------|
+| Overpass API (`overpass-api.de`, `overpass.private.coffee`, `maps.mail.ru`) | Road parts for "Whole road" and road details; the three servers are asked at the same time |
+| Nominatim (OpenStreetMap place search) | Searching places and roads from the browser; backup for "Whole road" (`dedupe=0`, at most 40 results) |
+| OSRM demo router (`router.project-osrm.org`) | "Road between two points": the streets between two clicked points, then a strip |
+| IDOT Gateway cameras (ArcGIS; pictures from `cctv.travelmidwest.com`) | Traffic cameras (view only, plus snapshot) |
+| Naperville open data (ArcGIS, CC0) | Pothole requests and work orders for Naperville |
+| Cook County PCI | Checking only (PI-23) |
+| NOAA GHCN-Daily and the National Weather Service `api.weather.gov` (LOT office) | Weather history and the 7-day outlook |

@@ -292,3 +292,28 @@ Differences from roadmap 7.3 (decided in F4c): risk history is per project (`/pr
 Personal notifications are created when an inspection (finding or road) is planned for someone else, and closed when it is resolved (opened again on reopen).
 
 **Every answer (P9.2, 2026-11-03)** carries security headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=(self)`, `Cross-Origin-Opener-Policy: same-origin`; `/api/` answers without their own caching rule get `Cache-Control: no-store`. A test (`test_p9_security.py`) fails if any new route answers without sign-in.
+
+## Implementation notes (team-lead phase, 2026-11-09 to 2026-11-17, additive)
+
+| Method | Path | Who | Answer |
+|--------|------|-----|--------|
+| POST | `/auth/agreement` | signed in | Accept the current agreement for this session (asked at every sign-in) |
+| GET | `/projects/{id}/photos.geojson` | `image.view` | Photo map (viewers see photos, but findings only when verified) |
+| POST, GET | `/images/{id}/share-links` | `image.share` | Make a share link (expiry 1–30 days) / list the photo's links |
+| POST | `/images/{id}/share-links/{link_id}/revoke` | `image.share` | Stop a link |
+| GET | `/shared/{token}` | public | The photo without its location. Headers `Cache-Control: no-store`, `X-Robots-Tag: noindex`, `Referrer-Policy: no-referrer`. The token is stored only as a SHA-256 hash |
+| GET | `/projects/{id}/roads.geojson?box=w,s,e,n` | `risk.view` + setting | Roads-only view with road details (speed limit, lanes, surface, one-way, route number) |
+| GET | `/projects/{id}/cameras` | `project.view` | Traffic cameras inside the area (IDOT, view only) |
+| GET | `/projects/{id}/cameras/nearby` | `project.view` | Cameras outside the area, up to 15 km, nearest first, at most 12 |
+| POST | `/projects/{id}/cameras/{camera_id}/snapshot` | `image.upload` | Save the camera picture as a normal photo; the camera must be inside the area |
+| POST | `/geo/whole-road` | signed in | Every part of a named road as one line, nothing saved (see below) |
+| DELETE | `/projects/{id}` | organization admin only | Body `{confirm_name}`; `204`. Soft delete (`projects.deleted_at`); audited as `project.deleted` |
+| GET, POST | organization data-storage settings (Data storage page) | organization admin | Read, test and save where photos are kept |
+
+The section detail of the road-risk page now includes `road` (road details).
+
+**`POST /geo/whole-road` (made to always work, 2026-11-17).** Body: `name`, `by_ref` (the name is a route number such as "IL 59"), `latitude`, `longitude` (middle of the place to search), `radius_m` (500–20,000; half the width of the search box, default 5,000), `osm_way_id` (optional: the found piece's own name and route numbers are matched too), and new:
+- `extent`: `"radius"` (default: a box around the point), `"box"` (the map view: `box` = `[west, south, east, north]`, at most 0.6 degrees wide and high) or `"town"` (inside the limits of `town`, the administrative area that contains the point).
+- `sources`: the sources to try, in this order: `"overpass"` (OpenStreetMap's Overpass servers) and `"database"` (road sections already loaded for forecasting, Chicago and Naperville). Default: both.
+
+Answer: `{shape (MultiLineString), pieces, length_km, source}`; `source` says which one answered. The Overpass search is tag first inside a box (`way["highway"]["name"="X"](s,w,n,e)`), all three servers are asked at the same time and the first good answer wins (20 seconds). `404` when no source found the road; `503` (with each server's reason) when a source could not answer. Shapes over the point limit are thinned. The browser adds two more steps itself, in this order: 1 the fast search (`sources: ["overpass"]`), 2 Nominatim (`dedupe=0`, `limit=40`, `viewbox` + `bounded=1`), 3 our database (`sources: ["database"]`). **Road between two points** needs no server request of its own: the browser asks the free OSRM demo route finder and sends the route line to `POST /geo/area-from-place`.

@@ -127,5 +127,16 @@ When every line passes, version 1 is finished. Each test points to the requireme
 | AC-68 | The person asked to inspect gets a personal notification that closes when resolved; "Assigned to me" in Priority. | 2026-11-03 | Auto | P9 || ✅ 2026-11-03 |
 | AC-69 | Every page except Home has Back (one level up) and a breadcrumb. | 2026-11-03 | Auto + Manual | P9 || ✅ automated 2026-11-03; owner walk-through pending |
 | AC-70 | Security headers on every answer; session cookie not readable by scripts; no secrets in the code; every route needs sign-in. | P9.2 | Auto | P9 || ✅ 2026-11-03 |
+| AC-71 | The agreement is asked at every sign-in; without agreeing only Sign out is possible; the acceptance is recorded. | FR-62 | Auto | TL || ✅ 2026-11-16 |
+| AC-72 | The About page opens without signing in and, signed in, keeps the main menu; every tab answers in detail. | FR-63 | Auto | TL || ✅ 2026-11-16 |
+| AC-73 | The photo map shows only analysed, located, not-withdrawn photos of the person's projects; rejected findings never show. | FR-64 | Auto | TL || ✅ 2026-11-16 |
+| AC-74 | Storage settings can be read, tested and saved by the organization admin only; the key is never shown back; files are encrypted. | FR-65 | Auto | TL || ✅ 2026-11-16 |
+| AC-75 | A share link works once created, expires, can be cancelled, stops when the photo is withdrawn, shows no location, and any bad link gives one plain "not found". | FR-66 | Auto | TL || ✅ 2026-11-16 |
+| AC-76 | Road details are read for every area; missing values read "Not on the map"; the Roads-only view lists only roads inside the chosen box. | FR-68 | Auto | TL || ✅ 2026-11-16 |
+| AC-77 | Cameras are listed only for the person's project; a snapshot is accepted only from the camera server, saved as a normal photo and kept once. | FR-69 | Auto | TL || ✅ 2026-11-16 |
+| AC-78 | Only an organization admin can delete a project; the name must be typed; the project disappears everywhere; nothing is erased; it is recorded. | FR-70 | Auto | TL || ✅ 2026-11-16 |
+| AC-79 | Tested levels are used only for Chicago and Naperville (with the transfer test on file); other areas show risk factors. | FR-72 | Auto | TL || ✅ 2026-11-16 |
+| AC-80 | Whole road: tag-first box search (all servers at once, first good answer wins), map-view and town-limit searches, Nominatim backup, our own database backup, the source named on screen, all-sources-fail message, Road between two points, long roads thinned. | FR-73 | Auto | TL || ✅ 2026-11-17 (backend 337 and frontend 150 tests passed; `test_geo.py`, `whole-road.test.ts`, `project-form-page.test.tsx`) |
+| AC-81 | Re-run AC-71 to AC-80 on the live deployment, and try the three whole-road tools on a real road. | FR-62–FR-73 | Manual | TL | | ⏳ owner |
 
 Results of the whole checklist: `06-demo/p9-results.md`.

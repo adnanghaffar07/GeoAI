@@ -285,3 +285,25 @@ Planned, not built: "Road risk" tab and forecast alerts (forecasting track, `04-
 | Bell / **Alerts** menu item with unread count | Main menu |
 | **Assigned to me** section; road inspections in My inspections | Priority tab |
 | "Road risk" tab appears only when road risk is on and allowed | Project tabs |
+
+## 7. Changes after the freeze (2026-11-09 to 2026-11-17)
+
+**New screens**
+
+| Screen | What |
+|--------|------|
+| Sign-in agreement pop-up | Asked at every sign-in; "Sign out" / "I agree" |
+| About page (public `/about`, signed-in `/help`) | Vertical tabs FAQ / Terms / Accessibility / Privacy / Contact us, dropdown answers, social icons. The main sidebar stays. The About link was removed from the sign-in page |
+| Data storage | Full width, 4 ways in dropdowns (cloud account, own PC, own server, existing cloud) |
+| My account | Redesigned |
+| Project tabs | **Photo map**, **Cameras** (with "Cameras near this area"), **Roads** |
+| Share photo dialog | Make and stop share links |
+| Road details box | On the road page: speed limit, lanes, surface, one-way, route number |
+| Project Settings | **Selected places** list with pencil and bin icons on the map; **Whole road** button in search results; red **Delete project** box (organization admins) |
+
+**Removed:** Finding types page, Data retention page (now covered in the FAQ).
+
+**Whole road made to always work (2026-11-17)**
+- Pressing **Whole road** (or any search below) tries the sources in turn and the message under the search names the one used: "OpenStreetMap fast search", "OpenStreetMap place search (backup)" or "our own road database (backup)". When all fail, the message lists what was tried and suggests "Road between two points" or adding the parts one by one.
+- **Find all parts of a road by name** (a fold-out panel in the place search): road name or route number; **Where to look**: Town limits (town name filled from the search result, can be changed), The map I see now (refused with advice when the view is larger than about 65 km), Within 5 / 10 / 20 km (middle = the place found, or the middle of the map when nothing was searched).
+- **Road between two points** (new button in the map toolbar next to Draw an area / Draw a road / Move or adjust): click the start (A) and the end (B) on a street; the streets between them (free OSRM route finder) are added as a strip of the chosen road width. Messages: "Finding the streets between the two points…", the added length with the source, or a plain refusal when no route exists.

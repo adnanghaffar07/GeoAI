@@ -18,16 +18,47 @@ export function areaFromPlace(
   })
 }
 
+/** Where a road's parts were found on the server: OpenStreetMap's map servers or our own road database. */
+export type WholeRoadSource = 'overpass' | 'database'
+
 export interface WholeRoad {
   shape: PlaceShape
   pieces: number
   length_km: number
+  source: WholeRoadSource
 }
 
-/** Owner, 2026-11-16: every piece of a named road within `radiusM` of a point (OpenStreetMap). */
-export function findWholeRoad(input: { name: string; byRef: boolean; latitude: number; longitude: number; radiusM: number; osmWayId?: number }): Promise<WholeRoad> {
+export interface WholeRoadInput {
+  name: string
+  byRef: boolean
+  latitude: number
+  longitude: number
+  /** Half the width of the box searched (the box is twice as wide). */
+  radiusM: number
+  osmWayId?: number
+  /** Where to look: near the point (default), inside the map view (`box` = west, south, east, north) or inside the town limits. */
+  extent?: 'radius' | 'box' | 'town'
+  box?: [number, number, number, number]
+  town?: string
+  /** Sources to try, in this order (default: the map servers, then our own database). */
+  sources?: WholeRoadSource[]
+}
+
+/** Every part of a named road in a chosen place (owner, 2026-11-16 and 2026-11-17). */
+export function findWholeRoad(input: WholeRoadInput): Promise<WholeRoad> {
   return apiRequest('/v1/geo/whole-road', {
     method: 'POST',
-    body: { name: input.name, by_ref: input.byRef, latitude: input.latitude, longitude: input.longitude, radius_m: input.radiusM, osm_way_id: input.osmWayId },
+    body: {
+      name: input.name,
+      by_ref: input.byRef,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      radius_m: input.radiusM,
+      osm_way_id: input.osmWayId,
+      extent: input.extent ?? 'radius',
+      box: input.box,
+      town: input.town,
+      sources: input.sources,
+    },
   })
 }

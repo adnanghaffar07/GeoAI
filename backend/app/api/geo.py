@@ -2,7 +2,8 @@
 
 `POST /api/v1/geo/area-from-place`: any signed-in person. It only calculates a shape;
 nothing is saved until the project is saved (which checks permissions as usual).
-`POST /api/v1/geo/whole-road`: every piece of a named road near a point (OpenStreetMap).
+`POST /api/v1/geo/whole-road`: every piece of a named road in a chosen place (near a point, the
+map view or the town limits), from OpenStreetMap or our own road database.
 """
 
 from typing import Any
@@ -12,7 +13,11 @@ from sqlalchemy.orm import Session
 
 from app.core.auth import CurrentUser, get_current_user
 from app.core.database import get_db
-from app.schemas.geo import AreaFromPlaceRequest, AreaFromPlaceResponse, WholeRoadRequest
+from app.schemas.geo import (
+    AreaFromPlaceRequest,
+    AreaFromPlaceResponse,
+    WholeRoadRequest,
+)
 from app.services.geo import area_from_place
 from app.services.whole_road import whole_road
 
@@ -31,7 +36,11 @@ def make_area(
 
 @router.post("/whole-road")
 def find_whole_road(
-    body: WholeRoadRequest, _current: CurrentUser = Depends(get_current_user)
+    body: WholeRoadRequest,
+    _current: CurrentUser = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    """All pieces of the road with this name near the point (a few km), from OpenStreetMap."""
-    return whole_road(body)
+    """The parts of the road with this name in a chosen place (near a point, the map view or the
+    town limits), as one line. The answer says which source it came from (OpenStreetMap's
+    Overpass servers, or our own road database)."""
+    return whole_road(db, body)

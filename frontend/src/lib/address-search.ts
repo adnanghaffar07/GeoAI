@@ -74,7 +74,7 @@ export function parseCoordinates(text: string): { lat: number; lon: number } | n
   return { lat, lon }
 }
 
-async function getJson(url: string, signal?: AbortSignal): Promise<unknown> {
+export async function getJson(url: string, signal?: AbortSignal): Promise<unknown> {
   let response: Response
   try {
     response = await fetch(url, { signal, headers: { Accept: 'application/json' } })

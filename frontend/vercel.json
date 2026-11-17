@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://incredible-operational-shapes-pvc.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://bon-delicious-able-agreement.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -21,7 +21,7 @@ import {
 import { useAuth } from '@/auth/auth-context'
 import { ErrorMessage } from '@/components/error-message'
 import { areaFromPlace, type PlaceShape } from '@/api/geo'
-import { AreaDrawMap, type DrawMode } from '@/components/map/area-draw-map'
+import { AreaDrawMap, type DrawMode, type MapView } from '@/components/map/area-draw-map'
 import { PlaceSearch } from '@/components/map/place-search'
 import { Button } from '@/components/ui/button'
 import { TextField } from '@/components/ui/field'
@@ -29,6 +29,7 @@ import { SkeletonRows } from '@/components/ui/loading-screen'
 import { PageIntro } from '@/components/ui/page-intro'
 import { AreaFileError, areaFromGeoJsonText } from '@/lib/geojson'
 import { newPlaceId, nextLabel, placesFromArea, type Place } from '@/lib/places'
+import { routeBetween, SOURCE_NAMES } from '@/lib/whole-road'
 import { hasProjectPermission, useProject } from '@/pages/project/project-layout'
 
 const MAX_AREA_FILE_BYTES = 5 * 1024 * 1024
@@ -293,6 +294,24 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
     })
   }
 
+  // Owner, 2026-11-17: "Road between two points": the streets between two clicked points (free OSRM
+  // route finder), made into a strip like any other road.
+  const viewRef = useRef<(() => MapView | null) | null>(null)
+  const [routeNote, setRouteNote] = useState<string | null>(null)
+  const roadBetween = useMutation({
+    mutationFn: async ({ from, to }: { from: [number, number]; to: [number, number] }) => {
+      const route = await routeBetween(from, to)
+      const { area } = await areaFromPlace(route.shape, { roadWidthM: roadWidth, addTo: null })
+      return { area, route }
+    },
+    onMutate: () => setRouteNote(null),
+    onSuccess: ({ area, route }) => {
+      addPlace(area, nextLabel(placesRef.current, 'Road between two points'))
+      setRouteNote(`Road between two points added: about ${route.lengthKm} km, ${roadWidth} m wide. Source: ${SOURCE_NAMES[route.source]}. Check it on the map; the bin icon removes it.`)
+    },
+    onError: () => setMapKey((key) => key + 1),
+  })
+
   const loadAreaFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     event.target.value = '' // allow choosing the same file again
@@ -437,6 +456,7 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
               currentArea={places.length > 0 ? (boundary ?? places[0]?.area ?? null) : null}
               roadWidthM={roadWidth}
               onRoadWidthChange={setRoadWidth}
+              getMapBox={() => viewRef.current?.() ?? null}
               onChoose={(area, label, add) => {
                 setFileProblem(null)
                 addPlace(area, label, add)
@@ -447,7 +467,7 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
             <AreaDrawMap
               key={mapKey}
               places={places}
-              disabled={readOnly || joinShape.isPending}
+              disabled={readOnly || joinShape.isPending || roadBetween.isPending}
               roadWidthM={roadWidth}
               initialMode={drawMode}
               onModeChange={setDrawMode}
@@ -455,6 +475,8 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
               onEdit={setEditingId}
               onAreaDrawn={(area) => addPlace(area, nextLabel(placesRef.current, 'Drawn area'))}
               onRoadDrawn={addDrawnRoad}
+              onRoute={(from, to) => roadBetween.mutate({ from, to })}
+              viewRef={viewRef}
               onPlaceChanged={(placeId, area) =>
                 applyPlaces(
                   placesRef.current.map((place) => (place.id === placeId ? { ...place, area } : place)),
@@ -468,7 +490,7 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
                 applyPlaces([])
               }}
             />
-            {(joinShape.isPending || joining) && (
+            {(joinShape.isPending || joining || roadBetween.isPending) && (
               <p role="status" className="absolute top-14 left-3 rounded-lg bg-white/95 px-3 py-2 text-sm font-medium shadow">
                 Updating the area…
               </p>
@@ -481,6 +503,21 @@ function ProjectForm({ orgId, project }: { orgId: string; project?: ProjectDetai
               />
             )}
           </div>
+          {roadBetween.isPending && (
+            <p role="status" className="text-sm text-asphalt-600">
+              Finding the streets between the two points…
+            </p>
+          )}
+          {routeNote && !roadBetween.isPending && (
+            <p role="status" className="rounded-lg bg-lane-50 px-3 py-2 text-sm text-asphalt-800">
+              {routeNote}
+            </p>
+          )}
+          {roadBetween.isError && (
+            <p role="alert" className="text-sm text-red-700">
+              {roadBetween.error instanceof Error ? roadBetween.error.message : 'The road between the two points could not be found. Try again, or draw the road by hand.'}
+            </p>
+          )}
           {joinShape.isError && (
             <p role="alert" className="text-sm text-red-700">
               That shape could not be added: {joinShape.error instanceof Error ? joinShape.error.message : 'try drawing it again.'}

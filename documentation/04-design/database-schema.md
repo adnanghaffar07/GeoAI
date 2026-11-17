@@ -446,8 +446,17 @@ Each phase adds its tables with one migration, which is tested both forwards and
 | 0010 | 2026-10-30 | `forecast_settings.visible_to_roles` (JSON, default technical reviewers and viewers); `inspections.project_id` (filled from the finding, required), `inspections.section_id` (→ forecast_sections), `inspections.finding_id` now optional, rule "exactly one of finding or road", one open inspection per road | F4d: who sees road risk; road inspections without a finding. The downgrade refuses while road inspections exist |
 | 0011 | 2026-11-02 | `forecast_settings.assistant_enabled` bool, default false | CR-006: "Ask about road risk" on/off per project |
 | 0012 | 2026-11-03 | `alerts.user_id` (→ users, optional; set = personal notification), index `(user_id, created_at)`, alert type `inspection_assigned` | The person asked to inspect is notified |
+| 0013 | 2026-11-09 | User agreements: the accepted agreement version per person, now tied to the session, so it is asked at every sign-in | Team lead plan TL phase 1: sign-in agreement pop-up |
+| 0014 | 2026-11-10 | Organization's own storage settings (where photos are kept; the access key is stored encrypted) | TL-D1: the client's own storage, chosen by the organization admin |
+| 0015 | 2026-11-10 | New table `image_share_links`: token stored only as a SHA-256 hash; expiry 1–30 days; revoked flag; who made it | TL-D3: share links expire and can be revoked |
+| 0016 | 2026-11-10 | `forecast_sections`: `speed_limit_mph`, `lanes`, `surface`, `oneway`, `road_ref`, `details_filled` | Road details from OpenStreetMap on the road page and the Roads-only view |
+| 0017 | 2026-11-12 | `projects.deleted_at`: a deleted project is hidden everywhere; nothing is erased | Project delete for organization admins only |
 
-All are **add-only** except 0010, which makes `inspections.finding_id` optional (existing rows keep their finding); every migration downgrades cleanly (0010 only while no road inspections exist).
+All are **add-only** (0013–0017 too) except 0010, which makes `inspections.finding_id` optional (existing rows keep their finding); every migration downgrades cleanly (0010 only while no road inspections exist).
+
+New audit types (2026-11-09 to 11-17): `image.camera_snapshot`, `project.deleted`, share link created and revoked, agreement accepted, storage changed.
+
+The whole-road search (2026-11-17) adds no table: its backup reads the existing `forecast_sections` (name, `road_ref`, `line`) of the areas loaded for forecasting.
 
 **`organization_requests`**: a new organization asking to use the app. Nothing else is created until a platform admin approves.
 | Column | Type | Notes |
