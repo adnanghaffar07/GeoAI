@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://investigate-strengthening-disposal-shipments.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://incredible-operational-shapes-pvc.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

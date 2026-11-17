@@ -51,7 +51,7 @@ export function PlaceSearch({ currentArea, roadWidthM: width, onRoadWidthChange:
     mutationFn: async (place: PlaceResult) => {
       const name = place.roadName ?? place.label.split(',')[0] ?? ''
       const [longitude, latitude] = middleOf(place.shape)
-      const road = await findWholeRoad({ name, byRef: ROUTE_NUMBER.test(name), latitude, longitude, radiusM: WHOLE_ROAD_M })
+      const road = await findWholeRoad({ name, byRef: ROUTE_NUMBER.test(name), latitude, longitude, radiusM: WHOLE_ROAD_M, osmWayId: place.osmWayId })
       const { area } = await areaFromPlace(road.shape, { roadWidthM: width, addTo: null })
       return { area, road, name }
     },

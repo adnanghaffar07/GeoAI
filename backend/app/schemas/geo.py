@@ -50,6 +50,8 @@ class WholeRoadRequest(BaseModel):
     latitude: float = Field(ge=-90, le=90)
     longitude: float = Field(ge=-180, le=180)
     radius_m: int = Field(default=5000, ge=500, le=10_000)
+    # The OpenStreetMap piece that was found: its own name and route numbers are matched too.
+    osm_way_id: int | None = Field(default=None, gt=0)
 
 
 class AreaFromPlaceResponse(BaseModel):

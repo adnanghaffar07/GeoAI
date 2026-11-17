@@ -18,7 +18,12 @@ from app.schemas.geo import WholeRoadRequest
 
 log = logging.getLogger(__name__)
 
-OVERPASS_URL = "https://overpass-api.de/api/interpreter"
+# Free public Overpass servers, tried in turn: the main one is often busy (answers 429 or 504).
+OVERPASS_URLS = (
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+)
 MAX_PIECES = 400
 
 
@@ -26,39 +31,75 @@ def _quoted(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
 
-def _query(body: WholeRoadRequest) -> str:
+def _query(body: WholeRoadRequest, found_tags: dict[str, str]) -> str:
+    """Pieces named like the search result, plus every piece sharing the found piece's own
+    OpenStreetMap name or route number: the search may call Route 59 "Route 59" while the road
+    itself is "Illinois Route 59" with route number "IL 59"."""
     key = "ref" if body.by_ref else "name"
-    return (
-        "[out:json][timeout:25];"
-        f"way(around:{body.radius_m},{body.latitude:.6f},{body.longitude:.6f})"
-        f'["highway"][{_quoted(key)}={_quoted(body.name.strip())}];'
-        "out geom;"
+    around = f"(around:{body.radius_m},{body.latitude:.6f},{body.longitude:.6f})"
+    wanted = {(key, body.name.strip())}
+    for tag in ("name", "ref"):
+        value = (found_tags.get(tag) or "").strip()
+        if value:
+            # A way can carry several route numbers ("IL 59;US 30"): match each.
+            for one in value.split(";") if tag == "ref" else [value]:
+                if one.strip():
+                    wanted.add((tag, one.strip()))
+    parts = "".join(
+        f'way{around}["highway"][{_quoted(tag)}={_quoted(value)}];' for tag, value in sorted(wanted)
     )
+    return f"[out:json][timeout:25];({parts});out geom;"
+
+
+def _found_tags(way_id: int | None) -> dict[str, str]:
+    """The name and route number of the piece the search found (empty if unknown)."""
+    if not way_id:
+        return {}
+    data = _overpass(f"[out:json][timeout:15];way({way_id});out tags;")
+    for element in data.get("elements", []):
+        tags = element.get("tags") or {}
+        return {k: str(v) for k, v in tags.items() if k in ("name", "ref")}
+    return {}
 
 
 def _overpass(query: str) -> dict[str, Any]:
-    try:
-        answer = requests.post(
-            OVERPASS_URL,
-            data={"data": query},
-            headers={"User-Agent": "GeoInfraLens AI (road condition app)"},
-            timeout=40,
-        )
-        answer.raise_for_status()
-        return answer.json()
-    except (requests.RequestException, ValueError) as error:
-        log.warning("Overpass whole-road search failed: %s", error)
-        raise ServiceUnavailableError(
-            "The map service could not find the rest of the road right now. "
-            "Try again in a minute, or add the parts one by one."
-        ) from error
+    problems: list[str] = []
+    for url in OVERPASS_URLS:
+        host = url.split("/")[2]
+        try:
+            answer = requests.post(
+                url,
+                data={"data": query},
+                headers={
+                    "User-Agent": "GeoInfraLens AI (road condition app)",
+                    "Accept": "application/json",
+                },
+                timeout=35,
+            )
+            if answer.status_code != 200:
+                problems.append(f"{host}: answer {answer.status_code}")
+                continue
+            return answer.json()
+        except (requests.RequestException, ValueError) as error:
+            problems.append(f"{host}: {type(error).__name__}")
+    details = "; ".join(problems)
+    log.warning("Overpass whole-road search failed: %s", details)
+    raise ServiceUnavailableError(
+        "The map service could not find the rest of the road right now. "
+        f"Try again in a minute, or add the parts one by one. (Details: {details})"
+    )
 
 
 def whole_road(body: WholeRoadRequest) -> dict[str, Any]:
     """All pieces of the named road near the point, as a MultiLineString."""
-    data = _overpass(_query(body))
+    data = _overpass(_query(body, _found_tags(body.osm_way_id)))
     lines: list[list[list[float]]] = []
+    seen: set[object] = set()
     for element in data.get("elements", [])[:MAX_PIECES]:
+        if element.get("id") is not None:
+            if element["id"] in seen:
+                continue
+            seen.add(element["id"])
         points = element.get("geometry") or []
         line = [
             [round(float(p["lon"]), 7), round(float(p["lat"]), 7)]

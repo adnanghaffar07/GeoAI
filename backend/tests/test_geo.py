@@ -136,12 +136,21 @@ def test_the_whole_road_collects_every_piece_with_that_name(
 
     def fake_overpass(query: str) -> dict[str, Any]:
         asked.append(query)
+        if "out tags" in query:
+            tags = {"name": "Illinois Route 59", "ref": "IL 59;US 30"}
+            return {"elements": [{"type": "way", "id": 77, "tags": tags}]}
         if '"Nowhere Road"' in query:
             return {"elements": []}
         return {
             "elements": [
                 {
                     "type": "way",
+                    "id": 1,
+                    "geometry": [{"lat": 41.77, "lon": -88.15}, {"lat": 41.775, "lon": -88.15}],
+                },
+                {
+                    "type": "way",
+                    "id": 1,  # the same piece twice counts once
                     "geometry": [{"lat": 41.77, "lon": -88.15}, {"lat": 41.775, "lon": -88.15}],
                 },
                 {
@@ -172,5 +181,14 @@ def test_the_whole_road_collects_every_piece_with_that_name(
 
     by_ref = admin.post("/api/v1/geo/whole-road", json={**body, "name": "IL 59", "by_ref": True})
     assert by_ref.status_code == 200 and '["ref"="IL 59"]' in asked[-1]
+    # The piece found is known: its own name and every route number are matched too.
+    asked.clear()
+    route = admin.post(
+        "/api/v1/geo/whole-road", json={**body, "name": "Route 59", "osm_way_id": 77}
+    )
+    assert route.status_code == 200 and route.json()["pieces"] == 2
+    assert "way(77);out tags;" in asked[0]
+    for wanted in ('"Route 59"]', '"Illinois Route 59"]', '["ref"="IL 59"]', '["ref"="US 30"]'):
+        assert wanted in asked[1]
     missing = admin.post("/api/v1/geo/whole-road", json={**body, "name": "Nowhere Road"})
     assert missing.status_code == 404
