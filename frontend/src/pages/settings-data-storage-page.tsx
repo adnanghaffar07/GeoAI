@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { CircleAlert, Cloud, Clock, Computer, Database, HardDrive, Info, LockKeyhole, MapPin, Server, ShieldCheck } from 'lucide-react'
+import { CircleAlert, Cloud, Clock, Database, HardDrive, Info, LockKeyhole, MapPin, Server, ShieldCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 
 import { dataStorageQueryKeys, getDataStorage, saveDataStorage, type DataStorage, type DataStorageInput } from '@/api/data-storage'
@@ -104,7 +104,7 @@ function StorageForm({ orgId, current }: { orgId: string; current: DataStorage }
   }
   const choices = [
     { value: 'app', icon: HardDrive, title: 'GeoInfraLens AI storage', text: 'Kept for you, encrypted. Nothing to set up.' },
-    { value: 's3', icon: Server, title: 'Your own storage', text: 'Your cloud account (Amazon S3, Wasabi, Backblaze B2, Cloudflare R2) or your own computer or server running MinIO.' },
+    { value: 's3', icon: Server, title: 'Your own storage', text: 'Your cloud account (Amazon S3, Wasabi, Backblaze B2, Cloudflare R2) or your own server.' },
   ] as const
 
   return (
@@ -159,7 +159,7 @@ function StorageForm({ orgId, current }: { orgId: string; current: DataStorage }
 }
 
 /** The simple, step-by-step guide for administrators who are not technical (owner request 2026-11-10):
- * four ways to keep photos in your own space; each ends with the same "connect it here" part. */
+ * three ways to keep photos in your own space; each ends with the same "connect it here" part. */
 type Part = { title: string; time: string; steps: string[] }
 type Way = { key: string; title: string; best: string; needs: string; parts: Part[]; connect: string[] }
 
@@ -182,25 +182,12 @@ const WAYS: Way[] = [
     connect: ['Storage address: type https:// and then the Endpoint, for example https://s3.us-west-004.backblazeb2.com', 'Bucket name: the name of your box. Region: the middle part of the Endpoint, for example us-west-004.', 'Access key: the keyID. Secret key: the applicationKey.'],
   },
   {
-    key: 'pc',
-    title: 'Your own computer (PC)',
-    best: 'Photos stay on a computer in your office.',
-    needs: 'A Windows computer that stays switched on all the time, with enough free disk space, and about 30 minutes. If the computer is off, new uploads stop until it is back on.',
-    parts: [
-      { title: 'Get the free storage program (MinIO)', time: 'about 5 minutes', steps: ['On that computer, open this address in the browser: dl.min.io/server/minio/release/windows-amd64/minio.exe . The file minio.exe downloads.', 'Make a folder C:\\MinIO and move minio.exe into it.', 'Make a second folder where the photos will be kept, for example C:\\RoadPhotos.'] },
-      { title: 'Start the storage program', time: 'about 5 minutes', steps: ['Open the folder C:\\MinIO. Click the address bar at the top of the window, type powershell and press Enter. A blue window opens.', 'Copy these three lines into the blue window, change the password to your own long password, and press Enter after each line:', '$env:MINIO_ROOT_USER = "cityadmin"', '$env:MINIO_ROOT_PASSWORD = "choose-a-long-password"', '.\\minio.exe server C:\\RoadPhotos --console-address ":9001"', 'Leave this blue window open. (Your IT person can later make it start by itself when the computer starts.)'] },
-      { title: 'Make your storage box and a key', time: 'about 5 minutes', steps: ['In the browser on that computer, open localhost:9001 and sign in with "cityadmin" and your password.', 'Click "Buckets", then "Create Bucket". Name it road-photos and click "Create Bucket".', 'Click "Access Keys", then "Create access key", then "Create". Copy the "Access Key" and the "Secret Key" into a note for a moment.'] },
-      { title: 'Give it a safe internet address', time: 'about 10 minutes', steps: ['Our server must be able to reach your computer through a safe (https) address. The free way is Cloudflare Tunnel.', 'In the browser, search for "cloudflared download Windows", open the Cloudflare page and download cloudflared for Windows. Save it in C:\\MinIO as cloudflared.exe.', 'Open a second blue window in C:\\MinIO (as in Part 2) and type: .\\cloudflared.exe tunnel --url http://localhost:9000 and press Enter.', 'After a few seconds it shows an address like https://some-words.trycloudflare.com. Copy it. Leave this window open too.', 'Note: this quick address changes when the computer restarts; you then type the new one here again. For an address that never changes, ask an IT person to make a "named tunnel" with your own web address.'] },
-    ],
-    connect: ['Storage address: the https address from Part 4, for example https://some-words.trycloudflare.com', 'Bucket name: road-photos. Region: us-east-1.', 'Access key and Secret key: the two values from Part 3.'],
-  },
-  {
     key: 'server',
     title: 'Your own server (with your IT team)',
     best: 'Best for city offices with an IT department or a network drive (NAS).',
     needs: 'Your IT person, about 1 hour of their time.',
     parts: [
-      { title: 'Ask your IT team to prepare the storage', time: 'IT: about 1 hour', steps: ['Send them this sentence: "Please set up S3-compatible storage for GeoInfraLens AI, for example MinIO on one of our servers or the S3 feature of our network drive (NAS), with a private bucket, a key with read and write access to that bucket only, and a secure https address that the GeoInfraLens AI server can reach from the internet."', 'If they ask for more detail, they can use the technical guide that came with GeoInfraLens AI (guide-client-own-storage).'] },
+      { title: 'Ask your IT team to prepare the storage', time: 'IT: about 1 hour', steps: ['Send them this sentence: "Please set up S3-compatible storage for GeoInfraLens AI, for example SeaweedFS or Garage on one of our servers or the S3 feature of our network drive (NAS), with a private bucket, a key with read and write access to that bucket only, and a secure https address that the GeoInfraLens AI server can reach from the internet."', 'If they ask for more detail, they can use the technical guide that came with GeoInfraLens AI (guide-client-own-storage).'] },
       { title: 'Get five things back from them', time: 'a few minutes', steps: ['1. The storage address (it starts with https://)', '2. The bucket name', '3. The region (if they have none, use us-east-1)', '4. The access key', '5. The secret key'] },
     ],
     connect: ['Type the five things from your IT team into the matching boxes.', 'Note: write "Our own server" (or the server name) so everyone knows where the photos are.'],
@@ -219,15 +206,14 @@ const WAYS: Way[] = [
 
 const HELP: [string, string][] = [
   ['It says the address must start with https://', 'Type https:// in front of the address.'],
-  ['It says the storage could not be reached', 'Check that the address is typed exactly. For your own computer: is it switched on, with both windows open? Then try again in a few minutes.'],
+  ['It says the storage could not be reached', 'Check that the address is typed exactly. Then try again in a few minutes.'],
   ['It says access was refused', 'The keys were copied wrongly, or the key is for another box. Make a new key and paste it again.'],
   ['It says the bucket was not found', 'Check the bucket name: small letters, exactly as you made it.'],
 ]
 
-const WAY_ICONS: Record<string, typeof Cloud> = { cloud: Cloud, pc: Computer, server: Server, existing: Database }
+const WAY_ICONS: Record<string, typeof Cloud> = { cloud: Cloud, server: Server, existing: Database }
 const WAY_BADGES: Record<string, string[]> = {
   cloud: ['About 15 minutes', 'Free up to 10 GB', 'Easiest'],
-  pc: ['About 30 minutes', 'Free', 'Computer must stay on'],
   server: ['IT: about 1 hour', 'Uses your own server'],
   existing: ['About 15 minutes', 'Your current cloud plan'],
 }

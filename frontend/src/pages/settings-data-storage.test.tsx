@@ -22,12 +22,12 @@ describe('Data storage (team lead plan, Phase 2)', () => {
     )
     const { container } = renderWithProviders(<SettingsDataStoragePage />, { me: ADMIN_WITH_PROJECTS })
     expect(await screen.findByText('GeoInfraLens AI private storage')).toBeInTheDocument()
-    // all four ways are shown, each opening on click
-    for (const way of [/A free storage account in your name/, /Your own computer \(PC\)/, /Your own server/, /A cloud account you already have/]) {
+    // all three ways are shown, each opening on click
+    for (const way of [/A free storage account in your name/, /Your own server/, /A cloud account you already have/]) {
       expect(screen.getByRole('button', { name: way })).toHaveAttribute('aria-expanded', 'false')
     }
-    await userEvent.click(screen.getByRole('button', { name: /Your own computer \(PC\)/ }))
-    expect(screen.getByText(/Get the free storage program \(MinIO\)/)).toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: /A free storage account in your name/ }))
+    expect(screen.getByText(/Make your free storage account/)).toBeVisible()
     expect(screen.getByText(/Encrypted \(AES-256-GCM/)).toBeInTheDocument()
     await expectNoAccessibilityProblems(container)
 

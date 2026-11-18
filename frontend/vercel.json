@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://bon-delicious-able-agreement.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://metres-stops-demand-legend.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

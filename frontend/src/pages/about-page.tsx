@@ -107,7 +107,7 @@ const STORAGE: [string, string[]][] = [
   ['Photos (the original file and a smaller copy for screens)', [
     'Every photo you upload is kept twice: the original file, exactly as taken, and a smaller copy for fast screens and share links.',
     'They are kept in your organization\'s file storage. By default this is the private storage of the server that runs GeoInfraLens AI.',
-    'An organization administrator can switch to your organization\'s own storage instead in Settings, then Data storage: a cloud account in your name (for example Backblaze B2, Amazon S3, Cloudflare R2, Wasabi or Google Cloud), your own server, or a computer in your office running MinIO. New files go there from then on; files saved earlier stay where they were and still open.',
+    'An organization administrator can switch to your organization\'s own storage instead in Settings, then Data storage: a cloud account in your name (for example Backblaze B2, Amazon S3, Cloudflare R2, Wasabi or Google Cloud), or your own server. New files go there from then on; files saved earlier stay where they were and still open.',
   ]],
   ['How files are protected', [
     '- Every file is encrypted (AES-256-GCM) before it is saved, wherever it is saved, so the storage company cannot read it.',
