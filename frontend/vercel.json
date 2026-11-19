@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://cabinet-valve-score-sound.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://agents-llc-sonic-fold.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
