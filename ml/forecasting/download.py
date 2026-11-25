@@ -452,31 +452,38 @@ def overpass_boundary_query(osm: dict[str, Any]) -> str:
     return f"[out:json][timeout:{osm['timeout_s']}];\n{within}{osm['osm_relation_filter']};\nout geom;\n"
 
 
-def boundary_from_overpass(data: dict[str, Any]) -> dict[str, Any]:
-    """GeoJSON FeatureCollection with one (Multi)Polygon: the outer rings of the one boundary relation found."""
+def boundary_from_overpass(data: dict[str, Any], merge: bool = False, expected: int | None = None) -> dict[str, Any]:
+    """GeoJSON FeatureCollection with one (Multi)Polygon: the outer rings of the one boundary relation found.
+    With `merge` (area file: `osm_merge_relations: true`) several relations, e.g. four neighbouring towns, become one shape."""
     from shapely.geometry import LineString, MultiPolygon, mapping
     from shapely.ops import polygonize, unary_union
 
     relations = [e for e in data.get("elements", []) if e.get("type") == "relation"]
-    if len(relations) != 1:
+    if (len(relations) < 1) if merge else (len(relations) != 1):
         names = [((r.get("tags") or {}).get("name"), r.get("id")) for r in relations]
         raise SourceChangedError(
             f"Expected one boundary relation, found {len(relations)}: {names}. Make the area's boundary filter stricter."
         )
-    relation = relations[0]
-    lines = [
-        LineString([(p["lon"], p["lat"]) for p in member["geometry"]])
-        for member in relation.get("members", [])
-        if member.get("type") == "way" and member.get("role", "outer") in ("outer", "") and len(member.get("geometry") or []) >= 2
-    ]
-    polygons = list(polygonize(unary_union(lines)))
-    if not polygons:
-        raise SourceChangedError(f"Boundary relation {relation.get('id')} has no closed outer ring.")
+    if expected is not None and len(relations) != expected:
+        names = [((r.get("tags") or {}).get("name"), r.get("id")) for r in relations]
+        raise SourceChangedError(f"Expected {expected} boundary relations (area file), found {len(relations)}: {names}.")
+    polygons = []
+    for relation in relations:
+        lines = [
+            LineString([(p["lon"], p["lat"]) for p in member["geometry"]])
+            for member in relation.get("members", [])
+            if member.get("type") == "way" and member.get("role", "outer") in ("outer", "") and len(member.get("geometry") or []) >= 2
+        ]
+        found = list(polygonize(unary_union(lines)))
+        if not found:
+            raise SourceChangedError(f"Boundary relation {relation.get('id')} has no closed outer ring.")
+        polygons.extend(found)
     shape = unary_union(polygons)
     if shape.geom_type == "Polygon":
         shape = MultiPolygon([shape])
-    tags = relation.get("tags") or {}
-    feature = {"type": "Feature", "properties": {"name": tags.get("name"), "osm_relation": relation.get("id")}, "geometry": mapping(shape)}
+    name = " + ".join(str((r.get("tags") or {}).get("name")) for r in relations)
+    ids = [r.get("id") for r in relations]
+    feature = {"type": "Feature", "properties": {"name": name, "osm_relation": ids[0] if len(ids) == 1 else ids}, "geometry": mapping(shape)}
     return {"type": "FeatureCollection", "features": [feature]}
 
 
@@ -524,6 +531,8 @@ def plan_downloads(src: dict[str, Any], rules: dict[str, Any]) -> list[dict[str,
                     "portal": False,
                     "url": src["osm"]["overpass_url"],
                     "query": overpass_boundary_query(src["osm"]),
+                    "merge_relations": bool(src["osm"].get("osm_merge_relations")),
+                    "expected_relations": src["osm"].get("osm_expected_relations"),
                     "licence": src["osm"]["licence"],
                 }
             )
@@ -739,7 +748,7 @@ def run_job(
         return 1
     if job["kind"] == "osm_boundary":
         download_file(session, job["url"], out_path, method="POST", data={"data": job["query"]}, timeout=600, sleep=sleep)
-        geojson = boundary_from_overpass(json.loads(out_path.read_text(encoding="utf-8")))
+        geojson = boundary_from_overpass(json.loads(out_path.read_text(encoding="utf-8")), merge=bool(job.get("merge_relations")), expected=job.get("expected_relations"))
         (out_path.parent / "boundary.geojson").write_text(json.dumps(geojson), encoding="utf-8")
         return 1
     if job["kind"] in BBOX_KINDS or (job["kind"] == "arcgis" and src.get(job["config"], {}).get("limit_to_area_box")):

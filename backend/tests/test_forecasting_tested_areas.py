@@ -51,4 +51,8 @@ def test_the_level_label_names_where_the_levels_were_tested() -> None:
     assert road_risk.level_label(row(2, "naperville")) == (
         "Tested risk levels (Chicago model, tested on this city's reports)"
     )
+    assert "seeclickfix.com" in (road_risk.level_label(row(2, "dupage_central")) or "")  # credit to the source
+    cook = road_risk.level_label(row(2, "cook_suburbs")) or ""
+    assert "lower confidence" in cook and "seeclickfix.com" in cook  # honest label + credit
+    assert "lower confidence" not in (road_risk.level_label(row(2, "dupage_central")) or "")
     assert road_risk.level_label(row(1, "p_123")) == "Risk factors only (no pothole history here)"

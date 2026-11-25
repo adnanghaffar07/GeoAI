@@ -48,9 +48,13 @@ LOCAL_TZ = ZoneInfo("America/Chicago")
 DAILY_HOUR, WEEKLY_HOUR = 6, 7  # B-D1
 CHICAGO = "chicago"
 NAPERVILLE = "naperville"
+DUPAGE_CENTRAL = "dupage_central"
+COOK_SUBURBS = "cook_suburbs"
 # Areas with tested levels: Chicago (the model was trained there) and cities whose locked
-# transfer test passed (Naperville, 2026-11-10: PASS). A project inside one gets Level 2 there.
-TESTED_AREAS = (CHICAGO, NAPERVILLE)
+# transfer test passed (Naperville, 2026-11-10: PASS; Central DuPage, 2026-11-24: PASS, SeeClickFix reports,
+# non-commercial use, credit seeclickfix.com; Cook suburbs, 2026-11-25: PASS but few reports, lower confidence).
+# A project inside one gets Level 2 there.
+TESTED_AREAS = (CHICAGO, NAPERVILLE, DUPAGE_CENTRAL, COOK_SUBURBS)
 LEVEL1 = "level1"
 
 

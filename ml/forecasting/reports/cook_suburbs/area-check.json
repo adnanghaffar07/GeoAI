@@ -1,0 +1,205 @@
+{
+  "area": "cook_suburbs",
+  "name": "Cook suburbs (La Grange Park, Elk Grove Village, Schaumburg)",
+  "level": 1,
+  "schema": "cook_suburbs",
+  "map_zone": "EPSG:26916",
+  "box": {
+    "min_lon": -88.1594,
+    "min_lat": 41.8142,
+    "max_lon": -87.8468,
+    "max_lat": 42.0831
+  },
+  "area_km2": 87.9,
+  "osm_extract": "2026-11-24T21:41:29Z",
+  "sections_before_boundary_cut": 10347,
+  "km_before_boundary_cut": 876.6,
+  "weather": {
+    "stations": [
+      {
+        "id": "USW00094846",
+        "name": "Chicago Ohare Intl Ap",
+        "lat": 41.9603,
+        "lon": -87.9317
+      },
+      {
+        "id": "USC00115097",
+        "name": "Lisle - Morton Arboretum",
+        "lat": 41.8128,
+        "lon": -88.0728
+      },
+      {
+        "id": "USC00110442",
+        "name": "Barrington 3Sw",
+        "lat": 42.1153,
+        "lon": -88.1639
+      }
+    ],
+    "snow_station": "USW00094846",
+    "choice": {
+      "rule": {
+        "max_distance_km": 30,
+        "min_complete_share": 0.9,
+        "years": 10,
+        "max_stations": 3,
+        "max_candidates": 8
+      },
+      "measured_from": "2016-01-01",
+      "measured_to": "2025-12-31",
+      "candidates_found": 14,
+      "measured": [
+        {
+          "id": "USW00094846",
+          "lat": 41.9603,
+          "lon": -87.9317,
+          "state": "IL",
+          "name": "CHICAGO OHARE INTL AP",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "62496df4ccc5b464a549714b4dd06cc2c0b02a9e7ab41d8723c6936ef4293f78"
+        },
+        {
+          "id": "USC00115097",
+          "lat": 41.8128,
+          "lon": -88.0728,
+          "state": "IL",
+          "name": "LISLE - MORTON ARBORETUM",
+          "distance_km": 0.2,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.966,
+            "rain": 0.983,
+            "snow": 0.993
+          },
+          "file_sha256": "4b7fc55c2f17e7ec8b95efd486f62c377faed9da19ce0a41a73fcfa04026ad89"
+        },
+        {
+          "id": "USC00110442",
+          "lat": 42.1153,
+          "lon": -88.1639,
+          "state": "IL",
+          "name": "BARRINGTON 3SW",
+          "distance_km": 3.6,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.982,
+            "rain": 0.99,
+            "snow": 0.809
+          },
+          "file_sha256": "251cf8a4c51df1f0f788d278e847d3eea62ba02452bde6f308b7fb802958b173"
+        },
+        {
+          "id": "USW00004838",
+          "lat": 42.1208,
+          "lon": -87.9047,
+          "state": "IL",
+          "name": "CHICAGO PALWAUKEE AP",
+          "distance_km": 4.2,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.998,
+            "rain": 0.996,
+            "snow": 0.057
+          },
+          "file_sha256": "a572e93435679e6a3ed6ea4ef7eee3f883aa2a47aac26f96856d6186e1917595"
+        },
+        {
+          "id": "USW00094892",
+          "lat": 41.8964,
+          "lon": -88.2511,
+          "state": "IL",
+          "name": "CHICAGO W CHICAGO DUPAGE AP",
+          "distance_km": 7.6,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.997,
+            "rain": 0.996,
+            "snow": 0.056
+          },
+          "file_sha256": "6cd553ddc8f2a0bae30495b4aa1b343a728eaa97ad8e771820217550f74aab81"
+        },
+        {
+          "id": "USW00014819",
+          "lat": 41.7842,
+          "lon": -87.7553,
+          "state": "IL",
+          "name": "CHICAGO MIDWAY AP",
+          "distance_km": 8.3,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.999,
+            "rain": 0.998,
+            "snow": 0.057
+          },
+          "file_sha256": "d07f99e8fd717e6b41091bcf80dbbe4c1e09ef5b36d81e281027162037449064"
+        },
+        {
+          "id": "USC00111577",
+          "lat": 41.7372,
+          "lon": -87.7772,
+          "state": "IL",
+          "name": "CHICAGO MIDWAY AP 3SW",
+          "distance_km": 10.3,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "018ee2578fff3e9c4e45f047b17122a960c58ca4207739686de2ddb3f1d54e93"
+        },
+        {
+          "id": "USC00112736",
+          "lat": 42.0628,
+          "lon": -88.2861,
+          "state": "IL",
+          "name": "ELGIN WATER",
+          "distance_km": 10.5,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.979,
+            "rain": 0.996,
+            "snow": 0.982
+          },
+          "file_sha256": "0f91a20c243209a350de88426212445332f85a4ba9d3c2be8fa44d53b0855e23"
+        }
+      ],
+      "stations": [
+        {
+          "id": "USW00094846",
+          "name": "Chicago Ohare Intl Ap",
+          "lat": 41.9603,
+          "lon": -87.9317
+        },
+        {
+          "id": "USC00115097",
+          "name": "Lisle - Morton Arboretum",
+          "lat": 41.8128,
+          "lon": -88.0728
+        },
+        {
+          "id": "USC00110442",
+          "name": "Barrington 3Sw",
+          "lat": 42.1153,
+          "lon": -88.1639
+        }
+      ],
+      "snow_station": "USW00094846",
+      "chosen_at": "2026-11-24"
+    }
+  },
+  "layers": {
+    "pothole history (Level 2)": true,
+    "weather (freeze-thaw, rain, snow)": true,
+    "elevation (USGS, national)": true,
+    "flood zones (FEMA, national)": true,
+    "soil (USDA, national)": true,
+    "traffic counts": true,
+    "bus routes": false
+  }
+}

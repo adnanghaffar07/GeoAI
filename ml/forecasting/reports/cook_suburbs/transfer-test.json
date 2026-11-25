@@ -1,0 +1,150 @@
+{
+  "area": "Cook suburbs (La Grange Park, Elk Grove Village, Schaumburg)",
+  "model": "forecast-chicago-0.2",
+  "test_mondays": [
+    "2025-01-06",
+    "2026-10-19",
+    94
+  ],
+  "reports_from": "2008-06-11",
+  "reports_to": "2026-11-19",
+  "sections": 9635,
+  "same_pothole_repeats_marked": 0,
+  "report_section_matches": 355,
+  "section_mondays_with_a_new_report": 768,
+  "results": {
+    "B1": {
+      "all": {
+        "mondays": 94,
+        "rows": 905690,
+        "base_rate": 0.0008,
+        "precision_at_top_1pct": {
+          "value": 0.0191,
+          "low": 0.0127,
+          "high": 0.026
+        },
+        "recall_at_top_10pct": {
+          "value": 0.4438,
+          "low": 0.3723,
+          "high": 0.5093
+        },
+        "pr_auc": {
+          "value": 0.0201,
+          "low": 0.0185,
+          "high": 0.0229
+        },
+        "brier": {
+          "value": 0.0011,
+          "low": 0.0009,
+          "high": 0.0012
+        }
+      },
+      "winter": {
+        "mondays": 43,
+        "rows": 414305,
+        "base_rate": 0.0012,
+        "precision_at_top_1pct": {
+          "value": 0.0352,
+          "low": 0.024,
+          "high": 0.0477
+        },
+        "recall_at_top_10pct": {
+          "value": 0.5622,
+          "low": 0.4657,
+          "high": 0.6648
+        },
+        "pr_auc": {
+          "value": 0.0295,
+          "low": 0.0259,
+          "high": 0.0347
+        },
+        "brier": {
+          "value": 0.0015,
+          "low": 0.0013,
+          "high": 0.0017
+        }
+      }
+    },
+    "B0": {
+      "all": {
+        "mondays": 94,
+        "rows": 905690,
+        "base_rate": 0.0008,
+        "precision_at_top_1pct": {
+          "value": 0.009,
+          "low": 0.0055,
+          "high": 0.0134
+        },
+        "recall_at_top_10pct": {
+          "value": 0.1612,
+          "low": 0.1253,
+          "high": 0.2012
+        },
+        "pr_auc": {
+          "value": 0.0112,
+          "low": 0.0108,
+          "high": 0.0121
+        },
+        "brier": {
+          "value": 0.0061,
+          "low": 0.006,
+          "high": 0.0062
+        }
+      },
+      "winter": {
+        "mondays": 43,
+        "rows": 414305,
+        "base_rate": 0.0012,
+        "precision_at_top_1pct": {
+          "value": 0.0144,
+          "low": 0.007,
+          "high": 0.0228
+        },
+        "recall_at_top_10pct": {
+          "value": 0.1405,
+          "low": 0.0908,
+          "high": 0.189
+        },
+        "pr_auc": {
+          "value": 0.0164,
+          "low": 0.0157,
+          "high": 0.0249
+        },
+        "brier": {
+          "value": 0.0064,
+          "low": 0.0062,
+          "high": 0.0066
+        }
+      }
+    }
+  },
+  "checks": {
+    "1_precision_top_1pct_ratio": {
+      "value": 2.1222,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "2_precision_ci_low_above_baseline": {
+      "value": 0.0127,
+      "needed": "> 0.009",
+      "passed": true
+    },
+    "3_pr_auc_ratio": {
+      "value": 1.7946,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "4_winter_precision_ratio": {
+      "value": 2.4444,
+      "needed": ">= 1.0",
+      "passed": true
+    },
+    "5_brier_better_than_baseline": {
+      "value": 0.0011,
+      "needed": "< 0.0061",
+      "passed": true
+    }
+  },
+  "outcome": "PASS",
+  "pass_marks_note": "PLACEHOLDER pass marks until PI-20 (same as Chicago's)."
+}

@@ -1,0 +1,150 @@
+{
+  "area": "Central DuPage (Lombard, Glen Ellyn, Oak Brook, Wheaton)",
+  "model": "forecast-chicago-0.2",
+  "test_mondays": [
+    "2025-01-06",
+    "2026-10-19",
+    94
+  ],
+  "reports_from": "2013-02-12",
+  "reports_to": "2026-11-19",
+  "sections": 10160,
+  "same_pothole_repeats_marked": 0,
+  "report_section_matches": 731,
+  "section_mondays_with_a_new_report": 1604,
+  "results": {
+    "B1": {
+      "all": {
+        "mondays": 94,
+        "rows": 955040,
+        "base_rate": 0.0017,
+        "precision_at_top_1pct": {
+          "value": 0.0159,
+          "low": 0.0126,
+          "high": 0.0192
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3353,
+          "low": 0.2957,
+          "high": 0.3768
+        },
+        "pr_auc": {
+          "value": 0.0059,
+          "low": 0.0053,
+          "high": 0.0068
+        },
+        "brier": {
+          "value": 0.0019,
+          "low": 0.0018,
+          "high": 0.002
+        }
+      },
+      "winter": {
+        "mondays": 43,
+        "rows": 436880,
+        "base_rate": 0.0014,
+        "precision_at_top_1pct": {
+          "value": 0.0207,
+          "low": 0.0155,
+          "high": 0.026
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3998,
+          "low": 0.337,
+          "high": 0.4684
+        },
+        "pr_auc": {
+          "value": 0.0099,
+          "low": 0.0085,
+          "high": 0.0112
+        },
+        "brier": {
+          "value": 0.0018,
+          "low": 0.0016,
+          "high": 0.002
+        }
+      }
+    },
+    "B0": {
+      "all": {
+        "mondays": 94,
+        "rows": 955040,
+        "base_rate": 0.0017,
+        "precision_at_top_1pct": {
+          "value": 0.0084,
+          "low": 0.006,
+          "high": 0.0112
+        },
+        "recall_at_top_10pct": {
+          "value": 0.1559,
+          "low": 0.1257,
+          "high": 0.196
+        },
+        "pr_auc": {
+          "value": 0.0029,
+          "low": 0.0027,
+          "high": 0.0039
+        },
+        "brier": {
+          "value": 0.0069,
+          "low": 0.0067,
+          "high": 0.007
+        }
+      },
+      "winter": {
+        "mondays": 43,
+        "rows": 436880,
+        "base_rate": 0.0014,
+        "precision_at_top_1pct": {
+          "value": 0.0116,
+          "low": 0.0073,
+          "high": 0.0162
+        },
+        "recall_at_top_10pct": {
+          "value": 0.1989,
+          "low": 0.1417,
+          "high": 0.2714
+        },
+        "pr_auc": {
+          "value": 0.0052,
+          "low": 0.0049,
+          "high": 0.0093
+        },
+        "brier": {
+          "value": 0.0066,
+          "low": 0.0064,
+          "high": 0.0067
+        }
+      }
+    }
+  },
+  "checks": {
+    "1_precision_top_1pct_ratio": {
+      "value": 1.8929,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "2_precision_ci_low_above_baseline": {
+      "value": 0.0126,
+      "needed": "> 0.0084",
+      "passed": true
+    },
+    "3_pr_auc_ratio": {
+      "value": 2.0345,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "4_winter_precision_ratio": {
+      "value": 1.7845,
+      "needed": ">= 1.0",
+      "passed": true
+    },
+    "5_brier_better_than_baseline": {
+      "value": 0.0019,
+      "needed": "< 0.0069",
+      "passed": true
+    }
+  },
+  "outcome": "PASS",
+  "pass_marks_note": "PLACEHOLDER pass marks until PI-20 (same as Chicago's)."
+}

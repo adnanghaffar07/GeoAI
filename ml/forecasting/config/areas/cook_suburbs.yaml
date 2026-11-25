@@ -1,0 +1,33 @@
+# Area: three Cook County suburbs (La Grange Park, Elk Grove Village, Schaumburg). RESEARCH TEST ONLY.
+# Counties expansion (team lead, 2026-11-24): the Cook towns that publish pothole reports through SeeClickFix.
+# Same data and same licence note as dupage_central: SeeClickFix public API, CC BY-NC-SA 3.0 (non-commercial,
+# credit seeclickfix.com, large reuse needs their OK): INTERNAL RESEARCH ONLY until written permission.
+# The towns are not next to each other (La Grange Park is south-west of Chicago; the other two are north-west).
+name: Cook suburbs (La Grange Park, Elk Grove Village, Schaumburg)
+schema: cook_suburbs
+level: 1
+
+boundary:
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"~"^(La Grange Park|Elk Grove Village|Schaumburg)$"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Illinois"]'
+  osm_merge_relations: true
+  osm_expected_relations: 3
+
+weather_stations: auto
+
+traffic_counts: idot
+
+city_potholes:
+  licence: SeeClickFix public API v2, CC BY-NC-SA 3.0 US (credit seeclickfix.com; non-commercial use). Owner decision 2026-11-24/25 - non-commercial project.
+  portal_type: seeclickfix
+  api: https://seeclickfix.com/api/v2/issues
+  unknown_points: [[0.0, 0.0]]
+  systems:
+    - name: seeclickfix_cook                # La Grange Park, Elk Grove Village, Schaumburg (about 400 since 2022)
+      pause_s: 3.2                          # SeeClickFix allows 20 requests a minute
+      boxes:                                # (min_lat, min_lng, max_lat, max_lng), one per town; repeats kept once
+        - [41.81, -87.89, 41.84, -87.85]    # La Grange Park
+        - [41.97, -88.04, 42.02, -87.96]    # Elk Grove Village
+        - [42.00, -88.13, 42.06, -88.03]    # Schaumburg
+      timezone: America/Chicago
+      columns: {request_id: id, created_at: created_at, status: status, latitude: lat, longitude: lng}

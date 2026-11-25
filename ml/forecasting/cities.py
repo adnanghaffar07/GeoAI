@@ -5,7 +5,8 @@ source, request_id, created_at, is_duplicate, status, latitude, longitude. Only 
 columns are fetched: no addresses, names or free text.
 
 Portal types: "ckan_sql" (CKAN DataStore SQL, e.g. Boston), "carto_sql" (Carto SQL API, e.g. Philadelphia),
-"arcgis" (ArcGIS Feature Service layers, e.g. Naperville). Socrata (New York) is added with its city.
+"arcgis" (ArcGIS Feature Service layers, e.g. Naperville), "csv_files" (CSV files already downloaded into a folder), "seeclickfix" (the
+public SeeClickFix API v2 for towns that take reports there, e.g. Central DuPage; at most 20 requests a minute). Socrata (New York) is added with its city.
 
 Systems run one after the other (an old 311 system replaced by a new one), or side by side ("parallel_systems": e.g.
 Naperville's residents' requests and the city crews' repair work orders). A work order made for a request that is
@@ -16,6 +17,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import time
 from collections import Counter
 from pathlib import Path
@@ -111,6 +113,70 @@ def arcgis_rows(session: requests.Session, api: str, system: dict[str, Any], pag
         offset += len(data["features"])
 
 
+def seeclickfix_rows(session: requests.Session, api: str, system: dict[str, Any], page: int, sleep=time.sleep):
+    """Pothole reports from the public SeeClickFix API v2, one search box per town. Yields (source, record).
+
+    Licence: CC BY-NC-SA 3.0 US (credit seeclickfix.com; non-commercial). Their limit is 20 requests a minute, so we wait
+    `pause_s` (default 3.2 s) between requests. Only the id, date, status and point are kept (no text, names or photos).
+    A report found in two towns' boxes is kept once."""
+    pothole = re.compile(r"(?i)pot\s?hole")
+    seen: set[str] = set()
+    pause = float(system.get("pause_s", 3.2))
+    for box in system["boxes"]:
+        number = 1
+        while number <= int(system.get("max_pages", 60)):
+            params = {
+                "min_lat": box[0], "min_lng": box[1], "max_lat": box[2], "max_lng": box[3],
+                "search": "pothole", "status": "open,acknowledged,closed,archived",
+                "per_page": 100, "page": number, "sort": "created_at", "sort_direction": "DESC",
+            }  # fmt: skip
+            answer = request_with_retries(session, "GET", api, params=params, sleep=sleep)
+            data = json.loads(answer.content)
+            if "issues" not in data:
+                raise SourceChangedError(f"{system['name']}: SeeClickFix did not answer with issues ({str(data)[:200]}).")
+            for issue in data["issues"]:
+                key = str(issue.get("id") or "")
+                if not key or key in seen:
+                    continue
+                seen.add(key)
+                title = str((issue.get("request_type") or {}).get("title") or "")
+                if not pothole.search(f"{title} {issue.get('summary') or ''}"):
+                    continue
+                yield "seeclickfix", {
+                    "id": issue["id"], "created_at": issue.get("created_at"), "status": issue.get("status"),
+                    "lat": issue.get("lat"), "lng": issue.get("lng"),
+                }  # fmt: skip
+            if not (data.get("metadata") or {}).get("pagination", {}).get("next_page"):
+                break
+            number += 1
+            sleep(pause)
+        sleep(pause)
+
+
+def csv_rows(session: requests.Session, api: str, system: dict[str, Any], page: int, sleep=time.sleep):
+    """Pothole rows from CSV files in a folder (`api`; relative paths start at the project folder). Yields (file, record).
+
+    The files are only read. A request number that appears in two files (towns whose search boxes overlap) is kept once."""
+    from forecasting import settings
+
+    folder = Path(api)
+    if not folder.is_absolute():
+        folder = settings.FORECAST_DIR.parents[1] / folder
+    seen: set[str] = set()
+    id_column = system["columns"]["request_id"]
+    for name in system["files"]:
+        path = folder / name
+        if not path.exists():
+            raise SourceChangedError(f"{system['name']}: the file {path} is missing.")
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            for record in csv.DictReader(handle):
+                key = str(record.get(id_column) or "").strip()
+                if key and key in seen:
+                    continue
+                seen.add(key)
+                yield name, record
+
+
 def local_time(value: str, timezone: str | None) -> str:
     """'2016-01-10T21:12:50Z' (UTC) or milliseconds since 1970 (UTC) -> the city's local time, like Chicago's;
     times without a zone are kept."""
@@ -146,7 +212,7 @@ def normalise(record: dict[str, Any], system: dict[str, Any], name: str) -> list
 
 def download_city_potholes(session: requests.Session, cfg: dict[str, Any], out_path: Path, sleep=time.sleep) -> int:
     """All configured 311 systems into one CSV. A newer system takes over from its first day (no report counted twice)."""
-    readers = {"ckan_sql": ckan_rows, "carto_sql": carto_rows, "arcgis": arcgis_rows}
+    readers = {"ckan_sql": ckan_rows, "carto_sql": carto_rows, "arcgis": arcgis_rows, "csv_files": csv_rows, "seeclickfix": seeclickfix_rows}
     if cfg["portal_type"] not in readers:
         raise SourceChangedError(f"Portal type {cfg['portal_type']} is not supported yet.")
     reader = readers[cfg["portal_type"]]

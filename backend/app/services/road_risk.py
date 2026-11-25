@@ -66,6 +66,13 @@ LEVEL_LABELS = {1: "Risk factors only (no pothole history here)", 2: "Tested Chi
 
 def level_label(row: Any) -> str | None:
     """Level 2 outside Chicago: the Chicago model, tested on the city's own reports."""
+    if row.level == 2 and row.area_key == forecasting.DUPAGE_CENTRAL:
+        return "Tested risk levels (Chicago model, tested on this area's pothole reports; reports: seeclickfix.com)"
+    if row.level == 2 and row.area_key == forecasting.COOK_SUBURBS:
+        return (
+            "Tested risk levels, lower confidence (Chicago model, tested on few pothole reports "
+            "in this area; reports: seeclickfix.com)"
+        )
     if row.level == 2 and row.area_key != forecasting.CHICAGO:
         return "Tested risk levels (Chicago model, tested on this city's reports)"
     return LEVEL_LABELS.get(row.level)

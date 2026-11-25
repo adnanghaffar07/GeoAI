@@ -411,3 +411,28 @@ def test_learning_table_comparison(tmp_path):
     np.save(new / "label.npy", np.array([[0, 1], [1, 1]], np.int8))
     results = {r["item"]: r["same"] for r in check.compare_learning_tables(old, new)}
     assert results["label.npy"] is False and results["weather__x.npy"] is True
+
+
+def test_boundary_from_overpass_can_merge_several_towns():
+    from shapely.geometry import shape
+
+    one = square_ways()
+    two = json.loads(json.dumps(one))
+    for element in two["elements"]:
+        for member in element.get("members", []):
+            for point in member.get("geometry", []):
+                point["lon"] += 0.5
+        element["id"] = element.get("id", 0) + 1000
+    merged = {"elements": one["elements"] + two["elements"]}
+    with pytest.raises(download.SourceChangedError, match="Expected one boundary relation"):
+        download.boundary_from_overpass(merged)
+    data = download.boundary_from_overpass(merged, merge=True)
+    assert shape(data["features"][0]["geometry"]).geom_type == "MultiPolygon"
+    assert len(shape(data["features"][0]["geometry"]).geoms) == 2
+
+
+def test_boundary_merge_stops_if_a_town_is_missing():
+    import pytest
+
+    with pytest.raises(download.SourceChangedError, match="Expected 2 boundary relations"):
+        download.boundary_from_overpass(square_ways(), merge=True, expected=2)

@@ -1,0 +1,38 @@
+# Area: Central DuPage County, Illinois (Lombard, Glen Ellyn, Oak Brook, Wheaton). RESEARCH TEST ONLY.
+# Counties expansion (team lead, 2026-11-24): the four towns that publish pothole reports through SeeClickFix.
+# Pothole history = public SeeClickFix reports downloaded by scripts/county-data-download.bat into
+# scripts/seeclickfix-data (date, status, type, point only). SeeClickFix's data licence is CC BY-NC-SA 3.0
+# (non-commercial, attribution to seeclickfix.com, large reuse needs their OK): INTERNAL RESEARCH ONLY until
+# SeeClickFix or the towns give written permission. Do not use in the product or for retraining before that.
+name: Central DuPage (Lombard, Glen Ellyn, Oak Brook, Wheaton)
+schema: dupage_central
+level: 1
+# projected_crs is worked out from the area's centre (NAD83 / UTM zone 16N here)
+
+boundary:
+  # The four village/city boundaries in OpenStreetMap, merged into one shape.
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"~"^(Lombard|Glen Ellyn|Oak Brook|Wheaton)$"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Illinois"]'
+  osm_merge_relations: true
+  osm_expected_relations: 4               # stop if a town is missing in OpenStreetMap
+
+weather_stations: auto
+
+traffic_counts: idot
+
+city_potholes:
+  licence: SeeClickFix public API v2, CC BY-NC-SA 3.0 US (credit seeclickfix.com; non-commercial use). Owner decision 2026-11-24 - non-commercial project.
+  portal_type: seeclickfix
+  api: https://seeclickfix.com/api/v2/issues
+  unknown_points: [[0.0, 0.0]]
+  systems:
+    - name: seeclickfix_dupage              # residents' pothole reports in four towns (about 630 since 2013, mostly 2022 on)
+      pause_s: 3.2                          # SeeClickFix allows 20 requests a minute
+      # Search boxes (min_lat, min_lng, max_lat, max_lng), one per town; reports found twice are kept once.
+      boxes:
+        - [41.85, -88.10, 41.90, -88.03]    # Glen Ellyn
+        - [41.84, -88.04, 41.90, -87.95]    # Lombard
+        - [41.81, -87.98, 41.87, -87.90]    # Oak Brook
+        - [41.82, -88.14, 41.89, -88.07]    # Wheaton
+      timezone: America/Chicago
+      columns: {request_id: id, created_at: created_at, status: status, latitude: lat, longitude: lng}

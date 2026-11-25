@@ -108,3 +108,70 @@ def test_naperville_requests_and_crew_repairs_side_by_side(tmp_path):
     loaded = list(cities.parse_city_csv(out, cfg, bbox, stats, "outside_naperville"))
     assert len(loaded) == 4 and stats["naperville_requests.location_default_point"] == 1  # 0,0 = no location
     assert stats["naperville_crew_repairs.duplicates"] == 1
+
+
+def test_csv_files_are_read_once_and_overlapping_ids_kept_once(tmp_path):
+    cfg = {
+        "portal_type": "csv_files",
+        "api": str(tmp_path),
+        "systems": [
+            {
+                "name": "seeclickfix_test",
+                "files": ["a.csv", "b.csv"],
+                "timezone": "America/Chicago",
+                "columns": {"request_id": "id", "created_at": "created_at", "status": "status", "latitude": "lat", "longitude": "lng"},
+            }
+        ],
+    }
+    header = "id,created_at,status,lat,lng\n"
+    (tmp_path / "a.csv").write_text(header + "1,2025-02-03T10:00:00-06:00,Archived,41.87,-88.01\n2,2025-02-04T11:00:00-06:00,Open,41.86,-88.05\n")
+    (tmp_path / "b.csv").write_text(header + "2,2025-02-04T11:00:00-06:00,Open,41.86,-88.05\n3,2025-02-05T12:00:00-06:00,Closed,41.85,-87.95\n")
+    out = tmp_path / "potholes_city.csv"
+    assert cities.download_city_potholes(FakeSession([]), cfg, out, sleep=no_sleep) == 3  # id 2 is in both files
+    rows = list(csv.DictReader(out.open(encoding="utf-8")))
+    assert [(r["request_id"], r["created_at"]) for r in rows] == [
+        ("1", "2025-02-03T10:00:00"),
+        ("2", "2025-02-04T11:00:00"),
+        ("3", "2025-02-05T12:00:00"),
+    ]  # the local time as written, no zone shift
+
+
+def test_seeclickfix_pages_one_box_per_town_and_keeps_repeats_once(tmp_path):
+    cfg = {
+        "portal_type": "seeclickfix",
+        "api": "https://seeclickfix.com/api/v2/issues",
+        "systems": [
+            {
+                "name": "seeclickfix_test",
+                "pause_s": 3.2,
+                "boxes": [[41.85, -88.10, 41.90, -88.03], [41.84, -88.04, 41.90, -87.95]],
+                "timezone": "America/Chicago",
+                "columns": {"request_id": "id", "created_at": "created_at", "status": "status", "latitude": "lat", "longitude": "lng"},
+            }
+        ],
+    }
+
+    def issue(number, title, when="2026-03-02T09:30:00-06:00"):
+        return {"id": number, "summary": title, "request_type": {"title": title}, "created_at": when, "status": "Archived",
+                "lat": 41.87, "lng": -88.05, "description": "text we never keep", "reporter": {"name": "never kept"}}  # fmt: skip
+
+    def answer(issues, more=False):
+        body = {"issues": issues, "metadata": {"pagination": {"next_page": 2 if more else None}}}
+        return FakeResponse(body=json.dumps(body).encode())
+
+    session = FakeSession([
+        answer([issue(1, "Pothole"), issue(2, "Sidewalk Defect")], more=True),  # town 1, page 1
+        answer([issue(3, "Pothole or Roadway Repair")]),  # town 1, page 2
+        answer([issue(3, "Pothole or Roadway Repair"), issue(4, "Pot Hole")]),  # town 2: id 3 is a repeat
+    ])
+    waits = []
+    out = tmp_path / "potholes_city.csv"
+    assert cities.download_city_potholes(session, cfg, out, sleep=waits.append) == 3
+    rows = list(csv.DictReader(out.open(encoding="utf-8")))
+    assert [r["request_id"] for r in rows] == ["1", "3", "4"]  # the sidewalk report is not a pothole
+    assert rows[0]["created_at"] == "2026-03-02T09:30:00"
+    assert "description" not in rows[0] and "reporter" not in str(rows)
+    first = session.calls[0][2]["params"]
+    assert first["min_lat"] == 41.85 and first["search"] == "pothole" and first["per_page"] == 100
+    assert session.calls[1][2]["params"]["page"] == 2
+    assert waits.count(3.2) >= 3  # we wait between requests (their limit is 20 a minute)
