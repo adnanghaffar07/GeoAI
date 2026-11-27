@@ -11,6 +11,9 @@ function Fail($text) { Write-Host ""; Write-Host "STOPPED: $text" -ForegroundCol
 
 $area = (Read-Host "Area name (press Enter for naperville)").Trim().ToLower()
 if (-not $area) { $area = "naperville" }
+$firstMonday = (Read-Host "First test Monday (press Enter for 2025-01-06; use a date about 90 days after the area's first report if its history is short)").Trim()
+if (-not $firstMonday) { $firstMonday = "2025-01-06" }
+if ($firstMonday -notmatch '^\d{4}-\d{2}-\d{2}$') { Fail "The date must look like 2025-05-05." }
 
 Step "1/3 Reading database user and password from .env"
 if (-not (Test-Path ".env")) { Fail "No .env file in $root" }
@@ -34,7 +37,7 @@ Set-Location (Join-Path $root "ml")
 $answer = (Read-Host "This locked test runs only once. Type YES to run it now").Trim()
 if ($answer -ne "YES") { Fail "Not started (you did not type YES)." }
 Step "3/3 Running the transfer test for $area"
-& $venvPython -u -m forecasting.run --area $area transfer-test --owner-go-ahead
+& $venvPython -u -m forecasting.run --area $area transfer-test --first-monday $firstMonday --owner-go-ahead
 if ($LASTEXITCODE -ne 0) { Fail "The transfer test did not finish. Send the lines above to Claude." }
 Write-Host ""
 Write-Host "DONE. Send ml\forecasting\reports\naperville\transfer-test.md to Claude." -ForegroundColor Green

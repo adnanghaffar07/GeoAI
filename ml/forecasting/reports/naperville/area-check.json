@@ -61,7 +61,7 @@
             "rain": 0.983,
             "snow": 0.993
           },
-          "file_sha256": "48cfc7dc2b5d9cd97e9ba959ee64c348d1959f05fb259b4049e2aa280609c1f8"
+          "file_sha256": "4b7fc55c2f17e7ec8b95efd486f62c377faed9da19ce0a41a73fcfa04026ad89"
         },
         {
           "id": "USC00110338",
@@ -76,7 +76,7 @@
             "rain": 0.999,
             "snow": 0.891
           },
-          "file_sha256": "f86e8002df8069808cd0cbf29b96706016b489e1a909c9de700c5f66bc725192"
+          "file_sha256": "bfa899f979bfdfc8d50401aea50b869d9b5e7698cea959cb9289ac0415582607"
         },
         {
           "id": "USC00117457",
@@ -91,7 +91,7 @@
             "rain": 1.0,
             "snow": 1.0
           },
-          "file_sha256": "a7555de41029c42aa07559a1d36f2a5fad84de08309b5da993132996f87d7f43"
+          "file_sha256": "1554415b5176601458068f43b1a88d51f3307becc5f03638145a50bf032bd555"
         },
         {
           "id": "USW00094892",
@@ -190,11 +190,11 @@
         }
       ],
       "snow_station": "USC00117457",
-      "chosen_at": "2026-11-06"
+      "chosen_at": "2026-11-25"
     }
   },
   "layers": {
-    "pothole history (Level 2)": false,
+    "pothole history (Level 2)": true,
     "weather (freeze-thaw, rain, snow)": true,
     "elevation (USGS, national)": true,
     "flood zones (FEMA, national)": true,

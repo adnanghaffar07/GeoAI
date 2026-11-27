@@ -21,7 +21,7 @@ Model `forecast-chicago-0.2`, used unchanged. Test Mondays 2025-01-06 to 2026-10
 | 5_brier_better_than_baseline | 0.0023 | < 0.0072 | yes |
 
 ## Limits
-- The city's history starts in 2023, so the model's 3- and 5-year history inputs are shorter than in Chicago.
-- Few reports (about 150-190 a year): wide ranges; a FAIL can mean 'not enough data' as well as 'does not transfer'.
+- Reports in this area start 2023-01-02; where the history is shorter than in Chicago, the model's 3- and 5-year history inputs are shorter too.
+- Few new-report weeks (2,255 section-Mondays): wide ranges; a FAIL can mean 'not enough data' as well as 'does not transfer'.
 - A report is a report, not an inspection; crew repairs are confirmed potholes.
 - Probabilities are Chicago's scale (much higher than here), so the Brier check mainly tests calibration.

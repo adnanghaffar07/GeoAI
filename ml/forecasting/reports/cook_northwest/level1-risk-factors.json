@@ -1,0 +1,140 @@
+{
+  "info": {
+    "as_of": "2026-11-16",
+    "weather_up_to": "2026-11-15",
+    "stations": [
+      "USC00110442",
+      "USW00004838",
+      "USW00094846"
+    ],
+    "sections": 12525
+  },
+  "counts": {
+    "freeze_thaw_14d": {
+      "high": 0,
+      "medium": 0,
+      "low": 12525,
+      "missing": 0
+    },
+    "below_freezing_days_30d": {
+      "high": 0,
+      "medium": 0,
+      "low": 12525,
+      "missing": 0
+    },
+    "heavy_rain_days_30d": {
+      "high": 0,
+      "medium": 0,
+      "low": 12525,
+      "missing": 0
+    },
+    "snow_mm_30d": {
+      "high": 0,
+      "medium": 0,
+      "low": 12525,
+      "missing": 0
+    },
+    "low_spot_m": {
+      "high": 636,
+      "medium": 2808,
+      "low": 9073,
+      "missing": 8
+    },
+    "slope_pct": {
+      "high": 1821,
+      "medium": 6188,
+      "low": 4511,
+      "missing": 5
+    },
+    "flood_zone": {
+      "high": 601,
+      "medium": 1436,
+      "low": 10488,
+      "missing": 0
+    },
+    "traffic_band": {
+      "high": 227,
+      "medium": 1390,
+      "low": 1834,
+      "missing": 9074
+    },
+    "heavy_vehicle_band": {
+      "high": 20,
+      "medium": 360,
+      "low": 3071,
+      "missing": 9074
+    },
+    "bus_routes": {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "missing": 12525
+    },
+    "road_roughness": {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "missing": 0
+    },
+    "cracking": {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "missing": 0
+    },
+    "rutting": {
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "missing": 0
+    }
+  },
+  "cutoffs": {
+    "status": "APPROVED",
+    "approved": "2026-10-30",
+    "drafted": "2026-10-30",
+    "drafted_from": "Chicago training Mondays (2012-01-02 to 2021-05-31), held-out areas left out",
+    "rule": "medium = 75th, high = 95th percentile (dips: 10th and 2nd); freeze, frost and snow on Nov-Apr Mondays",
+    "fixed_levels": "flood zone, traffic, heavy vehicles and bus routes use fixed levels (see risk_factors.py)",
+    "risk_factors": [
+      "freeze_thaw_14d",
+      "below_freezing_days_30d",
+      "snow_mm_30d",
+      "bus_routes"
+    ],
+    "background": [
+      "heavy_rain_days_30d",
+      "low_spot_m",
+      "slope_pct",
+      "flood_zone",
+      "traffic_band",
+      "heavy_vehicle_band"
+    ],
+    "cutoffs": {
+      "freeze_thaw_14d": {
+        "medium": 7.0,
+        "high": 10.0
+      },
+      "below_freezing_days_30d": {
+        "medium": 10.0,
+        "high": 17.0
+      },
+      "heavy_rain_days_30d": {
+        "medium": 1.0,
+        "high": 2.0
+      },
+      "snow_mm_30d": {
+        "medium": 241.0,
+        "high": 664.0
+      },
+      "low_spot_m": {
+        "medium": -0.26,
+        "high": -0.82
+      },
+      "slope_pct": {
+        "medium": 0.31,
+        "high": 1.03
+      }
+    }
+  }
+}

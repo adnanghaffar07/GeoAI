@@ -82,7 +82,8 @@ def arcgis_rows(session: requests.Session, api: str, system: dict[str, Any], pag
     """Pothole rows from one ArcGIS Feature Service layer (e.g. Naperville), paged. Yields (layer, record).
 
     Only the configured columns are asked for (no addresses or free text); dates come as milliseconds since 1970 (UTC)."""
-    names = ",".join(dict.fromkeys(system["columns"].values()))
+    point = bool(system.get("geometry_point"))  # layer has no lat/long columns: take them from the map point (WGS84)
+    names = ",".join(dict.fromkeys(v for v in system["columns"].values() if not (point and v in ("_lat", "_lng"))))
     column = system["type_column"]
     tests = []
     if system.get("pothole_values"):
@@ -99,15 +100,21 @@ def arcgis_rows(session: requests.Session, api: str, system: dict[str, Any], pag
             "orderByFields": system.get("order_by", "OBJECTID"),
             "resultOffset": offset,
             "resultRecordCount": page,
-            "returnGeometry": "false",
+            "returnGeometry": "true" if point else "false",
             "f": "json",
         }
+        if point:
+            params["outSR"] = 4326
         answer = request_with_retries(session, "GET", url, params=params, sleep=sleep)
         data = json.loads(answer.content)
         if "features" not in data:
             raise SourceChangedError(f"{system['name']}: the map service refused the query ({str(data.get('error'))[:200]}).")
         for feature in data["features"]:
-            yield system["layer"], feature.get("attributes") or {}
+            record = dict(feature.get("attributes") or {})
+            if point:
+                geometry = feature.get("geometry") or {}
+                record["_lat"], record["_lng"] = geometry.get("y"), geometry.get("x")
+            yield system["layer"], record
         if not data["features"] or not (data.get("exceededTransferLimit") or len(data["features"]) >= page):
             break
         offset += len(data["features"])

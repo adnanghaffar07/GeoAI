@@ -349,6 +349,11 @@ def summary_table(rows: list[tuple]) -> dict[str, dict[str, int]]:
     return counts
 
 
+def _not_measured(c: dict[str, int], info: dict[str, Any]) -> int:
+    """Sections with no value for a factor: saved as 'missing', or (road condition) not saved at all where HPMS did not measure."""
+    return max(int(info.get("sections", 0)) - c["high"] - c["medium"] - c["low"], c["missing"])
+
+
 def report_markdown(
     area_name: str,
     info: dict[str, Any],
@@ -366,8 +371,8 @@ def report_markdown(
             if status != "APPROVED"
             else []
         ),
-        "These are **risk factors, not a forecast**: there is no pothole history here, so no chance (percentage) can be "
-        "tested and none is shown. A high factor means a known cause of potholes is present, not that a pothole exists.",
+        "These are **risk factors, not a forecast**: there is no tested forecast for this area (no pothole history, or too little "
+        "of it), so no chance (percentage) can be tested and none is shown. A high factor means a known cause of potholes is present, not that a pothole exists.",
         "",
         f"As of {info['as_of']} (weather up to {info['weather_up_to']}; stations: {', '.join(info['stations']) or 'none'}). "
         f"{info['sections']:,} road sections.",
@@ -379,7 +384,7 @@ def report_markdown(
     ]
     for name, c in counts.items():
         if name not in background:
-            lines.append(f"| {FACTORS[name][0]} | {c['high']:,} | {c['medium']:,} | {c['low']:,} | {c['missing']:,} |")
+            lines.append(f"| {FACTORS[name][0]} | {c['high']:,} | {c['medium']:,} | {c['low']:,} | {_not_measured(c, info):,} |")
     if background:
         lines += [
             "",
@@ -393,7 +398,7 @@ def report_markdown(
         ]
         for name in background:
             c = counts[name]
-            lines.append(f"| {FACTORS[name][0]} | {c['high']:,} | {c['medium']:,} | {c['low']:,} | {c['missing']:,} |")
+            lines.append(f"| {FACTORS[name][0]} | {c['high']:,} | {c['medium']:,} | {c['low']:,} | {_not_measured(c, info):,} |")
     lines += ["", *extra, ""]
     return "\n".join(lines)
 

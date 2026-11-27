@@ -1,0 +1,555 @@
+{
+  "model_c": "forecast-chicago-0.2",
+  "results": {
+    "dupage_central": {
+      "C": {
+        "all": {
+          "mondays": 94,
+          "rows": 955040,
+          "base_rate": 0.0017,
+          "precision_at_top_1pct": {
+            "value": 0.0159,
+            "low": 0.0126,
+            "high": 0.0192
+          },
+          "recall_at_top_10pct": {
+            "value": 0.3353,
+            "low": 0.2957,
+            "high": 0.3768
+          },
+          "pr_auc": {
+            "value": 0.0059,
+            "low": 0.0053,
+            "high": 0.0068
+          },
+          "brier": {
+            "value": 0.0019,
+            "low": 0.0018,
+            "high": 0.0021
+          }
+        }
+      },
+      "B0": {
+        "all": {
+          "mondays": 94,
+          "rows": 955040,
+          "base_rate": 0.0017,
+          "precision_at_top_1pct": {
+            "value": 0.0084,
+            "low": 0.006,
+            "high": 0.0112
+          },
+          "recall_at_top_10pct": {
+            "value": 0.1559,
+            "low": 0.1257,
+            "high": 0.196
+          },
+          "pr_auc": {
+            "value": 0.0029,
+            "low": 0.0027,
+            "high": 0.0039
+          },
+          "brier": {
+            "value": 0.0069,
+            "low": 0.0067,
+            "high": 0.007
+          }
+        }
+      },
+      "K1": {
+        "all": {
+          "mondays": 94,
+          "rows": 955040,
+          "base_rate": 0.0017,
+          "precision_at_top_1pct": {
+            "value": 0.0127,
+            "low": 0.0102,
+            "high": 0.0154
+          },
+          "recall_at_top_10pct": {
+            "value": 0.3892,
+            "low": 0.3472,
+            "high": 0.4334
+          },
+          "pr_auc": {
+            "value": 0.0056,
+            "low": 0.0049,
+            "high": 0.0065
+          },
+          "brier": {
+            "value": 0.0017,
+            "low": 0.0015,
+            "high": 0.0018
+          }
+        }
+      },
+      "K2": {
+        "all": {
+          "mondays": 94,
+          "rows": 955040,
+          "base_rate": 0.0017,
+          "precision_at_top_1pct": {
+            "value": 0.0162,
+            "low": 0.0128,
+            "high": 0.0197
+          },
+          "recall_at_top_10pct": {
+            "value": 0.3432,
+            "low": 0.3041,
+            "high": 0.3853
+          },
+          "pr_auc": {
+            "value": 0.006,
+            "low": 0.0054,
+            "high": 0.0068
+          },
+          "brier": {
+            "value": 0.0017,
+            "low": 0.0015,
+            "high": 0.0018
+          }
+        }
+      }
+    },
+    "cook_suburbs": {
+      "C": {
+        "all": {
+          "mondays": 94,
+          "rows": 905690,
+          "base_rate": 0.0008,
+          "precision_at_top_1pct": {
+            "value": 0.0191,
+            "low": 0.0127,
+            "high": 0.026
+          },
+          "recall_at_top_10pct": {
+            "value": 0.4438,
+            "low": 0.3723,
+            "high": 0.5093
+          },
+          "pr_auc": {
+            "value": 0.0201,
+            "low": 0.0185,
+            "high": 0.0229
+          },
+          "brier": {
+            "value": 0.0011,
+            "low": 0.0009,
+            "high": 0.0012
+          }
+        }
+      },
+      "B0": {
+        "all": {
+          "mondays": 94,
+          "rows": 905690,
+          "base_rate": 0.0008,
+          "precision_at_top_1pct": {
+            "value": 0.009,
+            "low": 0.0055,
+            "high": 0.0134
+          },
+          "recall_at_top_10pct": {
+            "value": 0.1612,
+            "low": 0.1253,
+            "high": 0.2012
+          },
+          "pr_auc": {
+            "value": 0.0112,
+            "low": 0.0108,
+            "high": 0.0121
+          },
+          "brier": {
+            "value": 0.0061,
+            "low": 0.006,
+            "high": 0.0062
+          }
+        }
+      },
+      "K1": {
+        "all": {
+          "mondays": 94,
+          "rows": 905690,
+          "base_rate": 0.0008,
+          "precision_at_top_1pct": {
+            "value": 0.022,
+            "low": 0.0154,
+            "high": 0.0293
+          },
+          "recall_at_top_10pct": {
+            "value": 0.4246,
+            "low": 0.3631,
+            "high": 0.4882
+          },
+          "pr_auc": {
+            "value": 0.0145,
+            "low": 0.0125,
+            "high": 0.0168
+          },
+          "brier": {
+            "value": 0.0008,
+            "low": 0.0007,
+            "high": 0.001
+          }
+        }
+      },
+      "K2": {
+        "all": {
+          "mondays": 94,
+          "rows": 905690,
+          "base_rate": 0.0008,
+          "precision_at_top_1pct": {
+            "value": 0.0183,
+            "low": 0.0121,
+            "high": 0.025
+          },
+          "recall_at_top_10pct": {
+            "value": 0.4285,
+            "low": 0.3674,
+            "high": 0.4891
+          },
+          "pr_auc": {
+            "value": 0.0163,
+            "low": 0.0147,
+            "high": 0.019
+          },
+          "brier": {
+            "value": 0.0008,
+            "low": 0.0007,
+            "high": 0.001
+          }
+        }
+      }
+    },
+    "cook_northwest": {
+      "C": {
+        "all": {
+          "mondays": 251,
+          "rows": 3143775,
+          "base_rate": 0.0002,
+          "precision_at_top_1pct": {
+            "value": 0.0058,
+            "low": 0.0043,
+            "high": 0.0076
+          },
+          "recall_at_top_10pct": {
+            "value": 0.3712,
+            "low": 0.3147,
+            "high": 0.4338
+          },
+          "pr_auc": {
+            "value": 0.003,
+            "low": 0.0027,
+            "high": 0.0037
+          },
+          "brier": {
+            "value": 0.0004,
+            "low": 0.0004,
+            "high": 0.0005
+          }
+        }
+      },
+      "B0": {
+        "all": {
+          "mondays": 251,
+          "rows": 3143775,
+          "base_rate": 0.0002,
+          "precision_at_top_1pct": {
+            "value": 0.001,
+            "low": 0.0005,
+            "high": 0.0017
+          },
+          "recall_at_top_10pct": {
+            "value": 0.14,
+            "low": 0.1035,
+            "high": 0.1792
+          },
+          "pr_auc": {
+            "value": 0.0009,
+            "low": 0.0009,
+            "high": 0.0011
+          },
+          "brier": {
+            "value": 0.0055,
+            "low": 0.0055,
+            "high": 0.0056
+          }
+        }
+      },
+      "K1": {
+        "all": {
+          "mondays": 251,
+          "rows": 3143775,
+          "base_rate": 0.0002,
+          "precision_at_top_1pct": {
+            "value": 0.0059,
+            "low": 0.0044,
+            "high": 0.0077
+          },
+          "recall_at_top_10pct": {
+            "value": 0.3803,
+            "low": 0.3205,
+            "high": 0.4475
+          },
+          "pr_auc": {
+            "value": 0.007,
+            "low": 0.0066,
+            "high": 0.0075
+          },
+          "brier": {
+            "value": 0.0002,
+            "low": 0.0002,
+            "high": 0.0002
+          }
+        }
+      },
+      "K2": {
+        "all": {
+          "mondays": 251,
+          "rows": 3143775,
+          "base_rate": 0.0002,
+          "precision_at_top_1pct": {
+            "value": 0.0059,
+            "low": 0.0044,
+            "high": 0.0078
+          },
+          "recall_at_top_10pct": {
+            "value": 0.3687,
+            "low": 0.3122,
+            "high": 0.4263
+          },
+          "pr_auc": {
+            "value": 0.0029,
+            "low": 0.0025,
+            "high": 0.0035
+          },
+          "brier": {
+            "value": 0.0002,
+            "low": 0.0002,
+            "high": 0.0002
+          }
+        }
+      }
+    },
+    "naperville": {
+      "C": {
+        "all": {
+          "mondays": 92,
+          "rows": 1076124,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0407,
+            "low": 0.0324,
+            "high": 0.0497
+          },
+          "recall_at_top_10pct": {
+            "value": 0.5342,
+            "low": 0.4877,
+            "high": 0.577
+          },
+          "pr_auc": {
+            "value": 0.0206,
+            "low": 0.0178,
+            "high": 0.0236
+          },
+          "brier": {
+            "value": 0.0023,
+            "low": 0.0021,
+            "high": 0.0026
+          }
+        }
+      },
+      "B0": {
+        "all": {
+          "mondays": 92,
+          "rows": 1076124,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0262,
+            "low": 0.0193,
+            "high": 0.0336
+          },
+          "recall_at_top_10pct": {
+            "value": 0.1847,
+            "low": 0.16,
+            "high": 0.2087
+          },
+          "pr_auc": {
+            "value": 0.0116,
+            "low": 0.0106,
+            "high": 0.0152
+          },
+          "brier": {
+            "value": 0.0072,
+            "low": 0.007,
+            "high": 0.0074
+          }
+        }
+      },
+      "K1": {
+        "all": {
+          "mondays": 92,
+          "rows": 1076124,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0347,
+            "low": 0.0267,
+            "high": 0.0429
+          },
+          "recall_at_top_10pct": {
+            "value": 0.4837,
+            "low": 0.439,
+            "high": 0.5262
+          },
+          "pr_auc": {
+            "value": 0.0195,
+            "low": 0.0169,
+            "high": 0.0225
+          },
+          "brier": {
+            "value": 0.0022,
+            "low": 0.0019,
+            "high": 0.0024
+          }
+        }
+      },
+      "K2": {
+        "all": {
+          "mondays": 92,
+          "rows": 1076124,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0392,
+            "low": 0.0311,
+            "high": 0.0481
+          },
+          "recall_at_top_10pct": {
+            "value": 0.542,
+            "low": 0.4976,
+            "high": 0.5835
+          },
+          "pr_auc": {
+            "value": 0.0206,
+            "low": 0.018,
+            "high": 0.0237
+          },
+          "brier": {
+            "value": 0.0021,
+            "low": 0.0018,
+            "high": 0.0023
+          }
+        }
+      }
+    },
+    "aurora": {
+      "C": {
+        "all": {
+          "mondays": 56,
+          "rows": 682416,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0304,
+            "low": 0.0258,
+            "high": 0.0354
+          },
+          "recall_at_top_10pct": {
+            "value": 0.2765,
+            "low": 0.2505,
+            "high": 0.3
+          },
+          "pr_auc": {
+            "value": 0.0117,
+            "low": 0.0106,
+            "high": 0.0131
+          },
+          "brier": {
+            "value": 0.0023,
+            "low": 0.0021,
+            "high": 0.0025
+          }
+        }
+      },
+      "B0": {
+        "all": {
+          "mondays": 56,
+          "rows": 682416,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0179,
+            "low": 0.0143,
+            "high": 0.0217
+          },
+          "recall_at_top_10pct": {
+            "value": 0.165,
+            "low": 0.1437,
+            "high": 0.1852
+          },
+          "pr_auc": {
+            "value": 0.0053,
+            "low": 0.0048,
+            "high": 0.0074
+          },
+          "brier": {
+            "value": 0.0073,
+            "low": 0.0071,
+            "high": 0.0074
+          }
+        }
+      },
+      "K1": {
+        "all": {
+          "mondays": 56,
+          "rows": 682416,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0211,
+            "low": 0.018,
+            "high": 0.0242
+          },
+          "recall_at_top_10pct": {
+            "value": 0.2565,
+            "low": 0.2283,
+            "high": 0.2831
+          },
+          "pr_auc": {
+            "value": 0.008,
+            "low": 0.0071,
+            "high": 0.009
+          },
+          "brier": {
+            "value": 0.0021,
+            "low": 0.002,
+            "high": 0.0023
+          }
+        }
+      },
+      "K2": {
+        "all": {
+          "mondays": 56,
+          "rows": 682416,
+          "base_rate": 0.0021,
+          "precision_at_top_1pct": {
+            "value": 0.0326,
+            "low": 0.0275,
+            "high": 0.0373
+          },
+          "recall_at_top_10pct": {
+            "value": 0.2651,
+            "low": 0.2391,
+            "high": 0.2891
+          },
+          "pr_auc": {
+            "value": 0.0113,
+            "low": 0.0103,
+            "high": 0.0124
+          },
+          "brier": {
+            "value": 0.0021,
+            "low": 0.002,
+            "high": 0.0023
+          }
+        }
+      }
+    }
+  }
+}

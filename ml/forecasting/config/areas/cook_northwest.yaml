@@ -1,0 +1,34 @@
+# Area: three northwest Cook County suburbs (Mount Prospect, Des Plaines, Arlington Heights). RESEARCH TEST ONLY.
+# Counties expansion (team lead, 2026-11-24): found by the 2026-11-25 SeeClickFix scan (scripts/more-towns-data-check).
+# About 330 pothole reports since 2017, about 235 since 2022 (Mount Prospect 210, Des Plaines 80, Arlington Heights 39).
+# Same data and same licence note as dupage_central and cook_suburbs: SeeClickFix public API, CC BY-NC-SA 3.0
+# (non-commercial, credit seeclickfix.com, large reuse needs their OK): INTERNAL RESEARCH ONLY until written permission.
+# The three towns are next to each other, just east of the Cook suburbs area (Elk Grove Village / Schaumburg).
+name: Cook northwest (Mount Prospect, Des Plaines, Arlington Heights)
+schema: cook_northwest
+level: 1
+
+boundary:
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"~"^(Mount Prospect|Des Plaines|Arlington Heights)$"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Illinois"]'
+  osm_merge_relations: true
+  osm_expected_relations: 3
+
+weather_stations: auto
+
+traffic_counts: idot
+
+city_potholes:
+  licence: SeeClickFix public API v2, CC BY-NC-SA 3.0 US (credit seeclickfix.com; non-commercial use). Owner decision 2026-11-24/25 - non-commercial project.
+  portal_type: seeclickfix
+  api: https://seeclickfix.com/api/v2/issues
+  unknown_points: [[0.0, 0.0]]
+  systems:
+    - name: seeclickfix_cook_northwest      # Mount Prospect, Des Plaines, Arlington Heights (about 235 since 2022)
+      pause_s: 3.2                          # SeeClickFix allows 20 requests a minute
+      boxes:                                # (min_lat, min_lng, max_lat, max_lng), one per town; repeats kept once
+        - [42.04, -87.95, 42.08, -87.88]    # Mount Prospect
+        - [41.97, -87.94, 42.06, -87.86]    # Des Plaines
+        - [42.06, -88.04, 42.13, -87.95]    # Arlington Heights
+      timezone: America/Chicago
+      columns: {request_id: id, created_at: created_at, status: status, latitude: lat, longitude: lng}

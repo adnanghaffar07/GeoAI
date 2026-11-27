@@ -184,8 +184,8 @@ def hpms_state(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, f
     return state.upper()
 
 
-def download_hpms(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, float], out_path: Path, sleep=time.sleep) -> int:
-    """HPMS road pieces in the area's box: the newest year that answers, only the fields that exist (US plan step B).
+def download_hpms_arcgis(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, float], out_path: Path, sleep=time.sleep) -> int:
+    """HPMS road pieces in the area's box from FHWA's map services: the newest year that answers, only the fields that exist (US plan step B).
 
     An area crossing a state line gets the state of its middle only (known limit)."""
     state = hpms_state(session, cfg, bbox, sleep=sleep)
@@ -217,6 +217,69 @@ def download_hpms(session: requests.Session, cfg: dict[str, Any], bbox: dict[str
         out_path.write_text(json.dumps(data), encoding="utf-8")
         return count
     raise SourceChangedError(f"No HPMS year answered for {state}: {'; '.join(tried)}")
+
+
+STATE_FIPS = {
+    "AL": "01", "AK": "02", "AZ": "04", "AR": "05", "CA": "06", "CO": "08", "CT": "09", "DE": "10", "DC": "11", "FL": "12",
+    "GA": "13", "HI": "15", "ID": "16", "IL": "17", "IN": "18", "IA": "19", "KS": "20", "KY": "21", "LA": "22", "ME": "23",
+    "MD": "24", "MA": "25", "MI": "26", "MN": "27", "MS": "28", "MO": "29", "MT": "30", "NE": "31", "NV": "32", "NH": "33",
+    "NJ": "34", "NM": "35", "NY": "36", "NC": "37", "ND": "38", "OH": "39", "OK": "40", "OR": "41", "PA": "42", "RI": "44",
+    "SC": "45", "SD": "46", "TN": "47", "TX": "48", "UT": "49", "VT": "50", "VA": "51", "WA": "53", "WV": "54", "WI": "55",
+    "WY": "56",
+}  # fmt: skip  (state FIPS codes: the HPMS table names the state by code)
+
+
+def download_hpms_table(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, float], out_path: Path, sleep=time.sleep) -> int:
+    """HPMS road pieces in the area's box from FHWA's searchable table on data.transportation.gov (public domain).
+
+    Used when FHWA's map services do not answer (they failed for every state on 2026-11-27). Only pieces with a measured
+    condition or traffic value are kept, like the map-service download. The table has one year (cfg['table']['year'])."""
+    table = cfg["table"]
+    state = hpms_state(session, cfg, bbox, sleep=sleep)
+    fips = STATE_FIPS.get(state)
+    if not fips:
+        raise SourceChangedError(f"No state code known for {state}.")
+    fields = list(cfg["wanted_fields"]) + [f for f in table.get("extra_fields", []) if f not in cfg["wanted_fields"]]
+    measured = " OR ".join(f"{name} IS NOT NULL" for name in cfg["wanted_fields"])
+    where = (
+        f"stateid='{fips}' AND within_box(line, {bbox['max_lat']}, {bbox['min_lon']}, {bbox['min_lat']}, {bbox['max_lon']}) "
+        f"AND ({measured})"
+    )
+    features: list[dict[str, Any]] = []
+    offset = 0
+    page = int(table.get("page_size", 5000))
+    while True:
+        params = {"$select": ",".join(fields + ["line"]), "$where": where, "$order": "shapeid", "$limit": page, "$offset": offset}
+        rows = json.loads(request_with_retries(session, "GET", table["url"], params=params, sleep=sleep).content.decode("utf-8"))
+        if not isinstance(rows, list):
+            raise SourceChangedError(f"The HPMS table answered: {str(rows)[:300]}. Update config/sources.yaml.")
+        for row in rows:
+            line = row.pop("line", None)
+            if isinstance(line, dict) and line.get("coordinates"):
+                features.append({"type": "Feature", "properties": row, "geometry": {"type": line["type"], "coordinates": line["coordinates"]}})
+        print(f"  HPMS table: {offset + len(rows):,} pieces", flush=True)
+        if len(rows) < page:
+            break
+        offset += page
+        sleep(1.0)
+    tmp_path = out_path.with_suffix(".part")
+    tmp_path.write_text(
+        json.dumps({"type": "FeatureCollection", "features": features, "hpms": {"state": state, "year": table["year"], "fields": fields, "source": table["url"]}}),
+        encoding="utf-8",
+    )
+    tmp_path.replace(out_path)
+    return len(features)
+
+
+def download_hpms(session: requests.Session, cfg: dict[str, Any], bbox: dict[str, float], out_path: Path, sleep=time.sleep) -> int:
+    """HPMS for the area: FHWA's map services first (newest year), the searchable table when they do not answer."""
+    try:
+        return download_hpms_arcgis(session, cfg, bbox, out_path, sleep=sleep)
+    except RuntimeError as error:
+        if "table" not in cfg:
+            raise
+        print(f"  FHWA's map services did not answer ({str(error)[:150]}); using the HPMS table on data.transportation.gov", flush=True)
+        return download_hpms_table(session, cfg, bbox, out_path, sleep=sleep)
 
 
 def bbox_envelope(bbox: dict[str, float]) -> dict[str, Any]:

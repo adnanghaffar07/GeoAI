@@ -1,0 +1,32 @@
+# Area: City of Aurora, Illinois (Kane, DuPage, Will and Kendall counties). Tested levels ON since 2026-11-25 (lower confidence).
+# Pothole history = Aurora's myAurora 311 open data, "311 Service Requests" layer (public domain, citation appreciated,
+# updated daily). Checked 2026-11-25: 331 pothole requests from 2025-01-31 to 2026-06-24 (one winter).
+# Locked transfer test of the Chicago model (first test Monday 2025-05-05, 56 Mondays): PASS, all 5 checks
+# (precision top 1% ratio 1.70, PR-AUC ratio 2.21, winter ratio 2.72). Few reports and one winter: lower confidence.
+name: City of Aurora
+schema: aurora
+level: 1
+# projected_crs is worked out from the area's centre (NAD83 / UTM zone 16N here)
+
+boundary:
+  osm_relation_filter: '["boundary"="administrative"]["admin_level"="8"]["name"="Aurora"]'
+  osm_within_filter: '["boundary"="administrative"]["admin_level"="4"]["name"="Illinois"]'
+
+weather_stations: auto
+
+traffic_counts: idot
+
+city_potholes:
+  licence: City of Aurora, IL, myAurora 311 Open Data, public domain (credit the City of Aurora Data Analytics Division)
+  portal_type: arcgis
+  api: https://services1.arcgis.com/79UxTxnBeBW8JHY4/arcgis/rest/services
+  page_size: 1000
+  unknown_points: [[0.0, 0.0]]
+  systems:
+    - name: aurora_311                      # residents' pothole requests (331 so far)
+      layer: OneView_ServiceRequests_Points_Mapped_view/FeatureServer/0
+      type_column: RequestType
+      pothole_values: ["Pothole"]
+      geometry_point: true                  # the layer has no lat/long columns; the map point is used
+      timezone: America/Chicago
+      columns: {request_id: Id, created_at: DateCreated, status: StatusType, latitude: _lat, longitude: _lng}

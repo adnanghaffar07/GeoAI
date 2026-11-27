@@ -50,11 +50,15 @@ CHICAGO = "chicago"
 NAPERVILLE = "naperville"
 DUPAGE_CENTRAL = "dupage_central"
 COOK_SUBURBS = "cook_suburbs"
+COOK_NORTHWEST = "cook_northwest"
+AURORA = "aurora"
 # Areas with tested levels: Chicago (the model was trained there) and cities whose locked
 # transfer test passed (Naperville, 2026-11-10: PASS; Central DuPage, 2026-11-24: PASS, SeeClickFix reports,
-# non-commercial use, credit seeclickfix.com; Cook suburbs, 2026-11-25: PASS but few reports, lower confidence).
+# non-commercial use, credit seeclickfix.com; Cook suburbs, 2026-11-25: PASS but few reports, lower confidence;
+# Cook northwest, 2026-11-25: PASS on about 245 SeeClickFix reports, lower confidence;
+# Aurora, 2026-11-25: PASS on one winter of the city's 311 open data (public domain), lower confidence).
 # A project inside one gets Level 2 there.
-TESTED_AREAS = (CHICAGO, NAPERVILLE, DUPAGE_CENTRAL, COOK_SUBURBS)
+TESTED_AREAS = (CHICAGO, NAPERVILLE, DUPAGE_CENTRAL, COOK_SUBURBS, COOK_NORTHWEST, AURORA)
 LEVEL1 = "level1"
 
 

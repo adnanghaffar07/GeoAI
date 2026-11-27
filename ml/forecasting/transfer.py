@@ -215,8 +215,8 @@ def markdown(r: dict[str, Any]) -> str:
     lines += [
         "",
         "## Limits",
-        "- The city's history starts in 2023, so the model's 3- and 5-year history inputs are shorter than in Chicago.",
-        "- Few reports (about 150-190 a year): wide ranges; a FAIL can mean 'not enough data' as well as 'does not transfer'.",
+        f"- Reports in this area start {r['reports_from']}; where the history is shorter than in Chicago, the model's 3- and 5-year history inputs are shorter too.",
+        f"- Few new-report weeks ({r['section_mondays_with_a_new_report']:,} section-Mondays): wide ranges; a FAIL can mean 'not enough data' as well as 'does not transfer'.",
         "- A report is a report, not an inspection; crew repairs are confirmed potholes.",
         "- Probabilities are Chicago's scale (much higher than here), so the Brier check mainly tests calibration.",
     ]

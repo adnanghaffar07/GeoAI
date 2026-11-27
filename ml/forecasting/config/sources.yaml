@@ -53,6 +53,11 @@ hpms:                                   # US plan step B: measured road conditio
   wanted_fields: [iri, cracking_percent, rutting, aadt, aadt_single_unit, aadt_combination]
   page_size: 1000
   state_lookup: https://api.weather.gov/points/{lat},{lon}   # which state the area's middle is in
+  table:                                # fallback when FHWA's map services fail (2026-11-27): searchable table, public domain
+    url: https://data.transportation.gov/resource/42um-tgh5.json   # HPMS Spatial All Sections - 2024
+    year: 2024
+    page_size: 5000
+    extra_fields: [year_last_improvement, last_overlay_thickness, surface_type, f_system, ownership]   # kept in the file for later use
   licence: FHWA Highway Performance Monitoring System (US DOT), US government work, public domain
 
 matching: {distance_m: 15, max_angle_deg: 20}   # a count line or bus route belongs to a section if this close and parallel

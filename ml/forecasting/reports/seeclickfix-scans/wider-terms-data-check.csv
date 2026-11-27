@@ -1,0 +1,186 @@
+county,town,term,total,since2024,y2022,y2023,y2024,y2025,y2026
+Lake,Highland Park/Lake Forest,pothole,112,62,18,9,16,14,32
+Lake,Highland Park/Lake Forest,pavement,12,5,4,1,3,0,2
+Lake,Highland Park/Lake Forest,road damage,56,30,6,4,8,9,13
+Lake,Highland Park/Lake Forest,street repair,191,94,33,33,27,22,45
+Lake,Highland Park/Lake Forest,sinkhole,3,2,1,0,0,0,2
+Lake,Libertyville/Mundelein,pothole,30,0,0,29,0,0,0
+Lake,Libertyville/Mundelein,pavement,1,0,0,1,0,0,0
+Lake,Libertyville/Mundelein,road damage,5,0,0,5,0,0,0
+Lake,Libertyville/Mundelein,street repair,14,0,0,14,0,0,0
+Lake,Libertyville/Mundelein,sinkhole,0,0,0,0,0,0,0
+Lake,Gurnee,pothole,3,0,0,0,0,0,0
+Lake,Gurnee,pavement,0,0,0,0,0,0,0
+Lake,Gurnee,road damage,0,0,0,0,0,0,0
+Lake,Gurnee,street repair,0,0,0,0,0,0,0
+Lake,Gurnee,sinkhole,0,0,0,0,0,0,0
+Lake,Vernon Hills,pothole,1,0,0,0,0,0,0
+Lake,Vernon Hills,pavement,0,0,0,0,0,0,0
+Lake,Vernon Hills,road damage,0,0,0,0,0,0,0
+Lake,Vernon Hills,street repair,0,0,0,0,0,0,0
+Lake,Vernon Hills,sinkhole,0,0,0,0,0,0,0
+Lake,Buffalo Grove,pothole,7,0,1,0,0,0,0
+Lake,Buffalo Grove,pavement,0,0,0,0,0,0,0
+Lake,Buffalo Grove,road damage,1,0,0,0,0,0,0
+Lake,Buffalo Grove,street repair,0,0,0,0,0,0,0
+Lake,Buffalo Grove,sinkhole,0,0,0,0,0,0,0
+Lake,Deerfield/Bannockburn,pothole,0,0,0,0,0,0,0
+Lake,Deerfield/Bannockburn,pavement,0,0,0,0,0,0,0
+Lake,Deerfield/Bannockburn,road damage,0,0,0,0,0,0,0
+Lake,Deerfield/Bannockburn,street repair,0,0,0,0,0,0,0
+Lake,Deerfield/Bannockburn,sinkhole,0,0,0,0,0,0,0
+Lake,Lake Zurich,pothole,1,0,0,0,0,0,0
+Lake,Lake Zurich,pavement,1,0,0,0,0,0,0
+Lake,Lake Zurich,road damage,0,0,0,0,0,0,0
+Lake,Lake Zurich,street repair,0,0,0,0,0,0,0
+Lake,Lake Zurich,sinkhole,0,0,0,0,0,0,0
+Lake,Grayslake/Round Lake,pothole,1,0,0,0,0,0,0
+Lake,Grayslake/Round Lake,pavement,0,0,0,0,0,0,0
+Lake,Grayslake/Round Lake,road damage,0,0,0,0,0,0,0
+Lake,Grayslake/Round Lake,street repair,9,0,4,5,0,0,0
+Lake,Grayslake/Round Lake,sinkhole,0,0,0,0,0,0,0
+Lake,Waukegan,pothole,6,0,0,0,0,0,0
+Lake,Waukegan,pavement,1,0,0,0,0,0,0
+Lake,Waukegan,road damage,0,0,0,0,0,0,0
+Lake,Waukegan,street repair,1,0,0,0,0,0,0
+Lake,Waukegan,sinkhole,0,0,0,0,0,0,0
+McHenry,Crystal Lake,pothole,0,0,0,0,0,0,0
+McHenry,Crystal Lake,pavement,0,0,0,0,0,0,0
+McHenry,Crystal Lake,road damage,0,0,0,0,0,0,0
+McHenry,Crystal Lake,street repair,0,0,0,0,0,0,0
+McHenry,Crystal Lake,sinkhole,0,0,0,0,0,0,0
+McHenry,Cary,pothole,1,0,0,0,0,0,0
+McHenry,Cary,pavement,0,0,0,0,0,0,0
+McHenry,Cary,road damage,0,0,0,0,0,0,0
+McHenry,Cary,street repair,0,0,0,0,0,0,0
+McHenry,Cary,sinkhole,0,0,0,0,0,0,0
+McHenry,Algonquin/Lake in the Hills,pothole,222,24,11,16,12,8,4
+McHenry,Algonquin/Lake in the Hills,pavement,56,10,6,8,5,4,1
+McHenry,Algonquin/Lake in the Hills,road damage,44,8,13,6,2,3,3
+McHenry,Algonquin/Lake in the Hills,street repair,822,174,50,110,76,57,41
+McHenry,Algonquin/Lake in the Hills,sinkhole,40,1,1,1,1,0,0
+McHenry,Huntley,pothole,0,0,0,0,0,0,0
+McHenry,Huntley,pavement,0,0,0,0,0,0,0
+McHenry,Huntley,road damage,0,0,0,0,0,0,0
+McHenry,Huntley,street repair,4,0,0,0,0,0,0
+McHenry,Huntley,sinkhole,0,0,0,0,0,0,0
+McHenry,Woodstock,pothole,0,0,0,0,0,0,0
+McHenry,Woodstock,pavement,0,0,0,0,0,0,0
+McHenry,Woodstock,road damage,0,0,0,0,0,0,0
+McHenry,Woodstock,street repair,0,0,0,0,0,0,0
+McHenry,Woodstock,sinkhole,0,0,0,0,0,0,0
+McHenry,McHenry,pothole,0,0,0,0,0,0,0
+McHenry,McHenry,pavement,0,0,0,0,0,0,0
+McHenry,McHenry,road damage,0,0,0,0,0,0,0
+McHenry,McHenry,street repair,0,0,0,0,0,0,0
+McHenry,McHenry,sinkhole,0,0,0,0,0,0,0
+Will,Joliet,pothole,16,0,0,0,0,0,0
+Will,Joliet,pavement,1,0,0,0,0,0,0
+Will,Joliet,road damage,2,0,0,0,0,0,0
+Will,Joliet,street repair,12,0,0,0,0,0,0
+Will,Joliet,sinkhole,0,0,0,0,0,0,0
+Will,Bolingbrook,pothole,1,0,0,0,0,0,0
+Will,Bolingbrook,pavement,0,0,0,0,0,0,0
+Will,Bolingbrook,road damage,0,0,0,0,0,0,0
+Will,Bolingbrook,street repair,0,0,0,0,0,0,0
+Will,Bolingbrook,sinkhole,0,0,0,0,0,0,0
+Will,Plainfield/Romeoville,pothole,4,0,0,0,0,0,0
+Will,Plainfield/Romeoville,pavement,1,0,0,0,0,0,0
+Will,Plainfield/Romeoville,road damage,3,0,0,0,0,0,0
+Will,Plainfield/Romeoville,street repair,2,0,0,0,0,0,0
+Will,Plainfield/Romeoville,sinkhole,0,0,0,0,0,0,0
+Will,Naperville south (Will side),pothole,1,0,0,0,0,0,0
+Will,Naperville south (Will side),pavement,1,0,0,0,0,0,0
+Will,Naperville south (Will side),road damage,1,0,0,0,0,0,0
+Will,Naperville south (Will side),street repair,0,0,0,0,0,0,0
+Will,Naperville south (Will side),sinkhole,0,0,0,0,0,0,0
+Will,Frankfort/Mokena/New Lenox,pothole,2,0,0,0,0,0,0
+Will,Frankfort/Mokena/New Lenox,pavement,0,0,0,0,0,0,0
+Will,Frankfort/Mokena/New Lenox,road damage,0,0,0,0,0,0,0
+Will,Frankfort/Mokena/New Lenox,street repair,0,0,0,0,0,0,0
+Will,Frankfort/Mokena/New Lenox,sinkhole,0,0,0,0,0,0,0
+Kane,Geneva,pothole,96,96,0,0,0,22,74
+Kane,Geneva,pavement,15,15,0,0,0,6,9
+Kane,Geneva,road damage,6,6,0,0,0,2,4
+Kane,Geneva,street repair,262,262,0,0,0,88,174
+Kane,Geneva,sinkhole,12,12,0,0,0,4,8
+Kane,St. Charles,pothole,99,98,0,0,0,22,76
+Kane,St. Charles,pavement,15,15,0,0,0,6,9
+Kane,St. Charles,road damage,8,7,0,0,0,3,4
+Kane,St. Charles,street repair,265,265,0,0,0,94,171
+Kane,St. Charles,sinkhole,13,13,0,0,0,5,8
+Kane,Batavia,pothole,11,10,0,1,0,4,6
+Kane,Batavia,pavement,2,2,0,0,0,1,1
+Kane,Batavia,road damage,0,0,0,0,0,0,0
+Kane,Batavia,street repair,58,58,0,0,0,20,38
+Kane,Batavia,sinkhole,3,3,0,0,0,1,2
+Kane,Elgin,pothole,2,0,0,0,0,0,0
+Kane,Elgin,pavement,0,0,0,0,0,0,0
+Kane,Elgin,road damage,0,0,0,0,0,0,0
+Kane,Elgin,street repair,0,0,0,0,0,0,0
+Kane,Elgin,sinkhole,1,0,0,0,0,0,0
+Kane,Carpentersville/Algonquin,pothole,127,18,6,7,9,5,4
+Kane,Carpentersville/Algonquin,pavement,31,9,3,1,5,3,1
+Kane,Carpentersville/Algonquin,road damage,24,8,1,1,4,2,2
+Kane,Carpentersville/Algonquin,street repair,516,131,22,63,53,40,38
+Kane,Carpentersville/Algonquin,sinkhole,16,0,1,1,0,0,0
+Kendall,Oswego/Montgomery,pothole,8,0,4,0,0,0,0
+Kendall,Oswego/Montgomery,pavement,0,0,0,0,0,0,0
+Kendall,Oswego/Montgomery,road damage,0,0,0,0,0,0,0
+Kendall,Oswego/Montgomery,street repair,3,0,1,0,0,0,0
+Kendall,Oswego/Montgomery,sinkhole,0,0,0,0,0,0,0
+Kendall,Yorkville,pothole,1,0,0,0,0,0,0
+Kendall,Yorkville,pavement,0,0,0,0,0,0,0
+Kendall,Yorkville,road damage,0,0,0,0,0,0,0
+Kendall,Yorkville,street repair,0,0,0,0,0,0,0
+Kendall,Yorkville,sinkhole,0,0,0,0,0,0,0
+Kendall,Plano/Sandwich,pothole,1,0,0,0,0,0,0
+Kendall,Plano/Sandwich,pavement,0,0,0,0,0,0,0
+Kendall,Plano/Sandwich,road damage,0,0,0,0,0,0,0
+Kendall,Plano/Sandwich,street repair,0,0,0,0,0,0,0
+Kendall,Plano/Sandwich,sinkhole,0,0,0,0,0,0,0
+Grundy,Morris,pothole,0,0,0,0,0,0,0
+Grundy,Morris,pavement,0,0,0,0,0,0,0
+Grundy,Morris,road damage,0,0,0,0,0,0,0
+Grundy,Morris,street repair,0,0,0,0,0,0,0
+Grundy,Morris,sinkhole,0,0,0,0,0,0,0
+Cook,Evanston,pothole,150,0,1,2,0,0,0
+Cook,Evanston,pavement,53,0,0,0,0,0,0
+Cook,Evanston,road damage,3,0,0,0,0,0,0
+Cook,Evanston,street repair,64,0,0,0,0,0,0
+Cook,Evanston,sinkhole,37,0,0,0,0,0,0
+Cook,Oak Park/River Forest,pothole,6,0,0,1,0,0,0
+Cook,Oak Park/River Forest,pavement,3,0,0,0,0,0,0
+Cook,Oak Park/River Forest,road damage,0,0,0,0,0,0,0
+Cook,Oak Park/River Forest,street repair,0,0,0,0,0,0,0
+Cook,Oak Park/River Forest,sinkhole,2,0,0,0,0,0,0
+Cook,Orland Park/Tinley Park,pothole,7,0,0,0,0,0,0
+Cook,Orland Park/Tinley Park,pavement,0,0,0,0,0,0,0
+Cook,Orland Park/Tinley Park,road damage,2,0,0,0,0,0,0
+Cook,Orland Park/Tinley Park,street repair,4,0,0,0,0,0,0
+Cook,Orland Park/Tinley Park,sinkhole,0,0,0,0,0,0,0
+Cook,Palatine/Hoffman Estates,pothole,15,0,1,1,0,0,0
+Cook,Palatine/Hoffman Estates,pavement,0,0,0,0,0,0,0
+Cook,Palatine/Hoffman Estates,road damage,3,0,1,0,0,0,0
+Cook,Palatine/Hoffman Estates,street repair,0,0,0,0,0,0,0
+Cook,Palatine/Hoffman Estates,sinkhole,0,0,0,0,0,0,0
+Cook,Park Ridge/Skokie,pothole,290,85,5,20,46,13,26
+Cook,Park Ridge/Skokie,pavement,65,11,0,1,2,6,3
+Cook,Park Ridge/Skokie,road damage,6,6,0,0,1,2,3
+Cook,Park Ridge/Skokie,street repair,76,50,0,4,13,17,20
+Cook,Park Ridge/Skokie,sinkhole,54,12,0,8,8,1,3
+DuPage,Naperville north (DuPage side),pothole,2,0,0,0,0,0,0
+DuPage,Naperville north (DuPage side),pavement,0,0,0,0,0,0,0
+DuPage,Naperville north (DuPage side),road damage,0,0,0,0,0,0,0
+DuPage,Naperville north (DuPage side),street repair,0,0,0,0,0,0,0
+DuPage,Naperville north (DuPage side),sinkhole,0,0,0,0,0,0,0
+DuPage,Downers Grove/Westmont,pothole,5,1,0,0,0,1,0
+DuPage,Downers Grove/Westmont,pavement,0,0,0,0,0,0,0
+DuPage,Downers Grove/Westmont,road damage,0,0,0,0,0,0,0
+DuPage,Downers Grove/Westmont,street repair,1,0,0,0,0,0,0
+DuPage,Downers Grove/Westmont,sinkhole,0,0,0,0,0,0,0
+DuPage,Elmhurst/Villa Park,pothole,5,0,0,1,0,0,0
+DuPage,Elmhurst/Villa Park,pavement,0,0,0,0,0,0,0
+DuPage,Elmhurst/Villa Park,road damage,1,0,0,0,0,0,0
+DuPage,Elmhurst/Villa Park,street repair,2,1,0,0,0,1,0
+DuPage,Elmhurst/Villa Park,sinkhole,2,1,0,1,0,0,1

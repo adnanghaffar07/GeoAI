@@ -1,6 +1,6 @@
 # Area check: City of Naperville
 
-Result: **Level 1 only** (risk factors; no pothole history, so no tested percentage).
+Result: **Level 1 only** (risk factors; no tested forecast yet: pothole history missing or too short, so no tested percentage).
 
 - Map zone for measuring meters: EPSG:26916; box: {'min_lon': -88.2403, 'min_lat': 41.6613, 'max_lon': -88.0835, 'max_lat': 41.827}; area inside the boundary: 110.3 km²
 - Roads (OpenStreetMap extract 2026-10-30T15:50:28Z): 12,036 sections, 1,018.2 km before roads outside the boundary are removed at load.
@@ -9,7 +9,7 @@ Result: **Level 1 only** (risk factors; no pothole history, so no tested percent
 
 | Layer | Available |
 |---|---|
-| pothole history (Level 2) | no (shown as missing) |
+| pothole history (Level 2) | yes |
 | weather (freeze-thaw, rain, snow) | yes |
 | elevation (USGS, national) | yes |
 | flood zones (FEMA, national) | yes |

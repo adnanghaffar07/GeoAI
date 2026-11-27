@@ -1,0 +1,205 @@
+{
+  "area": "cook_northwest",
+  "name": "Cook northwest (Mount Prospect, Des Plaines, Arlington Heights)",
+  "level": 1,
+  "schema": "cook_northwest",
+  "map_zone": "EPSG:26916",
+  "box": {
+    "min_lon": -88.0315,
+    "min_lat": 41.9903,
+    "max_lon": -87.855,
+    "max_lat": 42.1589
+  },
+  "area_km2": 108.0,
+  "osm_extract": "2026-11-25T22:23:33Z",
+  "sections_before_boundary_cut": 12994,
+  "km_before_boundary_cut": 1115.3,
+  "weather": {
+    "stations": [
+      {
+        "id": "USW00004838",
+        "name": "Chicago Palwaukee Ap",
+        "lat": 42.1208,
+        "lon": -87.9047
+      },
+      {
+        "id": "USW00094846",
+        "name": "Chicago Ohare Intl Ap",
+        "lat": 41.9603,
+        "lon": -87.9317
+      },
+      {
+        "id": "USC00110442",
+        "name": "Barrington 3Sw",
+        "lat": 42.1153,
+        "lon": -88.1639
+      }
+    ],
+    "snow_station": "USW00094846",
+    "choice": {
+      "rule": {
+        "max_distance_km": 30,
+        "min_complete_share": 0.9,
+        "years": 10,
+        "max_stations": 3,
+        "max_candidates": 8
+      },
+      "measured_from": "2016-01-01",
+      "measured_to": "2025-12-31",
+      "candidates_found": 10,
+      "measured": [
+        {
+          "id": "USW00004838",
+          "lat": 42.1208,
+          "lon": -87.9047,
+          "state": "IL",
+          "name": "CHICAGO PALWAUKEE AP",
+          "distance_km": 0.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.998,
+            "rain": 0.996,
+            "snow": 0.057
+          },
+          "file_sha256": "a572e93435679e6a3ed6ea4ef7eee3f883aa2a47aac26f96856d6186e1917595"
+        },
+        {
+          "id": "USW00094846",
+          "lat": 41.9603,
+          "lon": -87.9317,
+          "state": "IL",
+          "name": "CHICAGO OHARE INTL AP",
+          "distance_km": 3.3,
+          "has_snow": true,
+          "share": {
+            "temperature": 1.0,
+            "rain": 1.0,
+            "snow": 1.0
+          },
+          "file_sha256": "62496df4ccc5b464a549714b4dd06cc2c0b02a9e7ab41d8723c6936ef4293f78"
+        },
+        {
+          "id": "USC00110442",
+          "lat": 42.1153,
+          "lon": -88.1639,
+          "state": "IL",
+          "name": "BARRINGTON 3SW",
+          "distance_km": 10.9,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.982,
+            "rain": 0.99,
+            "snow": 0.809
+          },
+          "file_sha256": "251cf8a4c51df1f0f788d278e847d3eea62ba02452bde6f308b7fb802958b173"
+        },
+        {
+          "id": "USC00115097",
+          "lat": 41.8128,
+          "lon": -88.0728,
+          "state": "IL",
+          "name": "LISLE - MORTON ARBORETUM",
+          "distance_km": 20.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.966,
+            "rain": 0.983,
+            "snow": 0.993
+          },
+          "file_sha256": "4b7fc55c2f17e7ec8b95efd486f62c377faed9da19ce0a41a73fcfa04026ad89"
+        },
+        {
+          "id": "USW00094892",
+          "lat": 41.8964,
+          "lon": -88.2511,
+          "state": "IL",
+          "name": "CHICAGO W CHICAGO DUPAGE AP",
+          "distance_km": 20.9,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.997,
+            "rain": 0.996,
+            "snow": 0.056
+          },
+          "file_sha256": "6cd553ddc8f2a0bae30495b4aa1b343a728eaa97ad8e771820217550f74aab81"
+        },
+        {
+          "id": "USC00112736",
+          "lat": 42.0628,
+          "lon": -88.2861,
+          "state": "IL",
+          "name": "ELGIN WATER",
+          "distance_km": 21.0,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.979,
+            "rain": 0.996,
+            "snow": 0.982
+          },
+          "file_sha256": "0f91a20c243209a350de88426212445332f85a4ba9d3c2be8fa44d53b0855e23"
+        },
+        {
+          "id": "USW00014819",
+          "lat": 41.7842,
+          "lon": -87.7553,
+          "state": "IL",
+          "name": "CHICAGO MIDWAY AP",
+          "distance_km": 24.4,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.999,
+            "rain": 0.998,
+            "snow": 0.057
+          },
+          "file_sha256": "d07f99e8fd717e6b41091bcf80dbbe4c1e09ef5b36d81e281027162037449064"
+        },
+        {
+          "id": "USC00115493",
+          "lat": 42.3097,
+          "lon": -88.2533,
+          "state": "IL",
+          "name": "MCHENRY STRATTON LOCK/DAM",
+          "distance_km": 24.8,
+          "has_snow": true,
+          "share": {
+            "temperature": 0.994,
+            "rain": 0.961,
+            "snow": 0.98
+          },
+          "file_sha256": "912e639023569e0000e17cff1a45dbc19b961c1342a34e33476bcd6ffc145a6e"
+        }
+      ],
+      "stations": [
+        {
+          "id": "USW00004838",
+          "name": "Chicago Palwaukee Ap",
+          "lat": 42.1208,
+          "lon": -87.9047
+        },
+        {
+          "id": "USW00094846",
+          "name": "Chicago Ohare Intl Ap",
+          "lat": 41.9603,
+          "lon": -87.9317
+        },
+        {
+          "id": "USC00110442",
+          "name": "Barrington 3Sw",
+          "lat": 42.1153,
+          "lon": -88.1639
+        }
+      ],
+      "snow_station": "USW00094846",
+      "chosen_at": "2026-11-25"
+    }
+  },
+  "layers": {
+    "pothole history (Level 2)": true,
+    "weather (freeze-thaw, rain, snow)": true,
+    "elevation (USGS, national)": true,
+    "flood zones (FEMA, national)": true,
+    "soil (USDA, national)": true,
+    "traffic counts": true,
+    "bus routes": false
+  }
+}

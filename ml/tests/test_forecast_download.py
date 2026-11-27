@@ -383,3 +383,42 @@ def test_hpms_is_optional_in_a_full_download(tmp_path, monkeypatch):
     monkeypatch.setattr(download, "run_job", slow)
     src = {**CHICAGO, "weather": {**CHICAGO["weather"], "stations": ["USW00094846"]}}
     download.download_all(tmp_path, src, settings.rules(), terms_confirmed=False, session=FakeSession([]), sleep=no_sleep)  # no SystemExit
+
+
+def _nws(state="IL"):
+    return _json({"properties": {"relativeLocation": {"properties": {"state": state}}}})
+
+
+def test_hpms_falls_back_to_the_table_when_fhwa_map_services_fail(tmp_path):
+    out = tmp_path / "hpms.geojson"
+    broken = _json({"error": {"code": 500, "message": "The connection attempt failed."}})
+    line = {"type": "MultiLineString", "coordinates": [[[-87.65, 41.87], [-87.64, 41.87]]]}
+    row = {"iri": "180.0", "aadt": "12000", "year_last_improvement": "2018-01-01T00:00:00.000", "line": line}
+    no_geometry = {"iri": "90.0"}  # a piece without a line is skipped
+    session = FakeSession([_nws(), *[broken] * len(HPMS_CFG["years"]), _nws(), _json([row, no_geometry])])
+    assert download.download_hpms(session, HPMS_CFG, BOX, out, sleep=no_sleep) == 1
+    params = session.calls[-1][2]["params"]
+    assert "data.transportation.gov" in session.calls[-1][1]
+    assert "stateid='17'" in params["$where"] and "within_box(line, 41.9, -87.7, 41.85, -87.6)" in params["$where"]
+    assert params["$select"].startswith("iri,cracking_percent,rutting,aadt,") and params["$select"].endswith(",line")
+    saved = json.loads(out.read_text())
+    assert saved["hpms"]["year"] == 2024 and saved["hpms"]["state"] == "IL"
+    props = saved["features"][0]["properties"]
+    assert props["iri"] == "180.0" and "line" not in props and saved["features"][0]["geometry"]["type"] == "MultiLineString"
+
+
+def test_hpms_table_rows_load_like_map_service_pieces(tmp_path):
+    from forecasting import static
+
+    line = {"type": "MultiLineString", "coordinates": [[[-87.65, 41.87], [-87.64, 41.87]]]}
+    data = {"features": [{"type": "Feature", "properties": {"iri": "180.0", "cracking_percent": "0.0", "aadt": "12000"}, "geometry": line}]}
+    rows = static.hpms_rows(data)
+    assert rows[0][0] == 180.0 and rows[0][1] is None and rows[0][3] == 12000  # 0 cracking = not measured, as before
+
+
+def test_hpms_without_a_table_keeps_the_old_error(tmp_path):
+    broken = _json({"error": {"code": 500, "message": "The connection attempt failed."}})
+    cfg = {k: v for k, v in HPMS_CFG.items() if k != "table"}
+    session = FakeSession([_nws(), *[broken] * len(cfg["years"])])
+    with pytest.raises(download.SourceChangedError, match="No HPMS year answered"):
+        download.download_hpms(session, cfg, BOX, tmp_path / "h.geojson", sleep=no_sleep)

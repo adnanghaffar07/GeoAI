@@ -1,0 +1,150 @@
+{
+  "area": "Cook northwest (Mount Prospect, Des Plaines, Arlington Heights)",
+  "model": "forecast-chicago-0.2",
+  "test_mondays": [
+    "2022-01-03",
+    "2026-10-19",
+    251
+  ],
+  "reports_from": "2010-01-05",
+  "reports_to": "2026-11-24",
+  "sections": 12525,
+  "same_pothole_repeats_marked": 0,
+  "report_section_matches": 194,
+  "section_mondays_with_a_new_report": 635,
+  "results": {
+    "B1": {
+      "all": {
+        "mondays": 251,
+        "rows": 3143775,
+        "base_rate": 0.0002,
+        "precision_at_top_1pct": {
+          "value": 0.0058,
+          "low": 0.0043,
+          "high": 0.0076
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3712,
+          "low": 0.3147,
+          "high": 0.4338
+        },
+        "pr_auc": {
+          "value": 0.003,
+          "low": 0.0027,
+          "high": 0.0037
+        },
+        "brier": {
+          "value": 0.0004,
+          "low": 0.0004,
+          "high": 0.0005
+        }
+      },
+      "winter": {
+        "mondays": 120,
+        "rows": 1503000,
+        "base_rate": 0.0002,
+        "precision_at_top_1pct": {
+          "value": 0.0078,
+          "low": 0.0048,
+          "high": 0.011
+        },
+        "recall_at_top_10pct": {
+          "value": 0.3325,
+          "low": 0.2527,
+          "high": 0.4114
+        },
+        "pr_auc": {
+          "value": 0.0039,
+          "low": 0.0031,
+          "high": 0.0054
+        },
+        "brier": {
+          "value": 0.0006,
+          "low": 0.0005,
+          "high": 0.0006
+        }
+      }
+    },
+    "B0": {
+      "all": {
+        "mondays": 251,
+        "rows": 3143775,
+        "base_rate": 0.0002,
+        "precision_at_top_1pct": {
+          "value": 0.001,
+          "low": 0.0005,
+          "high": 0.0017
+        },
+        "recall_at_top_10pct": {
+          "value": 0.14,
+          "low": 0.1035,
+          "high": 0.1792
+        },
+        "pr_auc": {
+          "value": 0.0009,
+          "low": 0.0009,
+          "high": 0.0011
+        },
+        "brier": {
+          "value": 0.0055,
+          "low": 0.0055,
+          "high": 0.0056
+        }
+      },
+      "winter": {
+        "mondays": 120,
+        "rows": 1503000,
+        "base_rate": 0.0002,
+        "precision_at_top_1pct": {
+          "value": 0.0009,
+          "low": 0.0002,
+          "high": 0.0017
+        },
+        "recall_at_top_10pct": {
+          "value": 0.128,
+          "low": 0.0852,
+          "high": 0.1766
+        },
+        "pr_auc": {
+          "value": 0.0009,
+          "low": 0.0009,
+          "high": 0.0011
+        },
+        "brier": {
+          "value": 0.0056,
+          "low": 0.0055,
+          "high": 0.0056
+        }
+      }
+    }
+  },
+  "checks": {
+    "1_precision_top_1pct_ratio": {
+      "value": 5.8,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "2_precision_ci_low_above_baseline": {
+      "value": 0.0043,
+      "needed": "> 0.001",
+      "passed": true
+    },
+    "3_pr_auc_ratio": {
+      "value": 3.3333,
+      "needed": ">= 1.15",
+      "passed": true
+    },
+    "4_winter_precision_ratio": {
+      "value": 8.6667,
+      "needed": ">= 1.0",
+      "passed": true
+    },
+    "5_brier_better_than_baseline": {
+      "value": 0.0004,
+      "needed": "< 0.0055",
+      "passed": true
+    }
+  },
+  "outcome": "PASS",
+  "pass_marks_note": "PLACEHOLDER pass marks until PI-20 (same as Chicago's)."
+}

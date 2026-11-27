@@ -359,6 +359,8 @@ def test_level1_area_load_and_risk_factors(tmp_path):
         assert conn.execute("SELECT count(*) FROM section_risk_factors").fetchone()[0] == len(rows)
     text = risk_factors.report_markdown("Testville", info, risk_factors.summary_table(rows), {"status": "DRAFT", "drafted": "x"}, [])
     assert "risk factors, not a forecast" in text and "DRAFT" in text and "chance (percentage)" in text
+    # road condition has no row where HPMS did not measure: the report counts those sections as missing
+    assert "| Road roughness (IRI, inches per mile: high = over 170, medium = 95-170) | 0 | 0 | 0 | 9 |" in text
 
 
 @pytest.mark.skipif(not TEST_DB, reason="set FORECAST_TEST_DATABASE_URL to run the PostGIS test")

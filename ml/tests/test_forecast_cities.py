@@ -175,3 +175,17 @@ def test_seeclickfix_pages_one_box_per_town_and_keeps_repeats_once(tmp_path):
     assert first["min_lat"] == 41.85 and first["search"] == "pothole" and first["per_page"] == 100
     assert session.calls[1][2]["params"]["page"] == 2
     assert waits.count(3.2) >= 3  # we wait between requests (their limit is 20 a minute)
+
+
+def test_arcgis_layer_without_lat_long_columns_uses_the_map_point(tmp_path):
+    cfg = json.loads(json.dumps(areas.sources_for("aurora")["city_potholes"]))
+    feature = {"attributes": {"Id": "5300001", "DateCreated": 1738364100000, "StatusType": "Closed"},
+               "geometry": {"x": -88.31, "y": 41.76}}  # fmt: skip
+    session = FakeSession([FakeResponse(body=json.dumps({"features": [feature], "exceededTransferLimit": False}).encode())])
+    out = tmp_path / "potholes_city.csv"
+    assert cities.download_city_potholes(session, cfg, out, sleep=no_sleep) == 1
+    params = session.calls[0][2]["params"]
+    assert params["returnGeometry"] == "true" and params["outSR"] == 4326
+    assert params["where"] == "RequestType IN ('Pothole')" and "_lat" not in params["outFields"]
+    row = list(csv.DictReader(out.open(encoding="utf-8")))[0]
+    assert (row["request_id"], row["latitude"], row["longitude"]) == ("5300001", "41.76", "-88.31")

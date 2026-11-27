@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://smilies-classical-platinum-detroit.trycloudflare.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://examinations-referral-implications-oil.trycloudflare.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

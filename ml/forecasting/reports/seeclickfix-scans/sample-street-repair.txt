@@ -1,0 +1,26 @@
+SeeClickFix street-repair sample 11/27/2026 06:38:20
+=== Geneva [street repair] sampled 262 ===
+  request types: Sidewalk & Curb Repair = 115; Water Utility Asphalt Or Concrete Repair = 63; Street Maintenance Request = 51; Street Lighting = 9; Catch Basin/Storm Drain = 5; Report A Concern = 4; Sinkholes = 3; Potholes = 3
+  top titles: Sidewalk & Curb Repair = 116; Water Utility Asphalt Or Concrete Repair = 63; Street Maintenance Request = 51; Street Lighting = 9; Potholes = 5; Report A Concern = 3; Catch Basin/Storm Drain = 3; Sinkholes = 2
+=== Geneva [pothole] sampled 96 ===
+  request types: Potholes = 86; Test Category = 2; Street Maintenance Request = 2; Sinkholes = 2; Miscellaneous Engineering Request = 2; Parkway Restoration For Public Works Water Projects = 1; Catch Basin/Storm Drain = 1
+  top titles: Potholes = 87; Street Maintenance Request = 2; Miscellaneous Engineering Request = 2; Pothole = 2; Sinkholes = 1; Road Construction Information = 1; Parkway Restoration For Public Works Water Projects = 1
+=== St. Charles [street repair] sampled 0 ===
+  request types: 
+  top titles: 
+=== St. Charles [pothole] sampled 1 ===
+  request types:  = 1
+  top titles: LARGE pothole = 1
+=== Algonquin/Lake in the Hills [street repair] sampled 300 ===
+  request types: Street Light Repair/Outage = 270; Street/Road/Driveway = 7; Grass/Turf Damage = 3; Construction Question = 3; Sign Issue = 2; Debris/Litter = 2; Mailbox Damage/Repair = 2; Drainage/Flooding Issue = 2
+  top titles: Street Light Repair/Outage = 270; Street/Road/Driveway = 7; Grass/Turf Damage = 3; Construction Question = 3; Debris/Litter = 2; Mailbox Damage/Repair = 2; Sign Issue = 2; Sidewalk/Bike Path = 2
+=== Algonquin/Lake in the Hills [pothole] sampled 222 ===
+  request types: Pothole/Sinkhole = 185; Street/Road/Driveway = 21; - Streets and Services Question/Information Request = 7; Drainage/Flooding Issue = 3; Algonquin Old Town Construction (Test) = 2;  = 1; Snow/Ice Removal = 1; Tree Dead/Damaged/Broken = 1
+  top titles: Pothole/Sinkhole = 127; Streets - Pothole = 49; Street/Road/Driveway = 21; - Streets and Services Question/Information Request = 7; Pothole = 4; Drainage/Flooding Issue = 2; Algonquin Old Town Construction = 2; Potholes = 2
+=== Highland Park/Lake Forest [street repair] sampled 191 ===
+  request types: Street Light Out = 140; Roadway Repair = 26; Flooding = 8; Damaged Sign = 3; Pothole = 3; Water Main Break = 3; Parkway Restoration = 2; Open Manhole Cover = 1
+  top titles: Street Light Out = 140; Roadway Repair = 26; Flooding = 8; Damaged Sign = 3; Pothole = 3; Water Main Break = 3; Parkway Restoration = 2; Open Manhole Cover = 1
+=== Highland Park/Lake Forest [pothole] sampled 112 ===
+  request types: Pothole = 104; Roadway Repair = 8
+  top titles: Pothole = 104; Roadway Repair = 8
+Done.

@@ -87,7 +87,7 @@ def markdown(r: dict[str, Any]) -> str:
     level = (
         "**Level 2** (has pothole history: a tested forecast is possible) and Level 1"
         if r["level"] == 2
-        else "**Level 1 only** (risk factors; no pothole history, so no tested percentage)"
+        else "**Level 1 only** (risk factors; no tested forecast yet: pothole history missing or too short, so no tested percentage)"
     )
     lines = [
         f"# Area check: {r['name']}",
